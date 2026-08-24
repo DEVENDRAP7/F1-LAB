@@ -85,3 +85,49 @@ class TestFitReliability:
         payload = fit_compound_degradation("UNKNOWN", [1, 2, 3], [90.0, 90.1, 90.2]).to_json()
         assert payload["reliable"] is False
         assert "usable laps" in payload["reliability_reason"]
+
+
+class TestLapsSchemaVersioning:
+    """A corrected model must reach rounds that were already exported.
+
+    The first version of refresh_race_laps skipped any round whose
+    laps.json existed, so a fix to the fit-reliability rule left 97 stale
+    fits on disk still labelled "reliable". Export is now versioned.
+    """
+
+    def _round(self, tmp_path, monkeypatch, existing: dict | None):
+        import run_refresh
+
+        monkeypatch.setattr(run_refresh, "PUBLIC_DATA", tmp_path)
+        out = tmp_path / "2026" / "1" / "R"
+        out.mkdir(parents=True)
+        if existing is not None:
+            (out / "laps.json").write_text(json.dumps(existing))
+        return run_refresh, out / "laps.json"
+
+    def test_skips_a_round_already_at_the_current_version(self, tmp_path, monkeypatch, capsys):
+        run_refresh, _ = self._round(
+            tmp_path, monkeypatch, {"schemaVersion": run_refresh_version()}
+        )
+        run_refresh.refresh_race_laps(2026, {"round": 1, "raceName": "X"})
+        assert "skipping" in capsys.readouterr().out
+
+    def test_re_exports_a_round_written_at_an_older_version(self, tmp_path, monkeypatch, capsys):
+        run_refresh, _ = self._round(tmp_path, monkeypatch, {"schemaVersion": 1})
+        # Network is unavailable in tests, so it fails after deciding to
+        # rebuild — the decision itself is what matters here.
+        run_refresh.refresh_race_laps(2026, {"round": 1, "raceName": "X"})
+        out = capsys.readouterr().out
+        assert "re-exporting" in out
+        assert "skipping" not in out
+
+    def test_treats_an_unversioned_file_as_stale(self, tmp_path, monkeypatch, capsys):
+        run_refresh, _ = self._round(tmp_path, monkeypatch, {"laps": []})
+        run_refresh.refresh_race_laps(2026, {"round": 1, "raceName": "X"})
+        assert "re-exporting" in capsys.readouterr().out
+
+
+def run_refresh_version():
+    import run_refresh
+
+    return run_refresh.LAPS_SCHEMA_VERSION
