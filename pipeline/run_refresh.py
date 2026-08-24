@@ -8,6 +8,9 @@ pipeline modules; this script just decides which rounds are due) and
 degrades per-round rather than aborting the whole refresh when one
 session's data is partial or unavailable, per docs/SPEC.md's "degrade
 per-driver, not per-page" rule extended to rounds.
+
+The one exception is standings, which are all-or-nothing — see
+refresh_standings for why a partial recomputation is worse than none.
 """
 from __future__ import annotations
 
@@ -146,8 +149,19 @@ def refresh_race_laps(year: int, round_info: dict) -> None:
 
 
 def refresh_standings(year: int, calendar: list[dict]) -> None:
+    """Recompute the championship table from every completed round.
+
+    Standings are all-or-nothing: the table is a running total, so a
+    round that fails to fetch does not degrade the result, it falsifies
+    it. A rate-limited run once produced a table computed from a subset
+    of rounds — internally consistent, plausible-looking, and wrong by
+    more than 150 points — which then shipped. So any per-round failure
+    now aborts the export and leaves the previous good artifact in
+    place, rather than overwriting it with a partial recomputation.
+    """
     points_system = load_points_system()
     results_by_round = []
+    failed_rounds = []
 
     for round_info in rounds_due(calendar):
         try:
@@ -159,11 +173,20 @@ def refresh_standings(year: int, calendar: list[dict]) -> None:
             )
         except Exception as exc:  # noqa: BLE001
             print(f"[standings] round {round_info['round']}: could not fetch results ({exc})")
+            failed_rounds.append(round_info["round"])
             continue
         if sprint_results["results"]:
             results_by_round.append({"session": "sprint", "results": sprint_results["results"]})
         if race_results["results"]:
             results_by_round.append({"session": "race", "results": race_results["results"]})
+
+    if failed_rounds:
+        print(
+            f"[standings] ABORTED: {len(failed_rounds)} round(s) could not be fetched "
+            f"({failed_rounds}). A championship table built from a subset of rounds would be "
+            "wrong, not merely incomplete — keeping the existing standings.json untouched."
+        )
+        return
 
     if not results_by_round:
         print("[standings] no completed rounds yet — nothing to compute")
