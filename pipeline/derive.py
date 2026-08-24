@@ -204,6 +204,110 @@ def cross_check_standings(computed: list[dict], api_standings: list[dict]) -> di
     return {"mismatch": len(mismatches) > 0, "details": mismatches}
 
 
+def build_stints(laps: list[dict], pitstops: list[dict], total_laps: int) -> list[dict]:
+    """Per-driver stints inferred from pit-stop laps.
+
+    A stop on lap N ends the stint that N belongs to; the next stint
+    starts on N+1. This is the only stint signal available without the
+    live-timing feed, and it carries a real limitation the UI must state:
+    **no tyre compound**. Ergast/Jolpica publishes no compound data, so
+    stints here are structural (when, how long) and never coloured by
+    compound — inventing one would be exactly the fabricated state the
+    project forbids.
+    """
+    stops_by_driver: dict[str, list[int]] = {}
+    for stop in sorted(pitstops, key=lambda s: (s["driverId"], s["lap"])):
+        stops_by_driver.setdefault(stop["driverId"], []).append(stop["lap"])
+
+    laps_by_driver: dict[str, list[dict]] = {}
+    for lap in laps:
+        laps_by_driver.setdefault(lap["driverId"], []).append(lap)
+
+    stints = []
+    for driver_id, driver_laps in laps_by_driver.items():
+        driver_laps.sort(key=lambda entry: entry["lap"])
+        last_lap = driver_laps[-1]["lap"] if driver_laps else total_laps
+        boundaries = stops_by_driver.get(driver_id, [])
+
+        start = 1
+        for stint_number, stop_lap in enumerate(boundaries + [last_lap], start=1):
+            end = stop_lap
+            if end < start:
+                continue
+            in_stint = [entry for entry in driver_laps if start <= entry["lap"] <= end]
+            stints.append(
+                {
+                    "driverId": driver_id,
+                    "stint": stint_number,
+                    "startLap": start,
+                    "endLap": end,
+                    "laps": end - start + 1,
+                    "compound": None,
+                    "compoundSource": "unavailable — Jolpica-F1 publishes no tyre compound data",
+                    "lapTimesS": [entry["timeS"] for entry in in_stint],
+                }
+            )
+            start = end + 1
+
+    return stints
+
+
+def fit_stint_degradation(stint: dict, min_laps: int = 3) -> dict | None:
+    """Fit lap time against tyre life across one stint.
+
+    Excludes the in-lap and out-lap (the stint's first and last recorded
+    laps) since both carry pit-lane time rather than pace, and excludes
+    laps more than `OUTLIER_FACTOR` above the stint median, which is how
+    safety-car and traffic laps present in a lap-time-only feed with no
+    track-status channel to filter on.
+
+    The fitted slope is **not** fuel-corrected: within a single stint,
+    fuel burn and tyre degradation are both very close to linear in lap
+    number and are therefore not separately identifiable from lap times
+    alone. The returned slope is their sum, and `fuel_corrected: False`
+    says so — config/model.json's fuel_effect_s_per_lap stays unfitted
+    rather than being back-filled with a guess.
+    """
+    from models.deg_fit import fit_compound_degradation
+
+    times = stint["lapTimesS"]
+    usable = [(i + 1, t) for i, t in enumerate(times) if t is not None]
+    # Drop out-lap (first) and in-lap (last) when the stint is long enough
+    # to still leave a fit behind.
+    if len(usable) >= min_laps + 2:
+        usable = usable[1:-1]
+    if len(usable) < min_laps:
+        return None
+
+    values = [t for _, t in usable]
+    median_time = sorted(values)[len(values) // 2]
+    OUTLIER_FACTOR = 1.07  # >7% off the stint median is not a green-flag lap
+    kept = [(life, t) for life, t in usable if t <= median_time * OUTLIER_FACTOR]
+    excluded = len(usable) - len(kept)
+    if len(kept) < min_laps:
+        return None
+
+    fit = fit_compound_degradation(
+        compound=stint["compound"] or "UNKNOWN",
+        tyre_life=[life for life, _ in kept],
+        lap_time_s=[t for _, t in kept],
+        excluded_laps=excluded,
+        exclusion_reason=(
+            f"out/in laps removed; {excluded} lap(s) over {OUTLIER_FACTOR:.0%} of the "
+            "stint median dropped as non-green-flag (no track-status channel available)"
+        ),
+    )
+    out = fit.to_json()
+    out["fuel_corrected"] = False
+    out["fuel_note"] = (
+        "slope combines tyre degradation and fuel burn; the two are not separately "
+        "identifiable from lap times within one stint"
+    )
+    out["driverId"] = stint["driverId"]
+    out["stint"] = stint["stint"]
+    return out
+
+
 def racing_line_channels(lap) -> dict:
     """Resample one lap's merged telemetry onto a fixed distance grid and
     return raw (unquantized) channel arrays keyed by common.LINE_CHANNELS
