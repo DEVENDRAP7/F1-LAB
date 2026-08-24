@@ -1,8 +1,6 @@
 # F1 2026 Race Intelligence
 
 **Live site:** https://devendrap7.github.io/F1-LAB/
-*(not live yet — see "Enabling the live deploy" below; the link will
-start working once GitHub Pages is switched on for this repo)*
 
 An unofficial, non-commercial, open-source F1 2026 race-analysis site:
 circuit atlases, standings, racing-line comparisons, tyre-strategy
@@ -12,16 +10,6 @@ analysis computed at build time from FastF1 and Jolpica-F1.
 
 See `DISCLAIMER.md` and `docs/SPEC.md` (full architecture and module
 spec) before contributing.
-
-### Enabling the live deploy
-
-`deploy.yml` builds and runs correctly on push to `main`, but the deploy
-step currently fails with `Ensure GitHub Pages has been enabled` — Pages
-needs a one-time manual switch that only a repo admin can make:
-[Settings → Pages](https://github.com/DEVENDRAP7/F1-LAB/settings/pages) →
-under "Build and deployment", set **Source** to **GitHub Actions**. After
-that, re-run the failed `Deploy to Pages` workflow (or push again) and the
-link above will resolve.
 
 ## Current status
 
