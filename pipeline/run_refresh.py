@@ -25,6 +25,15 @@ import export
 from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR
 
 
+# Bumped whenever the shape or the model behind an exported laps.json
+# changes. refresh_race_laps re-exports any round written under an older
+# version: without this, the skip-if-exists check meant a corrected model
+# silently never reached rounds that had already been exported (a fix to
+# the fit-reliability rule left 97 stale fits labelled "reliable" on
+# disk, because their rounds were simply skipped).
+LAPS_SCHEMA_VERSION = 2
+
+
 def load_points_system() -> dict:
     return json.loads((CONFIG_DIR / "points_system.json").read_text())
 
@@ -99,8 +108,14 @@ def refresh_race_laps(year: int, round_info: dict) -> None:
     round_ = round_info["round"]
     out_path = PUBLIC_DATA / str(year) / str(round_) / "R" / "laps.json"
     if out_path.exists():
-        print(f"[laps] round {round_}: already exported, skipping")
-        return
+        try:
+            existing_version = json.loads(out_path.read_text()).get("schemaVersion", 0)
+        except (json.JSONDecodeError, OSError):
+            existing_version = 0  # unreadable: treat as stale and rebuild
+        if existing_version == LAPS_SCHEMA_VERSION:
+            print(f"[laps] round {round_}: already exported at v{existing_version}, skipping")
+            return
+        print(f"[laps] round {round_}: re-exporting (v{existing_version} -> v{LAPS_SCHEMA_VERSION})")
 
     try:
         laps = ingest.fetch_laps(year, round_)
@@ -122,6 +137,7 @@ def refresh_race_laps(year: int, round_info: dict) -> None:
             deg_fits.append(fit)
 
     payload = {
+        "schemaVersion": LAPS_SCHEMA_VERSION,
         "year": year,
         "round": round_,
         "raceName": round_info["raceName"],
