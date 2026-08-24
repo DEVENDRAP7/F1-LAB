@@ -75,6 +75,17 @@ def export_racing_line(year: int, round_: int, session_name: str, driver_code: s
     return bin_path
 
 
+def export_race_laps(year: int, round_: int, payload: dict) -> Path:
+    """Lap times, stints and degradation fits for one race, under the
+    round's R session directory so the frontend lazy-loads it per round."""
+    out_dir = PUBLIC_DATA / str(year) / str(round_) / "R"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "laps.json"
+    path.write_text(json.dumps(payload, separators=(",", ":")))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_session_meta(year: int, round_: int, session_name: str, meta: dict) -> Path:
     out_dir = PUBLIC_DATA / str(year) / str(round_) / session_name
     out_dir.mkdir(parents=True, exist_ok=True)
