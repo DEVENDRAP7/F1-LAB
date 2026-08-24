@@ -1,0 +1,68 @@
+name: Refresh data
+
+on:
+  schedule:
+    # Every Tuesday at 06:00 UTC.
+    - cron: '0 6 * * 2'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache FastF1 data
+        uses: actions/cache@v4
+        with:
+          path: pipeline/.cache
+          # Keyed on year+week rather than session ID: FastF1's own cache
+          # is content-addressed per session internally, so a broad key
+          # with a long restore-keys fallback still avoids most re-downloads
+          # while keeping the cache action itself simple.
+          key: fastf1-cache-${{ github.run_id }}
+          restore-keys: |
+            fastf1-cache-
+
+      - name: Install pipeline dependencies
+        run: pip install -r pipeline/requirements.txt
+
+      - name: Run pipeline (ingest -> derive -> export)
+        working-directory: pipeline
+        run: python run_refresh.py --year 2026
+
+      - name: Validate exported data (hard gate)
+        working-directory: pipeline
+        run: |
+          python -m pytest tests -q
+          python validate_export.py
+
+      - name: Configure commit identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push if data changed
+        run: |
+          git add config/season_2026.json public/data
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "Refresh 2026 season data"
+            git push origin HEAD:main
+          fi

@@ -1,0 +1,75 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-nav {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-1);
+}
+
+.app-nav a {
+  color: var(--ink-1);
+  text-decoration: none;
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.app-nav a.active,
+.app-nav a:hover {
+  color: var(--ink-0);
+}
+
+main {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.empty-state {
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 2rem;
+  max-width: 42rem;
+}
+
+.empty-state-title {
+  font-size: 1.1rem;
+  color: var(--ink-0);
+  margin: 0 0 0.5rem;
+}
+
+.empty-state-reason {
+  color: var(--ink-1);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.warning-banner {
+  background: color-mix(in srgb, var(--warn) 15%, var(--bg-1));
+  border: 1px solid var(--warn);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: var(--ink-0);
+}
+
+.generated-at {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}

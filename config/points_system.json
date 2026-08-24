@@ -1,0 +1,16 @@
+{
+  "_comment": "Points system used by derive.compute_standings_from_results for the independent standings computation described in docs/SPEC.md M2. This is what the cross-check against Jolpica-F1's own standings endpoint exists to catch drift on: if the FIA changes the points table for 2026 and this file is stale, cross_check_standings() will flag every round as a mismatch instead of silently producing a wrong table.",
+  "source": "Unchanged since 2019 Sporting Regulations through the 2025 season (last version known at authoring time); NOT verified against the 2026 Sporting Regulations because this environment has no network access to the FIA's published documents. Treat 'verified: false' as a standing instruction to re-check this file against the actual 2026 regulations before trusting it, even though the automatic cross-check is the real safety net.",
+  "verified": false,
+  "race_points_by_position": {
+    "1": 25, "2": 18, "3": 15, "4": 12, "5": 10,
+    "6": 8, "7": 6, "8": 4, "9": 2, "10": 1
+  },
+  "fastest_lap_point": {
+    "points": 1,
+    "condition": "classified in the top 10"
+  },
+  "sprint_points_by_position": {
+    "1": 8, "2": 7, "3": 6, "4": 5, "5": 4, "6": 3, "7": 2, "8": 1
+  }
+}

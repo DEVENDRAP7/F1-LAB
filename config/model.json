@@ -1,0 +1,16 @@
+{
+  "_comment": "Model hyperparameters and documented constants, not season facts. Each field states its derivation so it can be checked rather than trusted.",
+  "fuel_effect_s_per_lap": {
+    "value": null,
+    "derivation": "Not yet fitted. Planned method: regress lap time on remaining-fuel-laps for green-flag laps on a single, unchanged-tyre stint early in a race, holding tyre life roughly constant across the sample; slope is the fuel effect in seconds per lap of fuel burned. Requires at least one 2026 race session's laps.json to fit.",
+    "status": "unfitted"
+  },
+  "quadratic_deg_r2_improvement_threshold": {
+    "value": 0.03,
+    "derivation": "Engineering default: only prefer a quadratic tyre-degradation fit over a linear one if it improves R^2 by more than this margin, per pipeline/models/deg_fit.py. Not a season fact; safe to author directly."
+  },
+  "min_reliable_degradation_samples": {
+    "value": 6,
+    "derivation": "Engineering default (docs/SPEC.md M4: \"a curve from 6 laps is not a curve\"). Below this sample count deg_fit.py marks the fit unreliable rather than hiding the small sample."
+  }
+}

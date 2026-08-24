@@ -1,0 +1,64 @@
+/*
+ * Design tokens only — no inline colors anywhere else in the app.
+ * Palette: dark instrument base. Color carries sport semantics
+ * (sector green/yellow/purple, compound bands) and nothing else.
+ */
+:root {
+  --bg-0: #0a0c10;
+  --bg-1: #12151b;
+  --bg-2: #1a1e26;
+  --line: #262b35;
+
+  --ink-0: #e8eaee;
+  --ink-1: #9aa2b1;
+  --ink-2: #5c6474;
+
+  --sector-green: #16c172;
+  --sector-yellow: #e8c547;
+  --sector-purple: #b558f6;
+
+  --compound-soft: #d1373b;
+  --compound-medium: #e8c547;
+  --compound-hard: #e8eaee;
+  --compound-inter: #2fae4e;
+  --compound-wet: #2b7fd6;
+
+  --accent: #3b8ef0;
+  --warn: #e07a3f;
+  --danger: #d1373b;
+
+  --font-display: 'Titillium Web', 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --radius: 4px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --bg-0: #f4f5f7;
+    --bg-1: #ffffff;
+    --bg-2: #eceef2;
+    --line: #d7dae0;
+    --ink-0: #14161a;
+    --ink-1: #4a5160;
+    --ink-2: #7a8394;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--ink-0);
+  font-family: var(--font-display);
+}
+
+.mono,
+.tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

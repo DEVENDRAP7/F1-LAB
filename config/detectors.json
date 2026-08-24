@@ -1,0 +1,25 @@
+{
+  "_comment": "Thresholds for pipeline/models/detectors.py (M7). detectors.py is not implemented yet (see its module docstring), so these are placeholder starting points to tune once real telemetry and a hand-labelled incident set exist — not season facts, safe to author directly, but not yet validated against real data.",
+  "lockup": {
+    "brake_pct_min": 95,
+    "speed_gradient_threshold_kph_per_s": null,
+    "status": "unvalidated"
+  },
+  "off_track": {
+    "lateral_deviation_m": null,
+    "status": "unvalidated"
+  },
+  "mid_corner_correction": {
+    "status": "unvalidated"
+  },
+  "poor_exit": {
+    "exit_speed_deficit_kph": null,
+    "status": "unvalidated"
+  },
+  "bad_launch": {
+    "status": "unvalidated"
+  },
+  "slow_in_out_lap": {
+    "status": "unvalidated"
+  }
+}

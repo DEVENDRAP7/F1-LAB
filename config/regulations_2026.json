@@ -1,0 +1,15 @@
+{
+  "_comment": "2026 technical regulation constants for pipeline/models/aero.py (M8). Ground rule: read exact figures from here, verified against the published FIA technical regulations — never from memory. This file has NOT been populated or verified yet because this development environment has no network access to the FIA's published documents. aero.py is deliberately left unimplemented (raises NotImplementedError) until this file is filled in from a primary source and its 'verified' flag is set to true.",
+  "verified": false,
+  "verified_source": null,
+  "verified_at": null,
+  "active_aero": {
+    "low_drag_mode": null,
+    "high_downforce_mode": null
+  },
+  "power_unit": {
+    "combustion_electric_split": null,
+    "mguk_notes": null,
+    "mguh_present": null
+  }
+}
