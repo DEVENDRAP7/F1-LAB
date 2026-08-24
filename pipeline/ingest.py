@@ -3,10 +3,22 @@ pipeline that touches the network — derive.py and export.py work purely
 on what this module returns, so a season/session that hasn't been
 ingested here simply doesn't exist for the rest of the pipeline.
 
-Run from GitHub Actions (see .github/workflows/refresh-data.yml), where
-Jolpica-F1 and FastF1's live-timing backend are both reachable. It cannot
-be exercised from a network-restricted dev sandbox; that's a deployment
-fact, not a code path to special-case around.
+Run from GitHub Actions (see .github/workflows/refresh-data.yml). It
+cannot be exercised from a network-restricted dev sandbox; that's a
+deployment fact, not a code path to special-case around.
+
+Source availability, measured (see pipeline/diagnose_sources.py and the
+"Data sources" section of the README):
+  - Jolpica-F1 answers 200 for schedule, results, standings, laps and
+    pit stops. It carries no telemetry and no tyre compounds.
+  - livetiming.formula1.com, which FastF1 needs, answers CloudFront 403
+    for every path from a datacenter IP — including its own root and a
+    prior-season control, so this is a network-origin block, not
+    anything about 2026. FastF1's own fallback mirror serves an SPA 404
+    at every static path.
+Everything FastF1-backed here is therefore written to degrade to an
+empty state rather than to fail, and the lap-level functions below are
+the telemetry-free path that actually returns data today.
 """
 from __future__ import annotations
 
@@ -23,12 +35,37 @@ JOLPICA_BASE = "https://api.jolpi.ca/ergast/f1"
 JOLPICA_RATE_LIMIT_S = 0.3  # be a polite client of a free, rate-limited API
 
 
-def _jolpica_get(path: str) -> dict:
+JOLPICA_PAGE_LIMIT = 100  # the API's own maximum page size
+
+
+def _jolpica_get(path: str, params: dict | None = None) -> dict:
     url = f"{JOLPICA_BASE}/{path}.json"
-    resp = requests.get(url, timeout=30)
+    resp = requests.get(url, params=params or {}, timeout=30)
     resp.raise_for_status()
     time.sleep(JOLPICA_RATE_LIMIT_S)
     return resp.json()
+
+
+def _jolpica_paged(path: str, extract):
+    """Follow Jolpica's offset pagination to completion.
+
+    A race's lap table is ~20 drivers x ~60 laps, well past the API's
+    100-row page cap, so anything lap-level must page or it silently
+    returns a truncated race. `extract` pulls the list of interest out of
+    one page's MRData; total comes from MRData.total.
+    """
+    collected = []
+    offset = 0
+    while True:
+        page = _jolpica_get(path, {"limit": JOLPICA_PAGE_LIMIT, "offset": offset})
+        mrdata = page["MRData"]
+        rows = extract(mrdata)
+        collected.extend(rows)
+
+        total = int(mrdata.get("total", 0))
+        offset += JOLPICA_PAGE_LIMIT
+        if offset >= total or not rows:
+            return collected
 
 
 def fetch_season_calendar(year: int = SEASON_YEAR) -> list[dict]:
@@ -134,6 +171,68 @@ def fetch_sprint_results(year: int, round_: int) -> dict:
             for r in results
         ]
     }
+
+
+def _lap_time_to_seconds(text: str) -> float | None:
+    """'1:32.264' -> 92.264. Returns None for anything unparseable rather
+    than guessing, so a malformed row becomes a visible gap instead of a
+    plausible wrong number."""
+    if not isinstance(text, str):
+        return None
+    try:
+        if ":" in text:
+            minutes, seconds = text.split(":", 1)
+            return int(minutes) * 60 + float(seconds)
+        return float(text)
+    except ValueError:
+        return None
+
+
+def fetch_laps(year: int, round_: int) -> list[dict]:
+    """Every driver's every lap for one race, flattened and paginated.
+
+    This is the telemetry-free backbone for stint and pace work: real
+    lap times, but no tyre compound and no per-sample telemetry — those
+    exist only behind the live-timing endpoint that blocks datacenter IPs.
+    """
+
+    def extract(mrdata):
+        races = mrdata["RaceTable"]["Races"]
+        return races[0]["Laps"] if races else []
+
+    flattened = []
+    for lap in _jolpica_paged(f"{year}/{round_}/laps", extract):
+        lap_number = int(lap["number"])
+        for timing in lap["Timings"]:
+            flattened.append(
+                {
+                    "lap": lap_number,
+                    "driverId": timing["driverId"],
+                    "position": int(timing["position"]),
+                    "timeS": _lap_time_to_seconds(timing["time"]),
+                }
+            )
+    return flattened
+
+
+def fetch_pitstops(year: int, round_: int) -> list[dict]:
+    """Pit stops for one race. Stint boundaries are derived from these
+    (pipeline/derive.build_stints) since no compound/stint feed exists on
+    this source."""
+
+    def extract(mrdata):
+        races = mrdata["RaceTable"]["Races"]
+        return races[0]["PitStops"] if races else []
+
+    return [
+        {
+            "driverId": stop["driverId"],
+            "lap": int(stop["lap"]),
+            "stop": int(stop["stop"]),
+            "durationS": _lap_time_to_seconds(stop.get("duration", "")),
+        }
+        for stop in _jolpica_paged(f"{year}/{round_}/pitstops", extract)
+    ]
 
 
 @dataclass
