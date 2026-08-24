@@ -4,6 +4,7 @@ import { MAX_SERIES, seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
 import StintChart from '../components/StintChart.jsx';
 import LapTimeChart from '../components/LapTimeChart.jsx';
+import UndercutLedger from '../components/UndercutLedger.jsx';
 
 // M4 — Tyre Strategy Board, on the data that actually exists.
 //
@@ -287,6 +288,25 @@ export default function RaceStrategy() {
               </>
             )}
           </section>
+
+          {data.undercuts && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>Undercut ledger</h2>
+                <p className="panel-note">
+                  Every stop measured against rivals who were within 30 seconds and had not
+                  yet stopped. Gaps come from elapsed race time — the running sum of lap
+                  times — so no gap channel is needed.
+                  {selected.length > 0 && ' Filtered to the drivers selected above.'}
+                </p>
+              </div>
+              <UndercutLedger
+                undercuts={data.undercuts.entries ?? data.undercuts}
+                excluded={data.undercuts.excluded}
+                driverFilter={new Set(selected)}
+              />
+            </section>
+          )}
 
           <section className="panel">
             <div className="panel-head">

@@ -567,3 +567,24 @@ tr.is-muted td {
 .tag-quiet {
   color: var(--ink-2);
 }
+
+/* Sign of the net change is the point of the ledger, so it carries the
+   only colour on the row — never colour alone: the number keeps its own
+   +/- sign and the column header states the direction. */
+.net-gain {
+  color: var(--sector-green);
+  font-weight: 600;
+}
+
+.net-loss {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.ledger-footnotes {
+  margin-top: 0.5rem;
+}
+
+.ledger-footnotes .link-button {
+  padding-top: 0.25rem;
+}
