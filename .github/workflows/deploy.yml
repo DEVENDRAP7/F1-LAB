@@ -33,6 +33,14 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # The what-if model ships as a Python reference and a JS port that
+      # must agree bit-for-bit on a committed fixture; running the Python
+      # suite here means a drift on either side fails this same workflow.
+      - name: Run pipeline unit tests (Python side of the parity contract)
+        run: |
+          pip install -q numpy pytest
+          python -m pytest pipeline/tests -q
+
       - name: Build
         run: npm run build
 

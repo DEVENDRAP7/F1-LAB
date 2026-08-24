@@ -1,0 +1,32 @@
+{
+  "_comment": "Parity-test fixture only. These are arbitrary but plausible-shaped model inputs used to pin the Python reference (pipeline/models/whatif.py) and its JS port (src/lib/whatifModel.js) to identical output. They are NOT fitted from any real session and are never exported to public/data.",
+  "seed": 12345,
+  "iterations": 200,
+  "total_laps": 57,
+  "base_pace_s": 92.5,
+  "fuel_effect_s_per_lap": 0.055,
+  "track_evolution_s_per_lap": 0.012,
+  "pit_loss_s": 21.3,
+  "pit_loss_sigma_s": 0.8,
+  "sc_laps": [23, 24, 25],
+  "sc_lap_extra_s": 25.0,
+  "compounds": {
+    "MEDIUM": {
+      "offset_s": 0.0,
+      "deg_rate_s_per_lap": 0.045,
+      "deg_rate_ci_s": 0.015,
+      "quad_s_per_lap2": 0.0008
+    },
+    "HARD": {
+      "offset_s": 0.35,
+      "deg_rate_s_per_lap": 0.03,
+      "deg_rate_ci_s": 0.01,
+      "quad_s_per_lap2": 0.0005
+    }
+  },
+  "strategy": [
+    { "compound": "MEDIUM", "laps": 20 },
+    { "compound": "HARD", "laps": 37 }
+  ],
+  "traffic_penalty_s": [1.2, 0.8, 0.4]
+}

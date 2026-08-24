@@ -29,16 +29,30 @@ tested:
   tests, and Season Ledger / Circuit Atlas pages that render an explicit,
   worded empty state rather than a spinner or placeholder data when
   `public/data/*.json` doesn't exist yet.
+- **Racing Lines (M3) machinery**: distance-axis delta-time math
+  (`src/lib/delta.js`), canvas telemetry trace panels with a pointer- and
+  keyboard-driven crosshair shared across the track map, speed/throttle
+  traces and delta chart (`src/components/TelemetryTrace.jsx`,
+  `src/pages/RacingLines.jsx`). Fully wired, waiting only on exported
+  session data.
+- **What-If (M5) engine core**: `pipeline/models/whatif.py` (stdlib-only
+  reference), `src/lib/whatifModel.js` (line-for-line port used by
+  `src/workers/whatif.worker.js`), and a two-sided parity test pinning
+  both to the same committed fixture output within 1e-9 s. **Not wired
+  into any page**: the spec's publish gate — reproducing a real race's
+  time within ~1% using the actual strategy — is written as a test that
+  currently skips (no real race artifacts exist yet) and will hard-fail
+  CI on drift once they do.
 - **CI** (`.github/workflows/`): `refresh-data.yml` (scheduled ingest with
   a hard-fail validation gate before any commit) and `deploy.yml`
   (build/test/deploy to Pages).
 
 Not built yet, in the order `docs/SPEC.md` prioritizes them: the full
-Circuit Atlas UI, Racing Lines overlay/linked-traces view, Tyre Strategy
-Board UI, What-If Engine (`pipeline/models/whatif.py` is an intentional
-`NotImplementedError` stub — it's gated on a validation test that doesn't
-exist yet), Driver Error Review (`detectors.py`, same status), and the
-Aero Explainer (`aero.py`, same status — also blocked on
+Circuit Atlas UI, Tyre Strategy Board UI, the What-If panel UI (engine
+core exists, see above, but stays unpublished until its validation gate
+passes), Driver Error Review (`detectors.py` is an intentional
+`NotImplementedError` stub pending a hand-labelled validation set), and
+the Aero Explainer (`aero.py`, same status — also blocked on
 `config/regulations_2026.json` being verified against the real FIA
 technical regulations).
 
