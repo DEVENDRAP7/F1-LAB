@@ -7,7 +7,9 @@
 // circuit_info.rotation at build time — see docs/SPEC.md). `lines` is an
 // array of { code, color, points } where points come from
 // lib/racingLine.js's decoded x/y channels.
-export default function TrackMap({ outline, corners = [], lines = [], width = 640, height = 640 }) {
+// `marker` is an optional [x, y] in metres — the crosshair's position on
+// the map, driven by the same index the telemetry traces use.
+export default function TrackMap({ outline, corners = [], lines = [], marker = null, width = 640, height = 640 }) {
   if (!outline || outline.length === 0) {
     return null;
   }
@@ -58,6 +60,16 @@ export default function TrackMap({ outline, corners = [], lines = [], width = 64
           opacity={0.9}
         />
       ))}
+      {marker && (
+        <circle
+          cx={project(marker)[0]}
+          cy={project(marker)[1]}
+          r={5}
+          fill="none"
+          stroke="var(--ink-0)"
+          strokeWidth={2}
+        />
+      )}
     </svg>
   );
 }

@@ -27,6 +27,14 @@
   --warn: #e07a3f;
   --danger: #d1373b;
 
+  /* Driver-overlay colours for up to 4 simultaneous racing lines (M3).
+   * Deliberately distinct from the sector green/yellow/purple and the
+   * compound bands, which are reserved for their own semantics. */
+  --driver-1: #3b8ef0;
+  --driver-2: #e8842f;
+  --driver-3: #2fbfbf;
+  --driver-4: #d75fd7;
+
   --font-display: 'Titillium Web', 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
 

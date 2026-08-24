@@ -109,13 +109,23 @@ def write_line_binary(path: Path, channel_arrays: dict) -> int:
     return point_count
 
 
-def write_manifest(path: Path, point_count: int, channels=LINE_CHANNELS, scale=None) -> None:
+def upsert_manifest_driver(path: Path, driver_code: str, point_count: int,
+                           channels=LINE_CHANNELS, scale=None) -> None:
+    """Merge one driver's entry into the session's line manifest. Each
+    driver's lap has its own point count (laps differ slightly in sampled
+    length), so the manifest carries a per-driver map rather than a single
+    pointCount — a bare rewrite per driver would clobber every earlier
+    entry and leave the JS decoder misreading all but the last .bin."""
     scale = scale or LINE_SCALE
-    manifest = {
-        "pointCount": point_count,
-        "channels": list(channels),
-        "scale": {k: scale[k] for k in channels},
-    }
+    if path.exists():
+        manifest = json.loads(path.read_text())
+    else:
+        manifest = {
+            "channels": list(channels),
+            "scale": {k: scale[k] for k in channels},
+            "drivers": {},
+        }
+    manifest["drivers"][driver_code] = {"pointCount": point_count}
     path.write_text(json.dumps(manifest, indent=2))
 
 

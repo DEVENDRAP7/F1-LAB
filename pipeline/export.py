@@ -17,8 +17,8 @@ from common import (
     PUBLIC_DATA,
     check_file_budget,
     quantize_int16,
+    upsert_manifest_driver,
     write_line_binary,
-    write_manifest,
 )
 
 
@@ -70,8 +70,7 @@ def export_racing_line(year: int, round_: int, session_name: str, driver_code: s
     point_count = write_line_binary(bin_path, quantized)
     check_file_budget(bin_path, MAX_RACING_LINE_BYTES)
 
-    manifest_path = out_dir / "manifest.json"
-    write_manifest(manifest_path, point_count)
+    upsert_manifest_driver(out_dir / "manifest.json", driver_code, point_count)
 
     return bin_path
 

@@ -1,11 +1,13 @@
+import json
+
 import numpy as np
 
 from common import (
     LINE_CHANNELS,
     quantize_int16,
     resample_by_distance,
+    upsert_manifest_driver,
     write_line_binary,
-    write_manifest,
 )
 
 
@@ -45,7 +47,7 @@ def test_write_line_binary_roundtrips_with_manifest(tmp_path):
     manifest_path = tmp_path / "manifest.json"
 
     written_count = write_line_binary(bin_path, channels)
-    write_manifest(manifest_path, written_count)
+    upsert_manifest_driver(manifest_path, "HAM", written_count)
 
     assert written_count == point_count
     raw = np.frombuffer(bin_path.read_bytes(), dtype="<i2")
@@ -55,3 +57,15 @@ def test_write_line_binary_roundtrips_with_manifest(tmp_path):
     # so it should read back as 0, 10, 20, ... at stride len(channels)
     x_values = raw[0 :: len(LINE_CHANNELS)]
     assert list(x_values) == [i * 10 for i in range(point_count)]
+
+
+def test_manifest_upsert_keeps_other_drivers(tmp_path):
+    manifest_path = tmp_path / "manifest.json"
+    upsert_manifest_driver(manifest_path, "HAM", 2500)
+    upsert_manifest_driver(manifest_path, "VER", 2512)
+    upsert_manifest_driver(manifest_path, "HAM", 2501)  # re-export updates in place
+
+    manifest = json.loads(manifest_path.read_text())
+    assert manifest["channels"] == list(LINE_CHANNELS)
+    assert manifest["drivers"]["HAM"]["pointCount"] == 2501
+    assert manifest["drivers"]["VER"]["pointCount"] == 2512
