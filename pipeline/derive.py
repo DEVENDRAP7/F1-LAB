@@ -140,7 +140,16 @@ def compute_standings_from_results(results_by_round: list[dict], points_system: 
         for entry in round_result["results"]:
             code = entry["driverCode"]
             row = totals.setdefault(
-                code, {"driverCode": code, "driverName": entry["driverName"], "team": entry["team"], "points": 0.0, "wins": 0}
+                code,
+                {
+                    "driverCode": code,
+                    "driverName": entry["driverName"],
+                    "team": entry["team"],
+                    "points": 0.0,
+                    "wins": 0,
+                    "_race_finishes": {},
+                    "_sprint_finishes": {},
+                },
             )
             row["team"] = entry["team"]  # keep current team on a mid-season change
 
@@ -148,14 +157,29 @@ def compute_standings_from_results(results_by_round: list[dict], points_system: 
             pos_int = int(position) if position and position.isdigit() else None
             if pos_int in table:
                 row["points"] += table[pos_int]
-            if pos_int == 1:
+            if pos_int is not None:
+                bucket = "_sprint_finishes" if is_sprint else "_race_finishes"
+                row[bucket][pos_int] = row[bucket].get(pos_int, 0) + 1
+            if pos_int == 1 and not is_sprint:
                 row["wins"] += 1
             if not is_sprint and entry.get("fastestLapRank") == "1" and pos_int is not None and pos_int <= 10:
                 row["points"] += fastest_lap_points
 
-    ranked = sorted(totals.values(), key=lambda r: (-r["points"], -r["wins"]))
+    # Ties break by FIA countback: most race wins, then most 2nds, and so
+    # on down the classification (Sporting Regulations art. 7.2), with
+    # sprint finishes as a further tier. The per-refresh cross-check
+    # against the API standings is the arbiter for whether this matches
+    # the season's actual regulation.
+    def rank_key(row: dict):
+        race = tuple(-row["_race_finishes"].get(p, 0) for p in range(1, 31))
+        sprint = tuple(-row["_sprint_finishes"].get(p, 0) for p in range(1, 31))
+        return (-row["points"], race, sprint)
+
+    ranked = sorted(totals.values(), key=rank_key)
     for i, row in enumerate(ranked, start=1):
         row["position"] = i
+        del row["_race_finishes"]
+        del row["_sprint_finishes"]
     return ranked
 
 

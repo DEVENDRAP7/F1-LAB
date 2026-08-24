@@ -67,3 +67,25 @@ def test_compute_standings_from_results_accumulates_points_and_fastest_lap():
     assert by_code["HAM"]["points"] == 44
     assert standings[0]["driverCode"] == "HAM"
     assert standings[0]["position"] == 1
+
+
+def test_standings_break_point_ties_by_countback():
+    # Both drivers score zero, so ordering must come from countback: the
+    # driver with the better best finish (P11 beats P12) ranks higher —
+    # the exact case (PER/TSU on 0 points) the first real refresh flagged
+    # as a mismatch against the API's ordering.
+    results_by_round = [
+        {
+            "session": "race",
+            "results": [
+                {"driverCode": "AAA", "driverName": "A Driver", "team": "T1", "position": "12", "fastestLapRank": "5"},
+                {"driverCode": "BBB", "driverName": "B Driver", "team": "T2", "position": "11", "fastestLapRank": "6"},
+            ],
+        },
+    ]
+
+    standings = compute_standings_from_results(results_by_round, POINTS_SYSTEM)
+
+    assert standings[0]["driverCode"] == "BBB"
+    assert standings[0]["points"] == 0
+    assert standings[1]["driverCode"] == "AAA"

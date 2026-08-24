@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # to dispatch deploy.yml after the data commit (see last step)
 
 concurrency:
   group: refresh-data
@@ -58,11 +59,24 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Commit and push if data changed
+        id: commit
         run: |
           git add config/season_2026.json public/data
           if git diff --cached --quiet; then
             echo "No data changes."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "Refresh 2026 season data"
             git push origin HEAD:main
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      # Pushes made with GITHUB_TOKEN do not fire `on: push` workflows
+      # (GitHub's recursion guard), so the data commit above would never
+      # reach Pages on its own. workflow_dispatch is exempt from that
+      # rule — dispatch the deploy explicitly.
+      - name: Trigger site deploy with the fresh data
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main
