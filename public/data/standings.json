@@ -5,7 +5,7 @@
       "driverName": "Andrea Kimi Antonelli",
       "team": "Mercedes",
       "points": 242.0,
-      "wins": 7,
+      "wins": 6,
       "position": 1
     },
     {
@@ -13,7 +13,7 @@
       "driverName": "George Russell",
       "team": "Mercedes",
       "points": 183.0,
-      "wins": 5,
+      "wins": 2,
       "position": 2
     },
     {
@@ -29,7 +29,7 @@
       "driverName": "Lando Norris",
       "team": "McLaren",
       "points": 159.0,
-      "wins": 3,
+      "wins": 2,
       "position": 4
     },
     {
@@ -113,17 +113,17 @@
       "position": 14
     },
     {
-      "driverCode": "SAI",
-      "driverName": "Carlos Sainz",
-      "team": "Williams",
+      "driverCode": "HUL",
+      "driverName": "Nico H\u00fclkenberg",
+      "team": "Audi",
       "points": 6.0,
       "wins": 0,
       "position": 15
     },
     {
-      "driverCode": "HUL",
-      "driverName": "Nico H\u00fclkenberg",
-      "team": "Audi",
+      "driverCode": "SAI",
+      "driverName": "Carlos Sainz",
+      "team": "Williams",
       "points": 6.0,
       "wins": 0,
       "position": 16
@@ -153,9 +153,9 @@
       "position": 19
     },
     {
-      "driverCode": "PER",
-      "driverName": "Sergio P\u00e9rez",
-      "team": "Cadillac F1 Team",
+      "driverCode": "TSU",
+      "driverName": "Yuki Tsunoda",
+      "team": "RB F1 Team",
       "points": 0.0,
       "wins": 0,
       "position": 20
@@ -177,62 +177,17 @@
       "position": 22
     },
     {
-      "driverCode": "TSU",
-      "driverName": "Yuki Tsunoda",
-      "team": "RB F1 Team",
+      "driverCode": "PER",
+      "driverName": "Sergio P\u00e9rez",
+      "team": "Cadillac F1 Team",
       "points": 0.0,
       "wins": 0,
       "position": 23
     }
   ],
-  "generated_at": "2026-08-24T14:05:19Z",
+  "generated_at": "2026-08-24T14:10:58Z",
   "source_check": {
-    "mismatch": true,
-    "details": [
-      {
-        "driverCode": "SAI",
-        "computed": {
-          "position": 15,
-          "points": 6.0
-        },
-        "api": {
-          "position": 16,
-          "points": 6.0
-        }
-      },
-      {
-        "driverCode": "HUL",
-        "computed": {
-          "position": 16,
-          "points": 6.0
-        },
-        "api": {
-          "position": 15,
-          "points": 6.0
-        }
-      },
-      {
-        "driverCode": "PER",
-        "computed": {
-          "position": 20,
-          "points": 0.0
-        },
-        "api": {
-          "position": 23,
-          "points": 0.0
-        }
-      },
-      {
-        "driverCode": "TSU",
-        "computed": {
-          "position": 23,
-          "points": 0.0
-        },
-        "api": {
-          "position": 20,
-          "points": 0.0
-        }
-      }
-    ]
+    "mismatch": false,
+    "details": []
   }
 }
