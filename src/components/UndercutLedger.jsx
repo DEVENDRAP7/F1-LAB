@@ -48,6 +48,12 @@ export default function UndercutLedger({ undercuts, excluded, driverFilter }) {
 
   return (
     <>
+      {rows.length === 0 ? (
+        <p className="panel-note">
+          Every measurable comparison for this selection happened while the field was
+          slowed — use the toggle below to see them, flagged as such.
+        </p>
+      ) : (
       <div className="table-scroll">
         <table>
           <caption className="visually-hidden">
@@ -58,10 +64,10 @@ export default function UndercutLedger({ undercuts, excluded, driverFilter }) {
               <th scope="col" className="tabular">Lap</th>
               <th scope="col">Stopper</th>
               <th scope="col">Rival</th>
-              <th scope="col" className="tabular">Rival stopped</th>
-              <th scope="col" className="tabular">Gap before</th>
-              <th scope="col" className="tabular">Gap after</th>
-              <th scope="col" className="tabular">Net to stopper</th>
+              <th scope="col" className="tabular">Their stop</th>
+              <th scope="col" className="tabular">Before</th>
+              <th scope="col" className="tabular">After</th>
+              <th scope="col" className="tabular">Net</th>
             </tr>
           </thead>
           <tbody>
@@ -89,6 +95,7 @@ export default function UndercutLedger({ undercuts, excluded, driverFilter }) {
           </tbody>
         </table>
       </div>
+      )}
 
       <div className="ledger-footnotes">
         <p className="chart-caption">

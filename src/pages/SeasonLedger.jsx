@@ -73,10 +73,13 @@ export default function SeasonLedger() {
           <tr>
             <th scope="col" className="tabular">Pos</th>
             <th scope="col">Driver</th>
-            <th scope="col">Team</th>
-            <th scope="col" className="tabular">Wins</th>
+            <th scope="col" className="hide-md">Team</th>
+            <th scope="col" className="tabular hide-sm">Wins</th>
             <th scope="col" className="tabular">Points</th>
-            <th scope="col">Gap to leader</th>
+            <th scope="col">
+              <span className="label-lg">Gap to leader</span>
+              <span className="label-sm">Gap</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -85,10 +88,10 @@ export default function SeasonLedger() {
               <td className="tabular">{row.position}</td>
               <td>
                 <span className="mono driver-code">{row.driverCode ?? '—'}</span>{' '}
-                {row.driverName}
+                <span className="driver-fullname">{row.driverName}</span>
               </td>
-              <td className="team-cell">{row.team}</td>
-              <td className="tabular">{row.wins > 0 ? row.wins : '—'}</td>
+              <td className="team-cell hide-md">{row.team}</td>
+              <td className="tabular hide-sm">{row.wins > 0 ? row.wins : '—'}</td>
               <td className="tabular points-cell">{row.points}</td>
               <td>
                 {/* Bar length is the points total against the leader's —

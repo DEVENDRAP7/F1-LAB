@@ -90,6 +90,7 @@ await light.screenshot({ path: '/tmp/strategy-light.png', fullPage: false });
 // one under active development still renders.
 for (const [route, name] of [['/', 'ledger'], ['/circuits', 'circuits'], ['/lines', 'lines']]) {
   const p2 = await browser.newPage({ viewport: { width: 1280, height: 1000 }, colorScheme: 'dark' });
+  p2.on('response', (r) => r.status() >= 400 && problems.push(`${name} HTTP ${r.status()} ${r.url()}`));
   p2.on('console', (m) => m.type() === 'error' && problems.push(`${name} console: ${m.text()}`));
   p2.on('pageerror', (e) => problems.push(`${name} pageerror: ${e.message}`));
   await p2.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
@@ -98,6 +99,18 @@ for (const [route, name] of [['/', 'ledger'], ['/circuits', 'circuits'], ['/line
   if (ov) problems.push(`${name}: horizontal overflow`);
   await p2.screenshot({ path: `/tmp/${name}.png`, fullPage: true });
   await p2.close();
+}
+
+// Same routes at phone width — "no overflow" alone is not "looks good",
+// so these get eyeballed, not just measured.
+for (const [route, name] of [['/', 'ledger'], ['/circuits', 'circuits'], ['/lines', 'lines']]) {
+  const m2 = await browser.newPage({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
+  await m2.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
+  await m2.waitForTimeout(700);
+  const ov = await m2.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (ov) problems.push(`${name}@390: horizontal overflow`);
+  await m2.screenshot({ path: `/tmp/${name}-mobile.png`, fullPage: true });
+  await m2.close();
 }
 
 console.log('desktop:', JSON.stringify(desktopStats));

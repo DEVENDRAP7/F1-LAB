@@ -10,6 +10,11 @@
   padding: 0.75rem 1.5rem;
   border-bottom: 1px solid var(--line);
   background: var(--bg-1);
+  /* Labels never wrap mid-word ("Season / Ledger"); when the row is
+     tighter than its items it scrolls sideways instead. */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .app-nav a {
@@ -17,6 +22,8 @@
   text-decoration: none;
   font-family: var(--font-display);
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .app-nav a.active,
@@ -72,6 +79,7 @@ td {
 .generated-at {
   color: var(--ink-2);
   font-size: 0.85rem;
+  text-align: left;
 }
 
 .controls-row {
@@ -240,6 +248,7 @@ td {
 
 .stint-row-label {
   flex: 0 0 auto;
+  width: 68px;
   color: var(--ink-1);
   font-size: 0.8rem;
   text-align: left;
@@ -299,6 +308,7 @@ td {
 
 .stint-axis-title {
   flex: 0 0 auto;
+  width: 68px;
   font-size: 0.7rem;
   color: var(--ink-2);
   letter-spacing: 0.06em;
@@ -417,6 +427,24 @@ td {
 
 .table-scroll table {
   margin: 0;
+  /* Natural column widths + horizontal scroll. Squeezing to fit made
+     the off-screen reason column wrap hard and stretch every row. */
+  width: max-content;
+  min-width: 100%;
+}
+
+.table-scroll th,
+.table-scroll td {
+  white-space: nowrap;
+}
+
+/* The one legitimately long cell: cap and wrap it at a readable
+   measure rather than letting it dictate the table's width. */
+.reason-text {
+  display: inline-block;
+  max-width: min(52ch, 62vw);
+  white-space: normal;
+  vertical-align: top;
 }
 
 .table-scroll thead th {
@@ -587,4 +615,87 @@ tr.is-muted td {
 
 .ledger-footnotes .link-button {
   padding-top: 0.25rem;
+}
+
+/* ---------- phone-width pass ----------
+   Grounded in 390px screenshots, not guessed: clipped ledger column,
+   seven rows of driver chips, mid-word nav wraps, ragged tall rows. */
+
+/* Column-hiding tiers for the ledger. Hiding is presentational only —
+   the full table is one breakpoint away, nothing is derived from it. */
+@media (max-width: 640px) {
+  main {
+    padding: 0.85rem;
+  }
+
+  .app-nav {
+    gap: 1.1rem;
+    padding: 0.65rem 0.85rem;
+  }
+
+  .page-head h1,
+  section > h1 {
+    font-size: 1.45rem;
+  }
+
+  .panel {
+    padding: 0.75rem 0.85rem 1rem;
+  }
+
+  .controls-row {
+    gap: 0.75rem;
+  }
+
+  .controls-row select {
+    max-width: 100%;
+  }
+
+  th,
+  td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  /* One scrollable row instead of seven wrapped ones. */
+  .driver-picker {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.4rem;
+  }
+
+  .driver-picker .driver-chip {
+    flex: 0 0 auto;
+  }
+
+  /* Narrower gutter keeps ~40px more of the race for the bars. */
+  .stint-row-label,
+  .stint-axis-title {
+    width: 44px;
+  }
+
+  .hide-md {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hide-sm {
+    display: none;
+  }
+}
+
+/* Long/short label pairs: the long form off phones, the short on. */
+.label-sm {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .label-lg {
+    display: none;
+  }
+
+  .label-sm {
+    display: inline;
+  }
 }

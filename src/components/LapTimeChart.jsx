@@ -94,7 +94,12 @@ export default function LapTimeChart({ series, totalLaps, height = 300 }) {
     for (let lap = 1; lap <= totalLaps; lap += step) {
       ctx.fillText(String(lap), xAt(lap), height - PAD.bottom + 6);
     }
-    ctx.fillText('lap', width - PAD.right - 12, height - PAD.bottom + 6);
+    // At phone widths the axis word lands on top of the final tick
+    // ("51lap"); the caption already names the axis, so drop the word
+    // rather than the tick.
+    if (width >= 520) {
+      ctx.fillText('lap', width - PAD.right - 12, height - PAD.bottom + 6);
+    }
 
     // Series: 2px lines, gaps where a point is missing or clipped.
     for (const s of series) {

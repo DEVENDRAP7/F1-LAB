@@ -15,7 +15,6 @@ import { useState } from 'react';
 
 const ROW_HEIGHT = 26;
 const ROW_GAP = 4;
-const LABEL_WIDTH = 68;
 const AXIS_HEIGHT = 24;
 const SEGMENT_GAP_PX = 2;
 
@@ -77,7 +76,7 @@ export default function StintChart({ stints, totalLaps, driverOrder, onHoverStin
           const rows = byDriver.get(driverId).slice().sort((a, b) => a.startLap - b.startLap);
           return (
             <div className="stint-row" key={driverId} style={{ height: ROW_HEIGHT }}>
-              <span className="stint-row-label mono" style={{ width: LABEL_WIDTH }}>
+              <span className="stint-row-label mono">
                 {driverId.slice(0, 3).toUpperCase()}
               </span>
               <div className="stint-row-track">
@@ -129,9 +128,7 @@ export default function StintChart({ stints, totalLaps, driverOrder, onHoverStin
       <div className="stint-axis-wrap">
         {/* The axis title lives in the row-label gutter, which is empty:
             at the right-hand end it overprinted the final-lap tick. */}
-        <span className="stint-axis-title" style={{ width: LABEL_WIDTH }}>
-          lap
-        </span>
+        <span className="stint-axis-title">lap</span>
         <div className="stint-axis">
           {axisTicks.map((lap) => (
             <span key={lap} className="stint-tick mono" style={{ left: `${lapToPct(lap)}%` }}>

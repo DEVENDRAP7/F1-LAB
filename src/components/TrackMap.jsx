@@ -34,7 +34,13 @@ export default function TrackMap({ outline, corners = [], lines = [], marker = n
     .join(' ');
 
   return (
-    <svg className="track-map" width={width} height={height} role="img" aria-label="Circuit track map">
+    <svg
+      className="track-map"
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ width: '100%', maxWidth: width, height: 'auto' }}
+      role="img"
+      aria-label="Circuit track map"
+    >
       <path d={outlinePath} fill="none" stroke="var(--ink-2)" strokeWidth={2} />
       {corners.map((corner) => {
         const [cx, cy] = project([corner.x, corner.y]);
