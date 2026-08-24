@@ -4,13 +4,16 @@
 // declares its own.
 
 const FALLBACKS = {
-  '--driver-1': '#3b8ef0',
-  '--driver-2': '#e8842f',
-  '--driver-3': '#2fbfbf',
-  '--driver-4': '#d75fd7',
+  '--series-1': '#3b8ef0',
+  '--series-2': '#d4711a',
+  '--series-3': '#1f9d9d',
+  '--series-4': '#b845c4',
+  '--ink-0': '#e8eaee',
   '--ink-1': '#9aa2b1',
   '--ink-2': '#5c6474',
   '--line': '#262b35',
+  '--bg-1': '#12151b',
+  '--bg-2': '#1a1e26',
 };
 
 export function cssToken(name) {
@@ -21,6 +24,13 @@ export function cssToken(name) {
   return FALLBACKS[name] ?? '#888888';
 }
 
-export function driverColor(slot) {
-  return cssToken(`--driver-${(slot % 4) + 1}`);
+// Series colours are assigned by position in the selection and never
+// cycled — selection is capped at MAX_SERIES so a 5th hue is never
+// invented. Colour follows the entity: callers key the slot to the
+// driver, not to their rank, so filtering others out never repaints
+// the ones that remain.
+export const MAX_SERIES = 4;
+
+export function seriesColor(slot) {
+  return cssToken(`--series-${Math.min(slot, MAX_SERIES - 1) + 1}`);
 }

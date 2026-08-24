@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import { deltaTrace } from '../lib/delta.js';
 import { lineToMapPoints, loadManifest, loadRacingLine } from '../lib/racingLine.js';
-import { driverColor } from '../theme/palette.js';
+import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
 import TelemetryTrace from '../components/TelemetryTrace.jsx';
 import TrackMap from '../components/TrackMap.jsx';
@@ -90,7 +90,7 @@ export default function RacingLines() {
     () =>
       active.map((code, i) => ({
         code,
-        color: driverColor(i),
+        color: seriesColor(i),
         points: lineToMapPoints(lines[code], manifest.data.scale),
       })),
     [active, lines, manifest.data],
@@ -98,12 +98,12 @@ export default function RacingLines() {
 
   const speedSeries = active.map((code, i) => ({
     code,
-    color: driverColor(i),
+    color: seriesColor(i),
     values: lines[code].speed,
   }));
   const throttleSeries = active.map((code, i) => ({
     code,
-    color: driverColor(i),
+    color: seriesColor(i),
     values: lines[code].throttle,
   }));
 
@@ -112,7 +112,7 @@ export default function RacingLines() {
     const ref = lines[active[0]].speed;
     return active.slice(1).map((code, i) => ({
       code: `${code} vs ${active[0]}`,
-      color: driverColor(i + 1),
+      color: seriesColor(i + 1),
       values: deltaTrace(ref, lines[code].speed, SPACING_M),
     }));
   }, [active, lines]);

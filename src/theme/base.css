@@ -165,3 +165,322 @@ td {
 .trace-readout-value {
   margin-left: 0.5rem;
 }
+
+/* ---------- page + panel scaffolding ---------- */
+
+.page-head {
+  margin-bottom: 1.25rem;
+}
+
+.page-head h1 {
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.page-sub {
+  margin: 0;
+  color: var(--ink-1);
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-1);
+  padding: 1rem 1.25rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.panel-head {
+  margin-bottom: 1rem;
+}
+
+.panel-head h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-0);
+}
+
+.panel-note {
+  margin: 0;
+  color: var(--ink-1);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  max-width: 62ch;
+}
+
+.panel-limitations ul {
+  margin: 0.5rem 0 0.75rem;
+  padding-left: 1.1rem;
+  color: var(--ink-1);
+  line-height: 1.6;
+  max-width: 76ch;
+}
+
+.panel-limitations h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ---------- stint chart ---------- */
+
+.stint-chart {
+  position: relative;
+}
+
+.stint-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.stint-row-label {
+  flex: 0 0 auto;
+  color: var(--ink-1);
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+.stint-row-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 0;
+}
+
+.stint-seg {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.stint-seg.is-hovered,
+.stint-seg:focus-visible {
+  outline: 2px solid var(--ink-0);
+  outline-offset: 1px;
+}
+
+.stint-seg-label {
+  font-size: 0.68rem;
+  /* colour is set per step in StintChart — the ramp crosses the
+     light/dark text boundary, so no single value clears 4.5:1 */
+  text-align: center;
+}
+
+.stint-axis-wrap {
+  display: flex;
+  align-items: flex-start;
+  border-top: 1px solid var(--line);
+  padding-top: 4px;
+}
+
+.stint-axis {
+  position: relative;
+  flex: 1 1 auto;
+  height: 20px;
+  min-width: 0;
+}
+
+.stint-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: var(--ink-2);
+}
+
+.stint-axis-title {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  color: var(--ink-2);
+  letter-spacing: 0.06em;
+}
+
+.stint-legend,
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.legend-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--ink-1);
+}
+
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+/* ---------- lap time chart ---------- */
+
+.laptime-chart {
+  position: relative;
+}
+
+.laptime-chart canvas {
+  display: block;
+  width: 100%;
+}
+
+.laptime-chart canvas:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.chart-tooltip {
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+  color: var(--ink-1);
+  line-height: 1.5;
+}
+
+.chart-tooltip-inline {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.tooltip-series {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.tooltip-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.tooltip-note {
+  color: var(--ink-2);
+  font-size: 0.75rem;
+}
+
+.chart-caption {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+  max-width: 72ch;
+}
+
+/* ---------- tables, chips, misc ---------- */
+
+.table-scroll {
+  overflow-x: auto;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-top: 0.75rem;
+}
+
+.table-scroll table {
+  margin: 0;
+}
+
+.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-2);
+  z-index: 1;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-1);
+}
+
+tr.is-muted td {
+  color: var(--ink-2);
+}
+
+.reason-cell {
+  font-size: 0.8rem;
+}
+
+.reason-text {
+  color: var(--ink-2);
+}
+
+.flag-ok {
+  color: var(--sector-green);
+  font-weight: 600;
+}
+
+.flag-no {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.driver-chip.is-on {
+  background: var(--bg-2);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  text-decoration: underline;
+}
+
+.link-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.legend-fullname {
+  color: var(--ink-2);
+  font-size: 0.75rem;
+}

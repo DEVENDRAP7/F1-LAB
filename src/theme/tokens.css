@@ -27,13 +27,28 @@
   --warn: #e07a3f;
   --danger: #d1373b;
 
-  /* Driver-overlay colours for up to 4 simultaneous racing lines (M3).
-   * Deliberately distinct from the sector green/yellow/purple and the
-   * compound bands, which are reserved for their own semantics. */
-  --driver-1: #3b8ef0;
-  --driver-2: #e8842f;
-  --driver-3: #2fbfbf;
-  --driver-4: #d75fd7;
+  /* Categorical series colours for up to 4 simultaneously compared
+   * drivers. Distinct from the sector green/yellow/purple and from the
+   * compound bands, which are reserved for their own semantics.
+   *
+   * Assigned in this fixed order and never cycled: a 5th series is not
+   * a generated hue, the UI caps selection at 4 instead. Validated
+   * against both surfaces (OKLCH lightness band, chroma floor, adjacent
+   * CVD separation, normal-vision floor, contrast) — worst adjacent
+   * pair is deutan dE 8.8. Re-run the check before changing any value. */
+  --series-1: #3b8ef0;
+  --series-2: #d4711a;
+  --series-3: #1f9d9d;
+  --series-4: #b845c4;
+
+  /* Sequential ramp for stint ordinal (1st stint -> last). One hue,
+   * monotonic in lightness (adjacent dL >= 0.083), both ends clearing
+   * 2:1 against the dark surface. Magnitude encoding — it says "how far
+   * into the race", NOT which compound, which this data does not carry. */
+  --stint-1: #375873;
+  --stint-2: #4a7599;
+  --stint-3: #5f93bd;
+  --stint-4: #77aeda;
 
   --font-display: 'Titillium Web', 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
@@ -50,6 +65,14 @@
     --ink-0: #14161a;
     --ink-1: #4a5160;
     --ink-2: #7a8394;
+
+    /* Light mode is stepped from the same hue rather than flipped: the
+     * ramp still runs light -> dark with stint ordinal, but it must
+     * darken (not brighten) to stay legible on a white surface. */
+    --stint-1: #a8c6de;
+    --stint-2: #7ba6c9;
+    --stint-3: #4f83aa;
+    --stint-4: #2f6086;
   }
 }
 
