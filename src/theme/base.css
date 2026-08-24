@@ -398,6 +398,9 @@ td {
 
 /* ---------- tables, chips, misc ---------- */
 
+/* Long, scannable tables (lap-by-lap times) get an internal scroll so
+   they do not push the rest of the page away. Reference tables meant to
+   be read whole — the calendar — opt out with .is-full. */
 .table-scroll {
   overflow-x: auto;
   max-height: 420px;
@@ -405,6 +408,11 @@ td {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   margin-top: 0.75rem;
+}
+
+.table-scroll.is-full {
+  max-height: none;
+  overflow-y: visible;
 }
 
 .table-scroll table {
@@ -483,4 +491,79 @@ tr.is-muted td {
 .legend-fullname {
   color: var(--ink-2);
   font-size: 0.75rem;
+}
+
+/* ---------- season ledger ---------- */
+
+.verified-note {
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  margin: 0 0 1rem;
+}
+
+.ledger-table td,
+.ledger-table th {
+  vertical-align: middle;
+}
+
+.driver-code {
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  margin-right: 0.15rem;
+}
+
+.team-cell {
+  color: var(--ink-1);
+}
+
+.points-cell {
+  font-weight: 600;
+  color: var(--ink-0);
+}
+
+/* Points against the leader: magnitude, so a bar. Recessive fill — the
+   number beside it carries the value, the bar only carries the shape. */
+.gap-bar-wrap {
+  display: inline-block;
+  width: 110px;
+  height: 6px;
+  background: var(--bg-2);
+  border-radius: 3px;
+  overflow: hidden;
+  vertical-align: middle;
+  margin-right: 0.6rem;
+}
+
+.gap-bar {
+  display: block;
+  height: 100%;
+  background: var(--series-1);
+  border-radius: 3px;
+}
+
+.gap-value {
+  color: var(--ink-2);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .gap-bar-wrap {
+    display: none;
+  }
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 0.05rem 0.35rem;
+  margin-right: 0.3rem;
+  color: var(--ink-1);
+}
+
+.tag-quiet {
+  color: var(--ink-2);
 }

@@ -41,34 +41,71 @@ export default function SeasonLedger() {
   }
 
   const { standings, generated_at, source_check } = state.data;
+  const leaderPoints = standings.length > 0 ? standings[0].points : 0;
 
   return (
-    <section>
-      <h1>Season Ledger</h1>
-      <p className="mono generated-at">Generated {generated_at}</p>
-      {source_check?.mismatch && (
+    <section className="page">
+      <header className="page-head">
+        <h1>Season Ledger</h1>
+        <p className="page-sub">
+          Points accumulated independently from each round's results, then cross-checked
+          against the published standings before publishing.
+        </p>
+        <p className="mono generated-at">generated {generated_at}</p>
+      </header>
+
+      {source_check?.mismatch ? (
         <div className="warning-banner" role="alert">
-          Computed standings disagree with the Jolpica-F1 standings endpoint
-          for this round — showing the locally computed table pending
-          investigation. See source_check in standings.json for details.
+          <strong>Cross-check failed.</strong> This table and the Jolpica-F1 standings
+          endpoint disagree for {source_check.details?.length ?? 0} driver(s). One of them
+          is wrong and this page cannot tell which, so treat every figure below as
+          unverified until it is resolved.
         </div>
+      ) : (
+        <p className="verified-note">
+          Cross-check passed: every position and points total matches the published
+          standings.
+        </p>
       )}
-      <table>
+
+      <table className="ledger-table">
         <thead>
           <tr>
-            <th>Pos</th>
-            <th>Driver</th>
-            <th>Team</th>
-            <th className="tabular">Points</th>
+            <th scope="col" className="tabular">Pos</th>
+            <th scope="col">Driver</th>
+            <th scope="col">Team</th>
+            <th scope="col" className="tabular">Wins</th>
+            <th scope="col" className="tabular">Points</th>
+            <th scope="col">Gap to leader</th>
           </tr>
         </thead>
         <tbody>
           {standings.map((row) => (
             <tr key={row.driverCode}>
-              <td>{row.position}</td>
-              <td>{row.driverName}</td>
-              <td>{row.team}</td>
-              <td className="tabular">{row.points}</td>
+              <td className="tabular">{row.position}</td>
+              <td>
+                <span className="mono driver-code">{row.driverCode ?? '—'}</span>{' '}
+                {row.driverName}
+              </td>
+              <td className="team-cell">{row.team}</td>
+              <td className="tabular">{row.wins > 0 ? row.wins : '—'}</td>
+              <td className="tabular points-cell">{row.points}</td>
+              <td>
+                {/* Bar length is the points total against the leader's —
+                    magnitude, so a bar; the number is right there beside
+                    it, so the bar carries no label of its own. */}
+                <span className="gap-bar-wrap" aria-hidden="true">
+                  <span
+                    className="gap-bar"
+                    style={{
+                      width: leaderPoints > 0 ? `${(row.points / leaderPoints) * 100}%` : '0%',
+                    }}
+                  />
+                </span>
+                <span className="tabular gap-value">
+                  {row.position === 1 ? '—' : `-${(leaderPoints - row.points).toFixed(0)}`}
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>

@@ -86,6 +86,20 @@ const light = await browser.newPage({ viewport: { width: 1280, height: 1000 }, c
 await openStrategy(light, 3);
 await light.screenshot({ path: '/tmp/strategy-light.png', fullPage: false });
 
+// Every route, so a page that regressed is not missed just because the
+// one under active development still renders.
+for (const [route, name] of [['/', 'ledger'], ['/circuits', 'circuits'], ['/lines', 'lines']]) {
+  const p2 = await browser.newPage({ viewport: { width: 1280, height: 1000 }, colorScheme: 'dark' });
+  p2.on('console', (m) => m.type() === 'error' && problems.push(`${name} console: ${m.text()}`));
+  p2.on('pageerror', (e) => problems.push(`${name} pageerror: ${e.message}`));
+  await p2.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
+  await p2.waitForTimeout(700);
+  const ov = await p2.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (ov) problems.push(`${name}: horizontal overflow`);
+  await p2.screenshot({ path: `/tmp/${name}.png`, fullPage: true });
+  await p2.close();
+}
+
 console.log('desktop:', JSON.stringify(desktopStats));
 console.log('mobile :', JSON.stringify(mobileStats),
   mobileStats.scrollW > mobileStats.clientW ? 'HORIZONTAL OVERFLOW' : 'no overflow');

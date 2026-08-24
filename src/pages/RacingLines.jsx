@@ -124,7 +124,7 @@ export default function RacingLines() {
     return (
       <EmptyState
         title="No session data published yet"
-        reason="Racing lines are decoded from Int16 .bin artifacts that pipeline/export.py writes per session. Nothing has been ingested yet — the first real data lands when the refresh-data workflow runs on GitHub Actions."
+        reason="Racing lines are decoded from Int16 .bin artifacts written per session. None exist yet — see the note below on why the telemetry source is currently unreachable."
       />
     );
   }
@@ -158,6 +158,25 @@ export default function RacingLines() {
         </label>
       </div>
 
+      <section className="panel panel-limitations">
+        <h2>Why this page has no data</h2>
+        <p className="panel-note">
+          Racing lines need per-sample car position, which only the Formula 1 live-timing
+          service publishes. That host answers <span className="mono">403</span> to every
+          request from a datacenter IP — its own root and a prior season included — so the
+          build runner cannot reach it, and the community mirror FastF1 falls back to does
+          not carry this season. This was measured, not assumed:{' '}
+          <span className="mono">pipeline/diagnose_sources.py</span> re-runs the probe on
+          demand.
+        </p>
+        <p className="panel-note">
+          Everything else on this site comes from a source that does answer, which is why
+          standings and race strategy have real data and this page does not. Nothing here
+          is estimated to fill the gap. Ingesting from a residential IP or a self-hosted
+          runner would unblock it.
+        </p>
+      </section>
+
       {!round && (
         <EmptyState
           title="Pick a round and session"
@@ -172,7 +191,7 @@ export default function RacingLines() {
       {round && manifest.status === 'empty' && (
         <EmptyState
           title={`No lines exported for round ${round} ${session}`}
-          reason="This session either hasn't happened yet, hasn't been ingested by the refresh-data workflow, or had no usable position telemetry. Sessions appear here after the pipeline exports them."
+          reason="No racing line has been exported for this session. The blocker below is the same for every round, not something specific to this one."
         />
       )}
 
