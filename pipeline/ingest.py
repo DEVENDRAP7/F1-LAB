@@ -38,12 +38,39 @@ JOLPICA_RATE_LIMIT_S = 0.3  # be a polite client of a free, rate-limited API
 JOLPICA_PAGE_LIMIT = 100  # the API's own maximum page size
 
 
+JOLPICA_MAX_RETRIES = 6
+JOLPICA_MAX_BACKOFF_S = 60.0
+
+
 def _jolpica_get(path: str, params: dict | None = None) -> dict:
+    """GET one Jolpica page, retrying through the API's rate limiting.
+
+    Jolpica caps both burst and hourly request volume, and a full-season
+    lap ingest sits close to that cap — several refreshes in one hour
+    will cross it. A bare raise on 429 is what turned a rate limit into
+    missing rounds and, worse, a standings table computed from a partial
+    set of results, so back off and retry instead. Retry-After is
+    honoured when present; otherwise the wait doubles per attempt.
+    """
     url = f"{JOLPICA_BASE}/{path}.json"
-    resp = requests.get(url, params=params or {}, timeout=30)
+    for attempt in range(JOLPICA_MAX_RETRIES):
+        resp = requests.get(url, params=params or {}, timeout=30)
+        if resp.status_code == 429:
+            retry_after = resp.headers.get("Retry-After")
+            try:
+                wait = float(retry_after) if retry_after else 2.0 ** attempt
+            except ValueError:
+                wait = 2.0 ** attempt
+            time.sleep(min(wait, JOLPICA_MAX_BACKOFF_S))
+            continue
+        resp.raise_for_status()
+        time.sleep(JOLPICA_RATE_LIMIT_S)
+        return resp.json()
+
+    # Out of retries: raise, so the caller records a real failure rather
+    # than proceeding on partial data.
     resp.raise_for_status()
-    time.sleep(JOLPICA_RATE_LIMIT_S)
-    return resp.json()
+    raise RuntimeError(f"Jolpica-F1 still rate-limiting after {JOLPICA_MAX_RETRIES} attempts: {url}")
 
 
 def _jolpica_paged(path: str, extract):
