@@ -1,0 +1,44 @@
+name: Diagnose data sources
+
+# Manual only. Prints how each upstream source responds from a runner so
+# a telemetry outage can be root-caused (IP block vs. changed upstream
+# path vs. season not published) instead of guessed at. Writes nothing.
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: Season to probe
+        required: false
+        default: '2026'
+      round:
+        description: Round to load with FastF1
+        required: false
+        default: '1'
+      session:
+        description: FastF1 session identifier (FP1, Q, R, ...)
+        required: false
+        default: 'Q'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pipeline dependencies
+        run: pip install -r pipeline/requirements.txt
+
+      - name: Probe sources
+        working-directory: pipeline
+        run: |
+          python diagnose_sources.py \
+            --year "${{ inputs.year }}" \
+            --round "${{ inputs.round }}" \
+            --session "${{ inputs.session }}"
