@@ -43,25 +43,31 @@ def refresh_circuit(year: int, round_info: dict) -> None:
         print(f"[circuit] {circuit_key}: already exported, skipping")
         return
 
+    # The whole per-round derivation sits inside one boundary: FastF1
+    # reports live-timing fetch failures as warnings and session.load()
+    # returns anyway, so the first exception often surfaces later, at
+    # session.laps or inside a derive step — not in fetch_session itself.
+    # (First real run failed exactly this way: every live-timing endpoint
+    # failed, load() returned, and .laps raised DataNotLoadedError past
+    # the old, narrower try block, killing the refresh for every round.)
     try:
         bundle = ingest.fetch_session(year, round_info["round"], "Q")
-    except Exception as exc:  # noqa: BLE001 - a single round's ingest failure must not abort the refresh
-        print(f"[circuit] {circuit_key}: could not load qualifying session ({exc})")
+        session = bundle.session
+        fastest = session.laps.pick_accurate().pick_fastest()
+        if fastest is None:
+            print(f"[circuit] {circuit_key}: no accurate fastest lap available")
+            return
+
+        circuit_info = session.get_circuit_info()
+        rotation = circuit_info.rotation
+
+        outline = derive.build_circuit_outline(fastest, rotation)
+        corners = derive.extract_corners(circuit_info, fastest, rotation)
+        drs_zones = derive.extract_drs_zones(fastest)
+        pit_loss = derive.compute_pit_loss(session.laps)
+    except Exception as exc:  # noqa: BLE001 - a single round's failure must not abort the refresh
+        print(f"[circuit] {circuit_key}: unavailable ({type(exc).__name__}: {exc})")
         return
-
-    session = bundle.session
-    fastest = session.laps.pick_accurate().pick_fastest()
-    if fastest is None:
-        print(f"[circuit] {circuit_key}: no accurate fastest lap available")
-        return
-
-    circuit_info = session.get_circuit_info()
-    rotation = circuit_info.rotation
-
-    outline = derive.build_circuit_outline(fastest, rotation)
-    corners = derive.extract_corners(circuit_info, fastest, rotation)
-    drs_zones = derive.extract_drs_zones(fastest)
-    pit_loss = derive.compute_pit_loss(session.laps)
 
     circuit_doc = {
         "circuitId": circuit_key,
@@ -85,9 +91,16 @@ def refresh_standings(year: int, calendar: list[dict]) -> None:
     for round_info in rounds_due(calendar):
         try:
             race_results = ingest.fetch_race_results(year, round_info["round"])
+            sprint_results = (
+                ingest.fetch_sprint_results(year, round_info["round"])
+                if round_info.get("sprint")
+                else {"results": []}
+            )
         except Exception as exc:  # noqa: BLE001
             print(f"[standings] round {round_info['round']}: could not fetch results ({exc})")
             continue
+        if sprint_results["results"]:
+            results_by_round.append({"session": "sprint", "results": sprint_results["results"]})
         if race_results["results"]:
             results_by_round.append({"session": "race", "results": race_results["results"]})
 

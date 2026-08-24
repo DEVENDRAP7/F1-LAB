@@ -36,6 +36,10 @@ def extract_corners(circuit_info, fastest_lap, rotation_deg: float) -> list[dict
     tel = fastest_lap.get_telemetry()
     if "Distance" not in tel:
         tel = tel.add_distance()
+    # np.argmin below yields positions; .loc lookups need labels. FastF1
+    # telemetry frames keep their original (sliced) index, so align the
+    # two by resetting to a RangeIndex first.
+    tel = tel.reset_index(drop=True)
 
     corners = []
     for _, corner in circuit_info.corners.iterrows():

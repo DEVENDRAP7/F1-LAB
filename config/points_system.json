@@ -7,8 +7,8 @@
     "6": 8, "7": 6, "8": 4, "9": 2, "10": 1
   },
   "fastest_lap_point": {
-    "points": 1,
-    "condition": "classified in the top 10"
+    "points": 0,
+    "condition": "abolished from the 2025 season onward (last awarded 2024); if the 2026 Sporting Regulations reinstated it, the standings cross-check against the API will flag every affected round"
   },
   "sprint_points_by_position": {
     "1": 8, "2": 7, "3": 6, "4": 5, "5": 4, "6": 3, "7": 2, "8": 1

@@ -110,6 +110,32 @@ def fetch_race_results(year: int, round_: int) -> dict:
     }
 
 
+def fetch_sprint_results(year: int, round_: int) -> dict:
+    """Sprint-session results for a sprint weekend. Returns empty results
+    for a non-sprint round (the endpoint just has no races), so callers
+    can gate on the calendar's `sprint` flag or on emptiness."""
+    data = _jolpica_get(f"{year}/{round_}/sprint")
+    races = data["MRData"]["RaceTable"]["Races"]
+    if not races:
+        return {"results": []}
+    results = races[0]["SprintResults"]
+    return {
+        "results": [
+            {
+                "position": r.get("position"),
+                "grid": int(r["grid"]),
+                "driverCode": r["Driver"].get("code"),
+                "driverName": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
+                "team": r["Constructor"]["name"],
+                "status": r["status"],
+                "points": float(r["points"]),
+                "laps": int(r["laps"]),
+            }
+            for r in results
+        ]
+    }
+
+
 @dataclass
 class SessionBundle:
     """Everything derive.py needs for one session, as returned by FastF1.
