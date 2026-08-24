@@ -84,6 +84,67 @@ def refresh_circuit(year: int, round_info: dict) -> None:
     print(f"[circuit] {circuit_key}: exported ({len(corners)} corners)")
 
 
+def refresh_race_laps(year: int, round_info: dict) -> None:
+    """Lap times, pit-stop-derived stints and per-stint degradation fits
+    for one completed race, all from Jolpica-F1.
+
+    This is the telemetry-free path (see ingest.py's module docstring):
+    it produces real pace and strategy structure, but no tyre compounds
+    and no position/telemetry channels, and the exported payload says so
+    explicitly rather than leaving the frontend to assume.
+    """
+    round_ = round_info["round"]
+    out_path = PUBLIC_DATA / str(year) / str(round_) / "R" / "laps.json"
+    if out_path.exists():
+        print(f"[laps] round {round_}: already exported, skipping")
+        return
+
+    try:
+        laps = ingest.fetch_laps(year, round_)
+        if not laps:
+            print(f"[laps] round {round_}: no lap data published")
+            return
+        pitstops = ingest.fetch_pitstops(year, round_)
+    except Exception as exc:  # noqa: BLE001 - one round must not abort the refresh
+        print(f"[laps] round {round_}: unavailable ({type(exc).__name__}: {exc})")
+        return
+
+    total_laps = max(lap["lap"] for lap in laps)
+    stints = derive.build_stints(laps, pitstops, total_laps)
+
+    deg_fits = []
+    for stint in stints:
+        fit = derive.fit_stint_degradation(stint)
+        if fit is not None:
+            deg_fits.append(fit)
+
+    payload = {
+        "year": year,
+        "round": round_,
+        "raceName": round_info["raceName"],
+        "totalLaps": total_laps,
+        "laps": laps,
+        # lapTimesS is dropped from the exported stints: it duplicates the
+        # laps array above and would roughly double the payload for
+        # nothing the frontend cannot recompute.
+        "stints": [{k: v for k, v in s.items() if k != "lapTimesS"} for s in stints],
+        "degradation": deg_fits,
+        "generated_at": ingest._now_iso(),
+        "source": f"Jolpica-F1 {year} round {round_} laps + pitstops",
+        "limitations": [
+            "No tyre compound: Jolpica-F1 publishes none, so stints are structural only.",
+            "Degradation slopes are not fuel-corrected; within one stint fuel burn and "
+            "tyre degradation are not separately identifiable from lap times.",
+            "No track-status channel, so safety-car and traffic laps are excluded by an "
+            "outlier rule rather than by flag.",
+        ],
+    }
+
+    export.export_race_laps(year, round_, payload)
+    print(f"[laps] round {round_}: exported {len(laps)} laps, {len(stints)} stints, "
+          f"{len(deg_fits)} fits")
+
+
 def refresh_standings(year: int, calendar: list[dict]) -> None:
     points_system = load_points_system()
     results_by_round = []
@@ -137,6 +198,7 @@ def main() -> int:
 
     for round_info in rounds_due(season_config["calendar"]):
         refresh_circuit(args.year, round_info)
+        refresh_race_laps(args.year, round_info)
 
     refresh_standings(args.year, season_config["calendar"])
 
