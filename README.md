@@ -3,125 +3,144 @@
 **Live site:** https://devendrap7.github.io/F1-LAB/
 
 An unofficial, non-commercial, open-source F1 2026 race-analysis site:
-circuit atlases, standings, racing-line comparisons, tyre-strategy
-modeling, a what-if race simulator, driver error review, and an
-aerodynamics explainer — built as a static site for GitHub Pages, with all
-analysis computed at build time from FastF1 and Jolpica-F1.
+standings, race strategy, and — where the data allows — circuit atlases,
+racing-line comparisons and aerodynamic analysis. Built as a static site
+for GitHub Pages, with every figure computed at build time from public
+data and nothing estimated to fill a gap.
 
 See `DISCLAIMER.md` and `docs/SPEC.md` (full architecture and module
 spec) before contributing.
 
-## Current status
+## What is live
 
-This is early-stage scaffolding, not a finished site. What's built and
-tested:
+- **Season Ledger** — the 2026 championship, accumulated independently
+  from each round's results and cross-checked against the published
+  standings. The cross-check result is shown either way; a mismatch is a
+  hard failure that blocks publication, not a warning to read past.
+- **Race Strategy** — twelve races of real lap times (14,066 laps), with
+  a stint chart, a lap-pace comparison for up to four drivers, an
+  undercut ledger, and per-stint pace-trend fits.
+- **Circuit Atlas** — the verified calendar. No track geometry; see
+  "Where the data stops" below.
 
-- **Pipeline** (`pipeline/`): `ingest.py` (Jolpica-F1 + FastF1),
-  `derive.py` (circuit rotation/corners/DRS zones, pit-loss measurement,
-  racing-line resampling, independent standings computation),
-  `export.py` (JSON + quantized-Int16 `.bin` artifact writer with hard
-  payload-budget checks), `models/deg_fit.py` (tyre degradation fit), and
-  `run_refresh.py` / `validate_export.py`, the orchestrator and hard
-  validation gate the CI workflow runs. 12 unit tests pass
-  (`pytest pipeline/tests`).
-- **Frontend** (`src/`): Vite + React + `HashRouter`, pit-wall theme
-  tokens, a binary racing-line decoder (`src/lib/racingLine.js`) with unit
-  tests, and Season Ledger / Circuit Atlas pages that render an explicit,
-  worded empty state rather than a spinner or placeholder data when
-  `public/data/*.json` doesn't exist yet.
-- **Racing Lines (M3) machinery**: distance-axis delta-time math
-  (`src/lib/delta.js`), canvas telemetry trace panels with a pointer- and
-  keyboard-driven crosshair shared across the track map, speed/throttle
-  traces and delta chart (`src/components/TelemetryTrace.jsx`,
-  `src/pages/RacingLines.jsx`). Fully wired, waiting only on exported
-  session data.
-- **What-If (M5) engine core**: `pipeline/models/whatif.py` (stdlib-only
-  reference), `src/lib/whatifModel.js` (line-for-line port used by
-  `src/workers/whatif.worker.js`), and a two-sided parity test pinning
-  both to the same committed fixture output within 1e-9 s. **Not wired
-  into any page**: the spec's publish gate — reproducing a real race's
-  time within ~1% using the actual strategy — is written as a test that
-  currently skips (no real race artifacts exist yet) and will hard-fail
-  CI on drift once they do.
-- **CI** (`.github/workflows/`): `refresh-data.yml` (scheduled ingest with
-  a hard-fail validation gate before any commit) and `deploy.yml`
-  (build/test/deploy to Pages).
+## Where the data stops
 
-Not built yet, in the order `docs/SPEC.md` prioritizes them: the full
-Circuit Atlas UI, Tyre Strategy Board UI, the What-If panel UI (engine
-core exists, see above, but stays unpublished until its validation gate
-passes), Driver Error Review (`detectors.py` is an intentional
-`NotImplementedError` stub pending a hand-labelled validation set), and
-the Aero Explainer (`aero.py`, same status — also blocked on
-`config/regulations_2026.json` being verified against the real FIA
-technical regulations).
+The site draws on two sources, and only one of them answers.
 
-### Why `public/data/` is empty
+**Jolpica-F1** (the Ergast successor) serves the schedule, entry list,
+results, standings, lap times and pit stops. Everything live on the site
+comes from it.
 
-This scaffolding was built in a development environment with no network
-access to Jolpica-F1, FastF1's live-timing backend, or the FIA's published
-documents — only GitHub/npm/PyPI were reachable. So:
+**The Formula 1 live-timing service** is the only public source of car
+position and telemetry — the channel behind racing lines, track maps,
+corner analysis, tyre compounds and any aerodynamic estimate. It returns
+**HTTP 403 to every request from a datacenter IP**, including its own
+root and a prior-season control, so this is the network origin being
+refused rather than anything specific to 2026. FastF1's own fallback
+mirror answers but does not carry this season.
 
-- No 2026 season data has been ingested or committed anywhere in this
-  repo. `config/season_2026.json` doesn't exist yet; it's generated by
-  `ingest.write_season_config()`, never hand-written.
-- `config/regulations_2026.json` and `config/points_system.json` are
-  present but explicitly marked `"verified": false` — see the `_comment`/
-  `source` fields in each file for exactly what needs checking against a
-  primary source before the aero module or standings computation can be
-  trusted.
-- The pipeline code itself is real (not mocked) and calls the real APIs;
-  it just hasn't been run end-to-end anywhere with network access yet.
-  That first real run happens the first time `refresh-data.yml` executes
-  on a GitHub Actions runner, which has full internet access. Until then,
-  every page in the frontend shows its empty state, and that's the
-  correct behavior, not a bug.
+That was measured, not assumed. `pipeline/diagnose_sources.py` probes
+every endpoint and prints the status codes; run it via the "Diagnose data
+sources" workflow whenever the telemetry side goes quiet.
+
+The consequence is deliberate and visible in the UI: modules that need
+telemetry (Circuit Atlas geometry, Racing Lines, Driver Error Review,
+Aero Explainer) show an empty state explaining the block. Drawing
+approximate track outlines or inventing tyre compounds would look
+finished and would be fabricated. Unblocking this needs ingest from a
+residential IP or a self-hosted runner.
+
+## Model limitations
+
+Every figure the site derives carries its own caveat in the UI; the
+substantive ones:
+
+- **Per-stint pace trend is not a degradation rate.** Within one stint,
+  fuel burn and tyre degradation are both close to linear in lap number
+  and are not separately identifiable from lap times alone. The published
+  slope is their sum plus track evolution, flagged `fuel_corrected:
+  false`. A negative slope (the driver getting faster) is normal and is
+  not evidence about tyres.
+- **A fit is only called usable when it earns it.** Reliability requires
+  both a sample-count floor and an R² floor. On real race data 57% of
+  fits clear both; the rest are published with the reason they failed
+  ("R² 0.06 below 0.3 — lap-to-lap scatter dominates any trend in this
+  stint") rather than shown as a confident number.
+- **No tyre compounds.** Jolpica-F1 publishes none, so stints are
+  structural — when and how long — and are shaded by stint order, never
+  by a compound colour.
+- **Undercuts measure what happened, not what would have happened.**
+  Gaps come from elapsed race time (the running sum of lap times).
+  Pairings are excluded when the window cannot be about the stop — the
+  rival stayed out beyond ten laps, either car stopped again inside it,
+  lap data is missing, or the swing exceeds four pit losses — and the
+  exclusion counts are shown alongside the table. Windows where the field
+  was slowed are flagged rather than deleted, since without a
+  track-status channel a neutralised period can only be suspected.
+- **No track-status channel at all**, so safety-car and traffic laps are
+  excluded from fits by an outlier rule rather than by flag.
+
+## Not built yet
+
+The What-If engine's core exists (`pipeline/models/whatif.py`, ported
+line-for-line to `src/lib/whatifModel.js` and pinned by a two-sided
+parity test) but is **not wired into any page**: the spec gates it on
+reproducing a real race's time within 1% using the actual strategy, and
+that test currently skips for want of fitted per-race parameters. It
+stays unpublished until it passes.
+
+Driver Error Review and the Aero Explainer are deliberate
+`NotImplementedError` stubs — both need the telemetry that is blocked,
+and the Aero module additionally needs
+`config/regulations_2026.json` verified against the published FIA
+technical regulations rather than filled in from memory.
 
 ## Running locally
 
-Frontend:
-
 ```bash
 npm install
-npm run dev      # Vite dev server
-npm test         # vitest — 5 passing tests
-npm run build    # production build; verify dist/ against the payload budgets in docs/SPEC.md
+npm run dev        # Vite dev server
+npm test           # vitest
+npm run build      # production build
 ```
-
-Pipeline:
 
 ```bash
 pip install -r pipeline/requirements.txt
 cd pipeline
-python -m pytest tests -q          # 12 passing tests, no network required
-python run_refresh.py --year 2026  # full refresh; requires network access to Jolpica-F1 and FastF1
-python validate_export.py          # the same hard gate CI runs before committing
+python -m pytest tests -q          # 53 tests, no network required
+python run_refresh.py --year 2026  # full refresh; needs network
+python validate_export.py          # the same hard gate CI runs
+python diagnose_sources.py         # probe every upstream source
 ```
 
-`scripts/serve_dev.py` serves `public/` alone over plain HTTP, matching
-how GitHub Pages serves it — useful for testing `fetch()` calls against
-real exported artifacts once some exist.
+To look at the built site the way GitHub Pages serves it — which is how
+an axis-label collision and a console 404 were caught that the tests and
+the build both passed:
 
-## Model limitations
+```bash
+npm run build && npm i --no-save playwright && node scripts/screenshot.mjs
+```
 
-- **Standings**: computed independently from race results using
-  `config/points_system.json`, then cross-checked against Jolpica-F1's own
-  standings endpoint. A mismatch renders as a warning banner rather than
-  silently picking one table — see `pipeline/validate_export.py`, which
-  fails CI if that cross-check didn't run at all.
-- **Tyre degradation**: fit per compound per event on green-flag,
-  non-in/out laps only; a fit is marked unreliable below 6 samples
-  (`pipeline/models/deg_fit.py`), and the UI must say so rather than
-  presenting a thin fit as fact.
-- **Pit loss**: measured per circuit from actual in-lap/out-lap timing,
-  never assumed; a circuit with too few pit stops recorded reports "not
-  enough data" instead of a number.
-- **What-If, Aero, Error Review**: not implemented yet (see Current
-  status above) — no placeholder or estimated output exists for these in
-  the current build.
+Playwright is intentionally not a project dependency, so neither CI nor a
+contributor's install pulls a browser.
+
+## How the data gets there
+
+`refresh-data.yml` runs weekly and on manual dispatch. It ingests, derives
+and exports, then runs `validate_export.py` as a hard gate before
+committing — and only then dispatches the Pages deploy, because a push
+made with `GITHUB_TOKEN` does not fire `on: push` workflows.
+
+The gate exists because there is no human review between a refresh and
+the live site. It has already earned its place: a rate-limited run once
+recomputed the championship from a partial set of rounds and published a
+table with the leader 156 points short. The gate now hard-fails on a
+flagged **or skipped** cross-check, the standings export aborts entirely
+if any round fails to fetch, rate limits are retried rather than raised,
+and exported artifacts carry a schema version so a corrected model
+reaches rounds that were already written.
 
 ## Repository hygiene
 
 `main` is the only branch. Commits are authored by the project owner (or
-`github-actions[bot]` for the scheduled refresh); no AI-tool attribution
-appears in any commit, PR, or file in this repository.
+`github-actions[bot]` for the scheduled refresh).
