@@ -26,6 +26,8 @@ import requests
 
 LIVETIMING_BASE = "https://livetiming.formula1.com"
 JOLPICA_BASE = "https://api.jolpi.ca/ergast/f1"
+# FastF1 3.8 falls back to this mirror on its own when livetiming 403s.
+MIRROR_BASE = "https://livetiming-mirror.fastf1.dev"
 
 # FastF1 reaches livetiming with its own UA; a plain requests default UA
 # can be treated differently, so probe with both to tell a UA filter
@@ -50,11 +52,18 @@ def probe(url: str, headers: dict | None = None, note: str = "") -> None:
         print(f"         body: {body!r}")
 
 
-def probe_http(year: int) -> None:
+def probe_http(year: int, round_: int) -> None:
     print(f"\n=== Raw HTTP probes ===")
 
     print("\nJolpica-F1 (the source that currently works):")
-    probe(f"{JOLPICA_BASE}/{year}.json")
+    probe(f"{JOLPICA_BASE}/{year}.json", note="season schedule")
+
+    # Which Jolpica detail endpoints carry 2026 data decides how much of
+    # the lap-level work (M4 stint structure, pace analysis) can be built
+    # without telemetry at all.
+    print("\nJolpica-F1 lap-level endpoints (telemetry-free fallback for M4):")
+    probe(f"{JOLPICA_BASE}/{year}/{round_}/laps.json?limit=5", note="lap times")
+    probe(f"{JOLPICA_BASE}/{year}/{round_}/pitstops.json?limit=5", note="pit stops")
 
     print("\nlivetiming.formula1.com (the source FastF1 needs):")
     probe(f"{LIVETIMING_BASE}/static/{year}/Index.json", note="season index, default UA")
@@ -70,6 +79,14 @@ def probe_http(year: int) -> None:
     # cause is upstream publication, not this runner's network.
     print(f"\nControl — prior season ({year - 1}) on the same host:")
     probe(f"{LIVETIMING_BASE}/static/{year - 1}/Index.json", note="prior-season index")
+
+    # FastF1 3.8 falls back to this community mirror automatically. It
+    # answers (so it is not blocked); the question is which seasons it
+    # actually carries.
+    print("\nFastF1 community mirror (reachable, coverage unknown):")
+    probe(f"{MIRROR_BASE}/static/{year}/Index.json", note=f"{year} index")
+    probe(f"{MIRROR_BASE}/static/{year - 1}/Index.json", note=f"{year - 1} index")
+    probe(f"{MIRROR_BASE}/", note="root")
 
 
 def probe_fastf1(year: int, round_: int, session_name: str) -> None:
@@ -105,7 +122,7 @@ def main() -> int:
     parser.add_argument("--session", type=str, default="Q")
     args = parser.parse_args()
 
-    probe_http(args.year)
+    probe_http(args.year, args.round)
     probe_fastf1(args.year, args.round, args.session)
     print("\nDone. Read the status codes above before changing any ingest code.")
     return 0
