@@ -31,7 +31,7 @@ from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR
 # silently never reached rounds that had already been exported (a fix to
 # the fit-reliability rule left 97 stale fits labelled "reliable" on
 # disk, because their rounds were simply skipped).
-LAPS_SCHEMA_VERSION = 2
+LAPS_SCHEMA_VERSION = 3
 
 
 def load_points_system() -> dict:
@@ -129,6 +129,7 @@ def refresh_race_laps(year: int, round_info: dict) -> None:
 
     total_laps = max(lap["lap"] for lap in laps)
     stints = derive.build_stints(laps, pitstops, total_laps)
+    undercuts = derive.build_undercut_ledger(laps, pitstops)
 
     deg_fits = []
     for stint in stints:
@@ -147,6 +148,8 @@ def refresh_race_laps(year: int, round_info: dict) -> None:
         # laps array above and would roughly double the payload for
         # nothing the frontend cannot recompute.
         "stints": [{k: v for k, v in s.items() if k != "lapTimesS"} for s in stints],
+        "pitstops": pitstops,
+        "undercuts": undercuts,
         "degradation": deg_fits,
         "generated_at": ingest._now_iso(),
         "source": f"Jolpica-F1 {year} round {round_} laps + pitstops",
@@ -156,12 +159,15 @@ def refresh_race_laps(year: int, round_info: dict) -> None:
             "tyre degradation are not separately identifiable from lap times.",
             "No track-status channel, so safety-car and traffic laps are excluded by an "
             "outlier rule rather than by flag.",
+            "Undercut figures measure what happened to the gap, not what would have "
+            "happened otherwise; a driver can gain on a rival for reasons unrelated to "
+            "the stop. Entries whose window looks neutralised are flagged, not dropped.",
         ],
     }
 
     export.export_race_laps(year, round_, payload)
     print(f"[laps] round {round_}: exported {len(laps)} laps, {len(stints)} stints, "
-          f"{len(deg_fits)} fits")
+          f"{len(deg_fits)} fits, {len(pitstops)} stops, {len(undercuts)} undercut pairs")
 
 
 def refresh_standings(year: int, calendar: list[dict]) -> None:

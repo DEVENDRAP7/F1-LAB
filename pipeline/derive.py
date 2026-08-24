@@ -252,6 +252,189 @@ def build_stints(laps: list[dict], pitstops: list[dict], total_laps: int) -> lis
     return stints
 
 
+def cumulative_times(laps: list[dict]) -> dict[str, dict[int, float]]:
+    """Elapsed race time per driver at the end of each lap.
+
+    Summing lap times from lap 1 gives each driver's time since the
+    start, so the difference between two drivers at the same lap is
+    their real on-track gap in seconds. That is what makes an undercut
+    measurable from a lap-time-only feed — no gap channel needed.
+
+    A driver with any missing lap time has no elapsed time from that lap
+    onward: the sum would silently under-count and turn a gap into
+    fiction, so the series simply stops instead.
+    """
+    by_driver: dict[str, list[dict]] = {}
+    for lap in laps:
+        by_driver.setdefault(lap["driverId"], []).append(lap)
+
+    elapsed: dict[str, dict[int, float]] = {}
+    for driver_id, driver_laps in by_driver.items():
+        driver_laps.sort(key=lambda entry: entry["lap"])
+        running = 0.0
+        per_lap: dict[int, float] = {}
+        for entry in driver_laps:
+            if entry["timeS"] is None:
+                break
+            running += entry["timeS"]
+            per_lap[entry["lap"]] = running
+        elapsed[driver_id] = per_lap
+    return elapsed
+
+
+# A rival more than this far away before the stop was not in the fight,
+# so a change in their gap is not an undercut outcome. Roughly one pit
+# loss: closer than this and a stop can plausibly change the order.
+UNDERCUT_RIVAL_WINDOW_S = 30.0
+# Median lap time in the comparison window this far above the race
+# median means the field was slowed (safety car, heavy traffic). The
+# comparison is then contaminated, and there is no track-status channel
+# to confirm it with, so the entry is flagged rather than dropped.
+NEUTRALISED_WINDOW_FACTOR = 1.15
+# A rival who stays out much longer than this is running a different
+# strategy, not resisting an undercut; the laps in between accumulate
+# every other thing that happens in a race.
+MAX_UNDERCUT_WINDOW_LAPS = 10
+# Beyond roughly four pit losses, the gap did not change because of a
+# stop — it changed because someone retired, sat in the garage, or the
+# race was red-flagged. Publishing that as a 20-minute "undercut" would
+# be a fabricated claim about racing, so it is excluded and counted.
+MAX_PLAUSIBLE_NET_S = 120.0
+
+
+def build_undercut_ledger(laps: list[dict], pitstops: list[dict]) -> list[dict]:
+    """Net time each pit stop won or lost against the cars actually being
+    fought (docs/SPEC.md M4).
+
+    For a stop by A on lap P, every rival B within
+    UNDERCUT_RIVAL_WINDOW_S at lap P-1 who had not yet stopped is
+    compared on the gap before A's stop and the gap once B has also
+    stopped and completed a lap. The change is the net time A gained.
+    Positive means A came out ahead of where they would have been.
+
+    This is a measurement of what happened, not a claim about what
+    would have happened otherwise: a driver can gain on a rival for
+    reasons that have nothing to do with the stop, which is why the
+    window is kept tight and neutralised periods are flagged.
+
+    Returns {"entries": [...], "excluded": {reason: count}}. Pairs are
+    excluded rather than published when the window cannot be about the
+    stop — it runs too long, either driver stops again inside it, or the
+    net swing is far beyond what any stop can produce (a retirement or a
+    long repair sitting in the middle of it). The counts travel with the
+    data so nothing is silently dropped.
+    """
+    elapsed = cumulative_times(laps)
+    stops_by_driver: dict[str, list[int]] = {}
+    for stop in sorted(pitstops, key=lambda s: (s["driverId"], s["lap"])):
+        stops_by_driver.setdefault(stop["driverId"], []).append(stop["lap"])
+
+    # Field median lap time per lap, to spot neutralised windows.
+    times_by_lap: dict[int, list[float]] = {}
+    for lap in laps:
+        if lap["timeS"] is not None:
+            times_by_lap.setdefault(lap["lap"], []).append(lap["timeS"])
+    median_by_lap = {
+        lap_no: sorted(values)[len(values) // 2] for lap_no, values in times_by_lap.items()
+    }
+    race_median = (
+        sorted(median_by_lap.values())[len(median_by_lap) // 2] if median_by_lap else None
+    )
+
+    def gap(driver_a: str, driver_b: str, lap_no: int) -> float | None:
+        a = elapsed.get(driver_a, {}).get(lap_no)
+        b = elapsed.get(driver_b, {}).get(lap_no)
+        if a is None or b is None:
+            return None
+        return b - a  # positive => A is ahead of B
+
+    ledger = []
+    excluded = {
+        "window_too_long": 0,
+        "another_stop_in_window": 0,
+        "incomplete_lap_data": 0,
+        "implausible_net": 0,
+    }
+    for driver_a, stop_laps in stops_by_driver.items():
+        for stop_index, stop_lap in enumerate(stop_laps, start=1):
+            before_lap = stop_lap - 1
+            if before_lap < 1:
+                continue
+
+            for driver_b, rival_stops in stops_by_driver.items():
+                if driver_b == driver_a:
+                    continue
+                # Only rivals who had not stopped yet when A stopped, and
+                # who stop later — that is the shape of an undercut.
+                later = [lap_no for lap_no in rival_stops if lap_no > stop_lap]
+                already = [lap_no for lap_no in rival_stops if lap_no <= before_lap]
+                if not later or already:
+                    continue
+                rival_stop = later[0]
+                after_lap = rival_stop + 1
+
+                gap_before = gap(driver_a, driver_b, before_lap)
+                if gap_before is None or abs(gap_before) > UNDERCUT_RIVAL_WINDOW_S:
+                    continue
+
+                if after_lap - before_lap > MAX_UNDERCUT_WINDOW_LAPS:
+                    excluded["window_too_long"] += 1
+                    continue
+
+                # A second stop by either car inside the window means the
+                # gap change is the sum of several events, not this one.
+                others = [
+                    lap_no
+                    for lap_no in stop_laps + rival_stops
+                    if before_lap < lap_no <= after_lap
+                    and lap_no not in (stop_lap, rival_stop)
+                ]
+                if others:
+                    excluded["another_stop_in_window"] += 1
+                    continue
+
+                gap_after = gap(driver_a, driver_b, after_lap)
+                if gap_after is None:
+                    excluded["incomplete_lap_data"] += 1
+                    continue
+
+                if abs(gap_after - gap_before) > MAX_PLAUSIBLE_NET_S:
+                    excluded["implausible_net"] += 1
+                    continue
+
+                window_medians = [
+                    median_by_lap[lap_no]
+                    for lap_no in range(before_lap, after_lap + 1)
+                    if lap_no in median_by_lap
+                ]
+                neutralised = bool(
+                    race_median
+                    and window_medians
+                    and (sorted(window_medians)[len(window_medians) // 2]
+                         > race_median * NEUTRALISED_WINDOW_FACTOR)
+                )
+
+                ledger.append(
+                    {
+                        "driverId": driver_a,
+                        "stop": stop_index,
+                        "stopLap": stop_lap,
+                        "rivalId": driver_b,
+                        "rivalStopLap": rival_stop,
+                        "comparedOverLaps": after_lap - before_lap,
+                        "gapBeforeS": round(gap_before, 3),
+                        "gapAfterS": round(gap_after, 3),
+                        "netS": round(gap_after - gap_before, 3),
+                        "aheadBefore": gap_before > 0,
+                        "aheadAfter": gap_after > 0,
+                        "neutralisedWindow": neutralised,
+                    }
+                )
+
+    ledger.sort(key=lambda e: (e["stopLap"], e["driverId"], e["rivalId"]))
+    return {"entries": ledger, "excluded": excluded}
+
+
 def fit_stint_degradation(stint: dict, min_laps: int = 3) -> dict | None:
     """Fit lap time against tyre life across one stint.
 
