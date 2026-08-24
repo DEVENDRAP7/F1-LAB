@@ -36,11 +36,46 @@ class DegradationFit:
             "sample_count": self.sample_count,
             "excluded_laps": self.excluded_laps,
             "exclusion_reason": self.exclusion_reason,
-            "reliable": self.sample_count >= MIN_RELIABLE_SAMPLES,
+            "reliable": self.is_reliable(),
+            "reliability_reason": self.reliability_reason(),
         }
+
+    def is_reliable(self) -> bool:
+        """A fit is only publishable as a trend if it has both enough
+        laps and enough explanatory power.
+
+        Sample count alone is not sufficient: on real 2026 race data, 97
+        fits cleared the lap-count bar while explaining under 30% of the
+        variance in lap time, and were being labelled "reliable" beside
+        an essentially meaningless slope. Lap-to-lap noise (traffic,
+        wind, driver variation) genuinely swamps the trend in many
+        stints, and the honest answer there is "no usable trend", not a
+        confident number.
+        """
+        if self.sample_count < MIN_RELIABLE_SAMPLES:
+            return False
+        if self.r_squared is None:
+            return False
+        return self.r_squared >= MIN_RELIABLE_R2
+
+    def reliability_reason(self) -> str:
+        if self.sample_count < MIN_RELIABLE_SAMPLES:
+            return f"only {self.sample_count} usable laps (need {MIN_RELIABLE_SAMPLES})"
+        if self.r_squared is None:
+            return "no fit computed"
+        if self.r_squared < MIN_RELIABLE_R2:
+            return (
+                f"R^2 {self.r_squared:.2f} below {MIN_RELIABLE_R2} — lap-to-lap scatter "
+                "dominates any trend in this stint"
+            )
+        return f"{self.sample_count} laps, R^2 {self.r_squared:.2f}"
 
 
 MIN_RELIABLE_SAMPLES = 6
+# Engineering default: below this, the linear trend explains so little of
+# the lap-time variance that reporting its slope would imply a precision
+# the data does not support.
+MIN_RELIABLE_R2 = 0.30
 QUADRATIC_R2_IMPROVEMENT_THRESHOLD = 0.03
 
 
