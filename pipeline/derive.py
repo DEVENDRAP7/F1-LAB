@@ -579,3 +579,129 @@ def compute_elimination(standings: list[dict], remaining_rounds: list[dict],
         "leaderPoints": leader_points,
         "drivers": drivers,
     }
+
+
+# --- M6: Upcoming Race Brief -------------------------------------------
+#
+# Priors for the next round, computed only from past editions of the same
+# circuit. Every figure carries the number of editions and the number of
+# drivers behind it, because a prior from two editions and a prior from
+# ten are different claims and a reader cannot tell them apart from the
+# number alone.
+#
+# Nothing here predicts the coming race. The 2026 regulation reset
+# changed the cars, so these are what happened here before, not what will
+# happen here next — the UI states that and so does this comment, since
+# the temptation to read a median as a forecast is the whole risk.
+
+
+def _classified(result: dict) -> bool:
+    """Did this car see the flag? Ergast reports classified runners as
+    "Finished" or "+N Lap(s)"; everything else (Accident, Engine,
+    Disqualified, ...) is a retirement or exclusion."""
+    status = (result.get("status") or "").strip()
+    return status == "Finished" or status.startswith("+")
+
+
+def _median(values: list[float]) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    if len(ordered) % 2:
+        return float(ordered[mid])
+    return (ordered[mid - 1] + ordered[mid]) / 2.0
+
+
+def summarise_circuit_history(editions: list[dict]) -> dict:
+    """Reduce past editions of one circuit to priors, with sample counts.
+
+    `editions` is a list of {year, results, pitstops} where results carry
+    the fields ingest.fetch_race_results produces and pitstops may be
+    None when that edition's stop data could not be fetched — a missing
+    source has to stay distinguishable from a race that genuinely had no
+    stops, so it is counted as unavailable rather than as zero.
+    """
+    starters = 0
+    classified = 0
+    position_changes: list[float] = []
+    winner_grids: list[int] = []
+    stops_per_driver: list[int] = []
+    editions_with_stops = 0
+    per_edition = []
+
+    for edition in editions:
+        results = edition.get("results") or []
+        if not results:
+            continue
+        starters += len(results)
+        edition_classified = [r for r in results if _classified(r)]
+        classified += len(edition_classified)
+
+        for r in edition_classified:
+            grid = r.get("grid")
+            position = r.get("position")
+            # Grid 0 is a pit-lane start, not P0: it has no grid slot to
+            # measure a position change against, so it is left out rather
+            # than counted as a 20-place gain.
+            if not grid or position is None:
+                continue
+            position_changes.append(abs(int(grid) - int(position)))
+
+        winner = next((r for r in results if str(r.get("position")) == "1"), None)
+        if winner and winner.get("grid"):
+            winner_grids.append(int(winner["grid"]))
+
+        pitstops = edition.get("pitstops")
+        edition_stops = None
+        if pitstops is not None:
+            editions_with_stops += 1
+            counts: dict[str, int] = {}
+            for stop in pitstops:
+                driver = stop.get("driverId")
+                if driver:
+                    counts[driver] = counts.get(driver, 0) + 1
+            stops_per_driver.extend(counts.values())
+            edition_stops = _median(list(counts.values()))
+
+        per_edition.append({
+            "year": edition.get("year"),
+            "starters": len(results),
+            "classified": len(edition_classified),
+            "winnerGrid": winner_grids[-1] if winner and winner.get("grid") else None,
+            "medianStops": edition_stops,
+        })
+
+    return {
+        "editions": len(per_edition),
+        "years": [e["year"] for e in per_edition],
+        "perEdition": per_edition,
+        "finishRate": {
+            "classified": classified,
+            "starters": starters,
+            "share": (classified / starters) if starters else None,
+        },
+        "positionChange": {
+            "medianPlaces": _median(position_changes),
+            "n": len(position_changes),
+            "note": "Absolute difference between grid slot and finishing position, "
+                    "classified finishers only. Pit-lane starts (grid 0) are excluded.",
+        },
+        "winnerGrid": {
+            "median": _median([float(g) for g in winner_grids]),
+            "best": min(winner_grids) if winner_grids else None,
+            "worst": max(winner_grids) if winner_grids else None,
+            "n": len(winner_grids),
+        },
+        "stops": {
+            "medianPerDriver": _median([float(s) for s in stops_per_driver]),
+            "n": len(stops_per_driver),
+            "editionsWithData": editions_with_stops,
+        },
+        "unavailable": {
+            "safetyCar": "No safety-car or track-status channel is published by this "
+                         "source, so neutralisation frequency cannot be counted.",
+            "tyreCompounds": "This source publishes no compound per stint, so no "
+                             "compound-level prior can be computed.",
+        },
+    }

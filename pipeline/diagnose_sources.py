@@ -155,8 +155,29 @@ def probe_circuit_history(circuit_id: str, years: list[int]) -> None:
                 f"rows={len(rows)} key={listkey} fields={sample}"
             )
             if endpoint == "results" and rows:
-                statuses = sorted({r.get("status") for r in rows})
-                print(f"         statuses: {statuses}")
+                # The status vocabulary is not stable across seasons
+                # ("+1 Lap" in 2022, "Lapped" in 2025), so pair it with
+                # positionText: a letter there marks a car that did not
+                # take a classified finish, independent of wording.
+                pairs = sorted({(r.get("positionText"), r.get("status")) for r in rows})
+                nonnumeric = [p for p in pairs if not str(p[0]).isdigit()]
+                print(f"         positionText/status non-numeric: {nonnumeric}")
+                print(f"         numeric statuses: "
+                      f"{sorted({p[1] for p in pairs if str(p[0]).isdigit()})}")
+                round_ = race.get("round")
+                stops_url = f"{JOLPICA_BASE}/{year}/{round_}/pitstops.json?limit=100"
+                try:
+                    sresp = requests.get(stops_url, timeout=DEFAULT_TIMEOUT)
+                    if sresp.ok:
+                        sdata = sresp.json()["MRData"]
+                        sraces = sdata.get("RaceTable", {}).get("Races", [])
+                        srows = sraces[0].get("PitStops", []) if sraces else []
+                        print(f"         round-scoped pitstops: total={sdata.get('total')} "
+                              f"fields={sorted(srows[0].keys()) if srows else []}")
+                    else:
+                        print(f"         round-scoped pitstops: {sresp.status_code}")
+                except Exception as exc:  # noqa: BLE001
+                    print(f"         round-scoped pitstops ERR: {type(exc).__name__}: {exc}")
 
 
 def main() -> int:
