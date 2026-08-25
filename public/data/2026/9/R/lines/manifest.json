@@ -1,0 +1,70 @@
+{
+  "channels": [
+    "x",
+    "y",
+    "speed",
+    "throttle",
+    "brake",
+    "gear"
+  ],
+  "scale": {
+    "x": 10,
+    "y": 10,
+    "speed": 10,
+    "throttle": 1,
+    "brake": 1,
+    "gear": 1
+  },
+  "drivers": {
+    "ANT": {
+      "pointCount": 3020
+    },
+    "VER": {
+      "pointCount": 2999
+    },
+    "HAD": {
+      "pointCount": 3010
+    },
+    "HAM": {
+      "pointCount": 2996
+    }
+  },
+  "schemaVersion": 1,
+  "source": "OpenF1 session 11326 (United Kingdom)",
+  "positionUnitsPerMetre": {
+    "value": 10.015831031080383,
+    "source": "measured on this lap: raw position path length divided by the lap length obtained by integrating published speed over the sample timestamps",
+    "sample_size": 361
+  },
+  "laps": [
+    {
+      "code": "ANT",
+      "driverNumber": 12,
+      "lapNumber": 37,
+      "lapTimeS": 91.777
+    },
+    {
+      "code": "VER",
+      "driverNumber": 3,
+      "lapNumber": 40,
+      "lapTimeS": 92.101
+    },
+    {
+      "code": "HAD",
+      "driverNumber": 6,
+      "lapNumber": 40,
+      "lapTimeS": 92.268
+    },
+    {
+      "code": "HAM",
+      "driverNumber": 44,
+      "lapNumber": 25,
+      "lapTimeS": 92.309
+    }
+  ],
+  "limitations": [
+    "Each line is one driver's fastest non-out lap of the race, not an average or an ideal line.",
+    "Position samples arrive at roughly 3.7 Hz and are resampled onto a fixed distance grid, so the line is interpolated between samples.",
+    "Corner numbering is not published by this source, so the map carries the driven path and no official corner labels."
+  ]
+}
