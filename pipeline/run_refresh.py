@@ -511,6 +511,28 @@ def refresh_error_review(year: int, round_info: dict, sessions: list[dict]) -> N
           f"{len(review['neutralisedLaps'])} neutralised lap(s)")
 
 
+def _lines_are_consistent(out_dir, manifest: dict) -> bool:
+    """Do the binaries decode at the stride their own manifest declares?
+
+    A round at the current schema version is still stale if the two
+    disagree — which they did, silently, the first time the elevation
+    channel appeared: seven-channel binaries under a manifest that still
+    said six. The version check alone had nothing to notice, so it is
+    asked here as well, and the same arithmetic is a hard gate in
+    validate_export.py.
+    """
+    channels = manifest.get("channels") or []
+    if not channels:
+        return False
+    for code, entry in (manifest.get("drivers") or {}).items():
+        binary = out_dir / f"{code}.bin"
+        if not binary.exists():
+            return False
+        if binary.stat().st_size != entry["pointCount"] * len(channels) * 2:
+            return False
+    return True
+
+
 def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool:
     """Track geometry and racing lines for one round, from real position data.
 
@@ -533,12 +555,16 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
     manifest = out_dir / "manifest.json"
     if manifest.exists():
         try:
-            stored = json.loads(manifest.read_text()).get("schemaVersion", 0)
+            stored_doc = json.loads(manifest.read_text())
         except (json.JSONDecodeError, OSError):
-            stored = 0
-        if stored == TELEMETRY_SCHEMA_VERSION:
+            stored_doc = {}
+        stored = stored_doc.get("schemaVersion", 0)
+        if stored == TELEMETRY_SCHEMA_VERSION and _lines_are_consistent(out_dir, stored_doc):
             print(f"[telemetry] round {round_}: already exported, skipping")
             return False
+        if stored == TELEMETRY_SCHEMA_VERSION:
+            print(f"[telemetry] round {round_}: re-exporting, the manifest and the "
+                  "binaries beside it disagree about the channel count")
 
     session = _match_openf1_session(round_info, sessions)
     if session is None:

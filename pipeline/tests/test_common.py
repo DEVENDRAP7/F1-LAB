@@ -105,3 +105,40 @@ def test_manifest_upsert_keeps_other_drivers(tmp_path):
     assert manifest["channels"] == list(LINE_CHANNELS)
     assert manifest["drivers"]["HAM"]["pointCount"] == 2501
     assert manifest["drivers"]["VER"]["pointCount"] == 2512
+
+
+def test_manifest_follows_a_changed_channel_list(tmp_path):
+    """A round can gain or lose the elevation channel between refreshes.
+
+    The manifest kept its original channel list when one already existed,
+    so a re-export that added elevation wrote seven-channel binaries under
+    a manifest still promising six — and every channel after x was read
+    off by one, for every driver in the session, with nothing raising.
+    """
+    manifest_path = tmp_path / "manifest.json"
+    six = tuple(name for name in LINE_CHANNELS if name != "z")
+
+    upsert_manifest_driver(manifest_path, "HAM", 2500, channels=six)
+    manifest = json.loads(manifest_path.read_text())
+    assert manifest["channels"] == list(six)
+    assert "z" not in manifest["scale"]
+
+    # The next refresh finds real elevation and writes it.
+    upsert_manifest_driver(manifest_path, "HAM", 2500, channels=LINE_CHANNELS)
+    manifest = json.loads(manifest_path.read_text())
+    assert manifest["channels"] == list(LINE_CHANNELS)
+    assert "z" in manifest["scale"]
+
+
+def test_a_changed_channel_list_drops_drivers_written_under_the_old_one(tmp_path):
+    """Their binaries have a different stride, so a manifest describing
+    them at the new one would misread every channel."""
+    manifest_path = tmp_path / "manifest.json"
+    six = tuple(name for name in LINE_CHANNELS if name != "z")
+
+    upsert_manifest_driver(manifest_path, "HAM", 2500, channels=six)
+    upsert_manifest_driver(manifest_path, "VER", 2510, channels=six)
+    upsert_manifest_driver(manifest_path, "HAM", 2500, channels=LINE_CHANNELS)
+
+    manifest = json.loads(manifest_path.read_text())
+    assert list(manifest["drivers"]) == ["HAM"]

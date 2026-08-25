@@ -140,6 +140,45 @@ def check_upcoming_brief() -> list[str]:
     return errors
 
 
+def check_line_manifests() -> list[str]:
+    """Every racing-line binary must decode at the stride its manifest declares.
+
+    This is the gate the elevation work needed and did not have. The
+    manifest kept its original channel list when one already existed, so
+    a re-export that added the elevation channel wrote seven-channel
+    binaries under a manifest still promising six. Nothing raised: the
+    pipeline was happy, the tests were green, and the frontend read every
+    channel after x off by one for three rounds.
+
+    The arithmetic is exact — a binary is point count x channels x 2
+    bytes — so this is a real check rather than a heuristic, and a
+    mismatch is always corruption.
+    """
+    errors = []
+    for path in sorted(PUBLIC_DATA.glob("*/*/*/lines/manifest.json")):
+        manifest = json.loads(path.read_text())
+        channels = manifest.get("channels") or []
+        if not channels:
+            errors.append(f"{path}: declares no channels")
+            continue
+
+        for code, entry in (manifest.get("drivers") or {}).items():
+            binary = path.parent / f"{code}.bin"
+            if not binary.exists():
+                errors.append(f"{path}: lists {code} but {code}.bin is missing")
+                continue
+            expected = entry["pointCount"] * len(channels) * 2
+            actual = binary.stat().st_size
+            if actual != expected:
+                errors.append(
+                    f"{binary}: {actual} bytes but the manifest declares "
+                    f"{entry['pointCount']} points x {len(channels)} channels "
+                    f"({expected} bytes) — the line would decode off by a channel"
+                )
+
+    return errors
+
+
 def check_whatif() -> list[str]:
     """Re-run every published what-if against the race it was fitted to.
 
@@ -184,6 +223,7 @@ def main() -> int:
         + check_standings_cross_check()
         + check_upcoming_brief()
         + check_whatif()
+        + check_line_manifests()
     )
 
     if errors:

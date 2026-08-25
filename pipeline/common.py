@@ -120,14 +120,26 @@ def upsert_manifest_driver(path: Path, driver_code: str, point_count: int,
     pointCount — a bare rewrite per driver would clobber every earlier
     entry and leave the JS decoder misreading all but the last .bin."""
     scale = scale or LINE_SCALE
-    if path.exists():
-        manifest = json.loads(path.read_text())
-    else:
-        manifest = {
-            "channels": list(channels),
-            "scale": {k: scale[k] for k in channels},
-            "drivers": {},
-        }
+    manifest = json.loads(path.read_text()) if path.exists() else {}
+
+    declared = list(channels)
+    if manifest.get("channels") != declared:
+        # The channel list changed — elevation is published only where the
+        # feed's z varies, so a round can gain or lose a channel between
+        # refreshes. Keeping the old list here was a silent corruption:
+        # the new binaries carried seven channels while the manifest still
+        # promised six, and every channel after x was read off by one for
+        # every driver in the session.
+        #
+        # Driver entries written under the old list go with it. Their
+        # binaries have a different stride, and a manifest that describes
+        # them wrongly is worse than a round that offers fewer drivers
+        # until the next refresh rewrites them.
+        manifest["channels"] = declared
+        manifest["scale"] = {k: scale[k] for k in declared}
+        manifest["drivers"] = {}
+
+    manifest.setdefault("drivers", {})
     manifest["drivers"][driver_code] = {"pointCount": point_count}
     path.write_text(json.dumps(manifest, indent=2))
 

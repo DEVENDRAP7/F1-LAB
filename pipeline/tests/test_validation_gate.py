@@ -174,3 +174,45 @@ def run_refresh_version():
     import run_refresh
 
     return run_refresh.LAPS_SCHEMA_VERSION
+
+
+class TestLineManifestIntegrity:
+    """The gate that was missing when elevation arrived.
+
+    A racing-line binary is exactly point count x channels x 2 bytes, so
+    a manifest that disagrees with the file beside it is corruption
+    rather than a judgement call — and it is invisible everywhere else:
+    the pipeline was happy, the suite was green, and three rounds shipped
+    reading every channel after x off by one.
+    """
+
+    def _round(self, tmp_path, monkeypatch, channels, point_count, size_bytes):
+        import validate_export
+
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        lines = tmp_path / "2026" / "12" / "R" / "lines"
+        lines.mkdir(parents=True)
+        (lines / "manifest.json").write_text(json.dumps({
+            "channels": list(channels),
+            "drivers": {"LEC": {"pointCount": point_count}},
+        }))
+        (lines / "LEC.bin").write_bytes(b"\x00" * size_bytes)
+        return validate_export
+
+    def test_a_matching_manifest_passes(self, tmp_path, monkeypatch):
+        validate_export = self._round(
+            tmp_path, monkeypatch, ["x", "y", "speed"], 100, 100 * 3 * 2)
+        assert validate_export.check_line_manifests() == []
+
+    def test_a_binary_with_an_extra_channel_fails(self, tmp_path, monkeypatch):
+        validate_export = self._round(
+            tmp_path, monkeypatch, ["x", "y", "speed"], 100, 100 * 4 * 2)
+        errors = validate_export.check_line_manifests()
+        assert len(errors) == 1
+        assert "off by a channel" in errors[0]
+
+    def test_a_missing_binary_fails(self, tmp_path, monkeypatch):
+        validate_export = self._round(
+            tmp_path, monkeypatch, ["x", "y", "speed"], 100, 100 * 3 * 2)
+        (tmp_path / "2026" / "12" / "R" / "lines" / "LEC.bin").unlink()
+        assert "is missing" in validate_export.check_line_manifests()[0]
