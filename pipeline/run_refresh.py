@@ -83,8 +83,21 @@ def refresh_race_laps(year: int, round_info: dict,
         except (json.JSONDecodeError, OSError):
             existing_version = 0  # unreadable: treat as stale and rebuild
         if existing_version == LAPS_SCHEMA_VERSION:
-            print(f"[laps] round {round_}: already exported at v{existing_version}, skipping")
-            return
+            # A round at the current version is still stale if the
+            # compound join never actually ran for it — a transient
+            # OpenF1 failure would otherwise freeze that round with no
+            # compounds forever, which is the same staleness trap that
+            # once kept 97 corrected fits off disk. "Ran and found
+            # nothing" is a real answer and is not retried.
+            try:
+                attempted = json.loads(out_path.read_text()).get(
+                    "compounds", {}).get("attempted", False)
+            except (json.JSONDecodeError, OSError):
+                attempted = False
+            if attempted or openf1_sessions is None:
+                print(f"[laps] round {round_}: already exported at v{existing_version}, skipping")
+                return
+            print(f"[laps] round {round_}: re-exporting, compound join never ran")
         print(f"[laps] round {round_}: re-exporting (v{existing_version} -> v{LAPS_SCHEMA_VERSION})")
 
     try:
@@ -107,10 +120,13 @@ def refresh_race_laps(year: int, round_info: dict,
     # colour can finally mean what a reader assumes it means — and a
     # stint that cannot be matched keeps the blank rather than taking a
     # plausible-looking guess.
-    compound_report = {"identified": 0, "stints": len(stints), "share": 0.0}
+    compound_report = {"identified": 0, "stints": len(stints), "share": 0.0,
+                       "attempted": False, "reason": "OpenF1 session list unavailable"}
     if openf1_sessions is not None:
         session = _match_openf1_session(round_info, openf1_sessions)
-        if session is not None:
+        if session is None:
+            compound_report["reason"] = "no OpenF1 race session matched this round"
+        else:
             try:
                 of1_stints = ingest_openf1.fetch_stints(session["sessionKey"])
                 of1_drivers = ingest_openf1.fetch_drivers(session["sessionKey"])
@@ -125,9 +141,16 @@ def refresh_race_laps(year: int, round_info: dict,
                 compound_report = derive_compounds.attach_compounds(
                     stints, by_code, lambda did: entry_codes.get(did)
                 )
+                compound_report["attempted"] = True
+                if not compound_report["identified"]:
+                    compound_report["reason"] = (
+                        f"the stint feed returned {len(of1_stints)} stint(s) for this "
+                        "session and none overlapped ours enough to identify"
+                    )
                 print(f"[laps] round {round_}: compounds identified for "
                       f"{compound_report['identified']}/{compound_report['stints']} stints")
             except Exception as exc:  # noqa: BLE001 - compounds are additive
+                compound_report["reason"] = f"{type(exc).__name__}: {exc}"
                 print(f"[laps] round {round_}: compound join skipped "
                       f"({type(exc).__name__}: {exc})")
     undercuts = derive.build_undercut_ledger(laps, pitstops)
