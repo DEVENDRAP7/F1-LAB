@@ -53,6 +53,18 @@ def export_standings(standings: list[dict], generated_at: str, source_check: dic
     return path
 
 
+def export_upcoming(payload: dict) -> Path:
+    """The Upcoming Race Brief: the next round plus priors from past
+    editions of its circuit. One small file at a fixed path, because the
+    page that reads it does not know which round is next until it has
+    read it."""
+    PUBLIC_DATA.mkdir(parents=True, exist_ok=True)
+    path = PUBLIC_DATA / "upcoming.json"
+    path.write_text(json.dumps(payload, indent=2))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_circuit(circuit_key: str, circuit_doc: dict) -> Path:
     out_dir = PUBLIC_DATA / "circuits"
     out_dir.mkdir(parents=True, exist_ok=True)

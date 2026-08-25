@@ -699,3 +699,67 @@ tr.is-muted td {
     display: inline;
   }
 }
+
+/* ---------- upcoming race brief ---------- */
+
+/* Each figure keeps its sample count physically attached to the number.
+   Splitting them into separate columns or a footnote is how a median
+   from two editions ends up read as a settled fact. */
+.figure-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+.figure {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.75rem 0.85rem;
+}
+
+.figure-label {
+  color: var(--ink-1);
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.figure-value {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  margin: 0.15rem 0 0.1rem;
+  text-align: left;
+}
+
+.figure-sample {
+  color: var(--ink-2);
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.figure-note {
+  color: var(--ink-2);
+  font-size: 0.72rem;
+  margin: 0.4rem 0 0;
+}
+
+.reason-list {
+  color: var(--ink-1);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.reason-list li + li {
+  margin-top: 0.4rem;
+}
+
+@media (max-width: 640px) {
+  .figure-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .figure-value {
+    font-size: 1.35rem;
+  }
+}

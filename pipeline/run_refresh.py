@@ -261,6 +261,55 @@ def refresh_standings(year: int, calendar: list[dict]) -> None:
           f"{len(progression)} progression rounds, {eliminated} mathematically out")
 
 
+HISTORY_SEASONS = 4
+
+
+def refresh_upcoming(year: int, calendar: list[dict]) -> None:
+    """Export the brief for the next round that has not happened yet.
+
+    Degrades to a written-out reason rather than an absent file: once the
+    season is over there is no next round, and the page should say so
+    instead of showing a stale brief for a race already run.
+    """
+    today = datetime.date.today()
+    upcoming = [r for r in calendar if datetime.date.fromisoformat(r["date"]) > today]
+    if not upcoming:
+        export.export_upcoming({
+            "generated_at": ingest._now_iso(),
+            "next": None,
+            "reason": "Every round on the published calendar has been run.",
+        })
+        print("upcoming: no rounds remain on the calendar")
+        return
+
+    next_round = min(upcoming, key=lambda r: r["date"])
+    years = [year - n for n in range(1, HISTORY_SEASONS + 1)]
+
+    try:
+        editions = ingest.fetch_circuit_history(next_round["circuitId"], years)
+    except Exception as exc:  # noqa: BLE001
+        # A brief is a nice-to-have; it must never take the refresh down
+        # with it, and an empty brief that says why beats a missing file.
+        print(f"upcoming: circuit history unavailable ({exc})")
+        export.export_upcoming({
+            "generated_at": ingest._now_iso(),
+            "next": next_round,
+            "history": None,
+            "reason": f"Past editions could not be fetched: {exc}",
+        })
+        return
+
+    history = derive.summarise_circuit_history(editions)
+    export.export_upcoming({
+        "generated_at": ingest._now_iso(),
+        "next": next_round,
+        "historyYearsRequested": years,
+        "history": history,
+    })
+    print(f"upcoming: R{next_round['round']} {next_round['raceName']} "
+          f"from {history['editions']} past edition(s)")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--year", type=int, default=SEASON_YEAR)
@@ -275,6 +324,7 @@ def main() -> int:
         refresh_race_laps(args.year, round_info)
 
     refresh_standings(args.year, season_config["calendar"])
+    refresh_upcoming(args.year, season_config["calendar"])
 
     return 0
 

@@ -262,6 +262,60 @@ def fetch_pitstops(year: int, round_: int) -> list[dict]:
     ]
 
 
+def fetch_circuit_history(circuit_id: str, years: list[int]) -> list[dict]:
+    """Past editions of one circuit, for the Upcoming Race Brief's priors.
+
+    Circuit-scoped results answer and carry the round each edition was,
+    which matters because the circuit-scoped pitstops endpoint answers
+    400 — stops are only reachable per round, and the round comes from
+    this response. A year the circuit was not raced simply has no races
+    and is skipped.
+
+    positionText is carried through deliberately. The status vocabulary
+    changes between seasons ("+1 Lap" in 2022, "Lapped" in 2025), so
+    classification downstream keys off positionText, which stays a
+    position number for a classified car and a letter code otherwise.
+
+    An edition whose stops cannot be fetched gets `pitstops: None`, never
+    an empty list: "the source did not answer" and "nobody stopped" are
+    different facts and must not collapse into the same number.
+    """
+    editions = []
+    for year in years:
+        data = _jolpica_get(f"{year}/circuits/{circuit_id}/results", {"limit": JOLPICA_PAGE_LIMIT})
+        races = data["MRData"]["RaceTable"]["Races"]
+        if not races:
+            continue
+        race = races[0]
+        round_ = int(race["round"])
+        results = [
+            {
+                "position": int(r["position"]),
+                "positionText": r.get("positionText"),
+                "grid": int(r["grid"]),
+                "driverCode": r["Driver"].get("code"),
+                "driverName": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
+                "status": r["status"],
+                "laps": int(r["laps"]),
+            }
+            for r in race["Results"]
+        ]
+
+        try:
+            pitstops = fetch_pitstops(year, round_)
+        except Exception:  # noqa: BLE001 - a missing edition must not abort the brief
+            pitstops = None
+
+        editions.append({
+            "year": year,
+            "round": round_,
+            "raceName": race["raceName"],
+            "results": results,
+            "pitstops": pitstops,
+        })
+    return editions
+
+
 @dataclass
 class SessionBundle:
     """Everything derive.py needs for one session, as returned by FastF1.

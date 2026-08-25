@@ -595,12 +595,29 @@ def compute_elimination(standings: list[dict], remaining_rounds: list[dict],
 # the temptation to read a median as a forecast is the whole risk.
 
 
+# Codes in positionText for a car that never started, so it should not
+# count as a starter when computing a finish rate. Everything else that
+# is non-numeric ('R' retired, 'D' disqualified, 'N' not classified) did
+# start and simply did not reach a classified finish.
+DID_NOT_START_CODES = {"W", "F"}
+
+
 def _classified(result: dict) -> bool:
-    """Did this car see the flag? Ergast reports classified runners as
-    "Finished" or "+N Lap(s)"; everything else (Accident, Engine,
-    Disqualified, ...) is a retirement or exclusion."""
-    status = (result.get("status") or "").strip()
-    return status == "Finished" or status.startswith("+")
+    """Did this car take a classified finish?
+
+    Keyed off positionText, not status, because the status vocabulary is
+    not stable across seasons: the same lapped-but-classified finisher
+    reads "+1 Lap" in 2022 and "Lapped" in 2025, and the same retirement
+    reads "Engine" in 2022 and "Retired" in 2025. positionText held to
+    one rule across every season probed — a position number for a
+    classified car, a letter code otherwise — so matching status strings
+    would have counted every lapped 2025 finisher as a retirement.
+    """
+    return str(result.get("positionText") or "").isdigit()
+
+
+def _started(result: dict) -> bool:
+    return str(result.get("positionText") or "") not in DID_NOT_START_CODES
 
 
 def _median(values: list[float]) -> float | None:
@@ -634,7 +651,8 @@ def summarise_circuit_history(editions: list[dict]) -> dict:
         results = edition.get("results") or []
         if not results:
             continue
-        starters += len(results)
+        edition_starters = [r for r in results if _started(r)]
+        starters += len(edition_starters)
         edition_classified = [r for r in results if _classified(r)]
         classified += len(edition_classified)
 
@@ -666,7 +684,7 @@ def summarise_circuit_history(editions: list[dict]) -> dict:
 
         per_edition.append({
             "year": edition.get("year"),
-            "starters": len(results),
+            "starters": len(edition_starters),
             "classified": len(edition_classified),
             "winnerGrid": winner_grids[-1] if winner and winner.get("grid") else None,
             "medianStops": edition_stops,

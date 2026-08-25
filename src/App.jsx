@@ -3,6 +3,7 @@ import SeasonLedger from './pages/SeasonLedger.jsx';
 import CircuitAtlas from './pages/CircuitAtlas.jsx';
 import RacingLines from './pages/RacingLines.jsx';
 import RaceStrategy from './pages/RaceStrategy.jsx';
+import UpcomingBrief from './pages/UpcomingBrief.jsx';
 
 // HashRouter, not BrowserRouter: GitHub Pages has no server-side rewrite,
 // so deep links must live entirely in the URL fragment.
@@ -15,6 +16,7 @@ export default function App() {
           <NavLink to="/circuits">Circuit Atlas</NavLink>
           <NavLink to="/strategy">Race Strategy</NavLink>
           <NavLink to="/lines">Racing Lines</NavLink>
+          <NavLink to="/upcoming">Upcoming</NavLink>
         </nav>
         <main>
           <Routes>
@@ -22,6 +24,7 @@ export default function App() {
             <Route path="/circuits" element={<CircuitAtlas />} />
             <Route path="/strategy" element={<RaceStrategy />} />
             <Route path="/lines" element={<RacingLines />} />
+            <Route path="/upcoming" element={<UpcomingBrief />} />
           </Routes>
         </main>
       </div>
