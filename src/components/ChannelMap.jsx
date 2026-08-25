@@ -1,29 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cssToken } from '../theme/palette.js';
 
-// The driven line, coloured by how much lateral acceleration the car was
-// carrying at each point of it — the braking zones, the corners and the
-// straights fall out of the colour without anyone labelling them.
+// The driven line, coloured by one channel of it — cornering load,
+// speed, throttle, gear or the brake. The braking zones, the corners and
+// the straights fall out of the colour without anyone labelling them.
 //
-// Magnitude, so a sequential ramp: one hue, low to high, five steps.
-// Colour is not the only channel — the bands are labelled with their g
-// values in the legend, and hovering reads out the exact figure with the
-// speed it was carried at, so a reader who cannot separate two steps can
-// still get the number.
+// Magnitude, so a sequential ramp: one hue, low to high. Colour is not
+// the only channel — every band is labelled with the values it covers,
+// and hovering reads the figure at a point, so a reader who cannot
+// separate two steps can still get the number.
 //
 // Banded rather than continuous on purpose. A continuous gradient invites
-// reading a precision off the colour that a fitted curvature does not
-// have; five bands say "about this much", which is what the measurement
-// supports.
-
-// Whole g, with the top band open-ended. Fixed thresholds rather than
-// fifths of this lap's peak: a band that means "a fifth of whatever the
-// fastest sample was" changes meaning between drivers and circuits, and
-// on real data it also collapsed — four fifths of the lap fell in the
-// bottom two bands and the map came out a single colour. Whole g is a
-// unit a reader already holds, and the split is close to even.
-const BAND_EDGES = [1, 2, 3, 4];
-const BANDS = BAND_EDGES.length + 1;
+// reading a precision off the colour that the underlying measurement does
+// not have; a handful of bands say "about this much", which is what it
+// supports. The band edges are the caller's: they belong with the channel
+// being drawn, not with the drawing.
 const PAD = 26;
 
 // Colour is smoothed over this many samples either side (about 20 m of
@@ -31,9 +22,39 @@ const PAD = 26;
 // edge several times through one corner — the underlying fit is per
 // sample and a corner is not perfectly even — and the map came out
 // speckled, which reads as noise rather than as a corner. The smoothing
-// is for the colour only: every number on this page still comes from the
-// unsmoothed trace.
+// is for the colour only: every number on the page still comes from the
+// unsmoothed values. A channel the source publishes directly (the brake,
+// the gear) is drawn unsmoothed, since there is nothing to smooth out.
 const COLOUR_SMOOTHING = 5;
+
+// The ramp has five validated steps. A channel with fewer bands takes
+// the ends and skips the middle rather than inventing intermediate
+// colours, so every step drawn is one that was checked against the
+// surface it is drawn on.
+const RAMP_STEPS = 5;
+
+function rampIndex(band, bands) {
+  if (bands >= RAMP_STEPS) return Math.min(band, RAMP_STEPS - 1);
+  return Math.round((band / Math.max(1, bands - 1)) * (RAMP_STEPS - 1));
+}
+
+function rampToken(band, bands) {
+  return `var(--grip-${rampIndex(band, bands) + 1})`;
+}
+
+function rampFor(bands) {
+  return Array.from({ length: bands }, (_, i) => cssToken(`--grip-${rampIndex(i, bands) + 1}`));
+}
+
+// The unit goes on the band, not on both of its ends: "100 km/h–175
+// km/h" is the same fact written twice.
+function bandLabel(band, edges, unit, labels) {
+  if (labels) return labels[band];
+  if (edges.length === 0) return 'all';
+  if (band === 0) return `under ${edges[0]}${unit}`;
+  if (band === edges.length) return `${edges[edges.length - 1]}${unit} and up`;
+  return `${edges[band - 1]}–${edges[band]}${unit}`;
+}
 
 function smoothMagnitude(values, half) {
   const n = values.length;
@@ -54,15 +75,27 @@ function smoothMagnitude(values, half) {
   return out;
 }
 
-function bandFor(value) {
+function bandFor(value, edges) {
   if (!Number.isFinite(value)) return 0;
-  const g = Math.abs(value);
+  const magnitude = Math.abs(value);
   let band = 0;
-  while (band < BAND_EDGES.length && g >= BAND_EDGES[band]) band += 1;
+  while (band < edges.length && magnitude >= edges[band]) band += 1;
   return band;
 }
 
-export default function GripMap({ points, lateralG, speedKph, turns = [], highlight = null, height = 420 }) {
+export default function ChannelMap({
+  points,
+  values,
+  bandEdges,
+  label,
+  unit = '',
+  bandLabels = null,
+  formatValue = (v) => v.toFixed(1),
+  smooth = true,
+  turns = [],
+  highlight = null,
+  height = 420,
+}) {
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
   const [width, setWidth] = useState(560);
@@ -110,9 +143,10 @@ export default function GripMap({ points, lateralG, speedKph, turns = [], highli
     ];
   }, [bounds, size]);
 
+  const bands = bandEdges.length + 1;
   const shaded = useMemo(
-    () => smoothMagnitude(lateralG, COLOUR_SMOOTHING),
-    [lateralG],
+    () => (smooth ? smoothMagnitude(values, COLOUR_SMOOTHING) : values),
+    [values, smooth],
   );
 
   useEffect(() => {
@@ -125,19 +159,19 @@ export default function GripMap({ points, lateralG, speedKph, turns = [], highli
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
 
-    const colors = Array.from({ length: BANDS }, (_, i) => cssToken(`--grip-${i + 1}`));
+    const colors = rampFor(bands);
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
     // One stroke per band rather than per segment: a stroke call for each
     // of a couple of thousand points is what makes a canvas map crawl.
-    for (let band = 0; band < BANDS; band += 1) {
+    for (let band = 0; band < bands; band += 1) {
       ctx.strokeStyle = colors[band];
       ctx.beginPath();
       let open = false;
       for (let i = 1; i < points.length; i += 1) {
-        if (bandFor(shaded[i]) !== band) {
+        if (bandFor(shaded[i], bandEdges) !== band) {
           open = false;
           continue;
         }
@@ -178,7 +212,7 @@ export default function GripMap({ points, lateralG, speedKph, turns = [], highli
       ctx.arc(hx, hy, 6, 0, Math.PI * 2);
       ctx.stroke();
     }
-  }, [points, shaded, project, size, hover, turns, highlight]);
+  }, [points, shaded, bandEdges, bands, project, size, hover, turns, highlight]);
 
   if (!bounds || !points || points.length < 2) return null;
 
@@ -207,31 +241,27 @@ export default function GripMap({ points, lateralG, speedKph, turns = [], highli
         ref={canvasRef}
         style={{ width: size, height: size, touchAction: 'none' }}
         role="img"
-        aria-label="Driven lap coloured by lateral acceleration, low to high"
+        aria-label={`Driven lap coloured by ${label}, low to high`}
         onPointerMove={(e) => setHover(nearestTo(e))}
         onPointerLeave={() => setHover(null)}
       />
       <div className="gripmap-side">
-        <p className="figure-label">Cornering load</p>
+        <p className="figure-label">{label}</p>
         <ul className="grip-legend">
-          {Array.from({ length: BANDS }, (_, i) => (
+          {Array.from({ length: bands }, (_, i) => (
             <li key={i}>
               <span
                 className="grip-swatch"
-                style={{ background: `var(--grip-${i + 1})` }}
+                style={{ background: rampToken(i, bands) }}
                 aria-hidden="true"
               />
-              <span className="mono">
-                {i === BANDS - 1
-                  ? `${BAND_EDGES[BAND_EDGES.length - 1]}g and up`
-                  : `${i === 0 ? 0 : BAND_EDGES[i - 1]}–${BAND_EDGES[i]}g`}
-              </span>
+              <span className="mono">{bandLabel(i, bandEdges, unit, bandLabels)}</span>
             </li>
           ))}
         </ul>
         {hover != null && (
           <p className="grip-readout mono" role="status">
-            {Math.abs(lateralG[hover]).toFixed(1)}g at {Math.round(speedKph[hover])} km/h
+            {formatValue(values[hover])}
           </p>
         )}
       </div>

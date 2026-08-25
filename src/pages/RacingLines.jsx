@@ -3,6 +3,7 @@ import { dataPath } from '../lib/dataPath.js';
 import { deltaTrace } from '../lib/delta.js';
 import { accelerationTrace } from '../lib/aero.js';
 import { detectTurns, turnDeltas } from '../lib/corners.js';
+import ChannelMap from '../components/ChannelMap.jsx';
 import { lineToMapPoints, loadManifest, loadRacingLine } from '../lib/racingLine.js';
 import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
@@ -18,6 +19,61 @@ const SPACING_M = 2; // fixed resample spacing, pipeline/common.py
 const MAX_DRIVERS = 4;
 const SESSIONS = ['FP1', 'FP2', 'FP3', 'Q', 'S', 'R'];
 
+// What the map can be coloured by, beyond one hue per driver.
+//
+// Every one of these is a channel the source publishes, drawn as it comes
+// — no derivation. The band edges are chosen for legibility rather than
+// derived from the lap: bands that mean "a fifth of whatever this lap's
+// maximum was" change meaning between circuits, so a reader comparing two
+// rounds would be reading two different scales in the same colours.
+//
+// Colouring by channel shows one driver at a time on purpose. The colour
+// is carrying the channel, so it cannot also carry identity, and two
+// drivers drawn in the same ramp would be indistinguishable where their
+// lines cross.
+const COLOUR_CHANNELS = {
+  driver: { label: 'One colour per driver' },
+  speed: {
+    label: 'Speed',
+    channel: 'speed',
+    scale: 'speed',
+    bandEdges: [100, 175, 235, 290],
+    unit: ' km/h',
+    format: (v) => `${Math.round(v)} km/h`,
+    smooth: true,
+  },
+  throttle: {
+    label: 'Throttle',
+    channel: 'throttle',
+    scale: 'throttle',
+    bandEdges: [1, 40, 70, 99],
+    unit: '%',
+    format: (v) => `${Math.round(v)}%`,
+    smooth: true,
+  },
+  gear: {
+    label: 'Gear',
+    channel: 'gear',
+    scale: 'gear',
+    bandEdges: [4, 5, 6, 7],
+    // The edges are whole gears, so each middle band is exactly one gear.
+    bandLabels: ['gear 3 or lower', 'gear 4', 'gear 5', 'gear 6', 'gear 7 or 8'],
+    format: (v) => `gear ${Math.round(v)}`,
+    // Published as a whole number that steps; smoothing it would draw
+    // gears the car was never in.
+    smooth: false,
+  },
+  brake: {
+    label: 'Brake',
+    channel: 'brake',
+    scale: 'brake',
+    bandEdges: [1],
+    bandLabels: ['off the brakes', 'on the brakes'],
+    format: (v) => (v >= 1 ? 'on the brakes' : 'off the brakes'),
+    smooth: false,
+  },
+};
+
 export default function RacingLines() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
   const [round, setRound] = useState('');
@@ -29,6 +85,7 @@ export default function RacingLines() {
   const [selected, setSelected] = useState([]);
   const [lines, setLines] = useState({});
   const [crosshair, setCrosshair] = useState(0);
+  const [colourBy, setColourBy] = useState('driver');
 
   useEffect(() => {
     let cancelled = false;
@@ -138,6 +195,17 @@ export default function RacingLines() {
     [active, lines, manifest.data],
   );
 
+  // The reference driver's chosen channel, in its published unit. Only
+  // the first driver is drawn when colouring by channel: the colour is
+  // carrying the channel, so it cannot also carry who.
+  const channelValues = useMemo(() => {
+    const spec = COLOUR_CHANNELS[colourBy];
+    if (!spec?.channel || active.length === 0 || !manifest.data) return [];
+    const raw = lines[active[0]][spec.channel];
+    const divisor = manifest.data.scale[spec.scale] ?? 1;
+    return Array.from(raw, (v) => v / divisor);
+  }, [colourBy, active, lines, manifest.data]);
+
   const speedSeries = active.map((code, i) => ({
     code,
     color: seriesColor(i),
@@ -231,6 +299,16 @@ export default function RacingLines() {
             ))}
           </select>
         </label>
+        <label>
+          Colour by{' '}
+          <select value={colourBy} onChange={(e) => setColourBy(e.target.value)}>
+            {Object.entries(COLOUR_CHANNELS).map(([key, spec]) => (
+              <option key={key} value={key}>
+                {spec.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <section className="panel panel-limitations">
@@ -295,15 +373,29 @@ export default function RacingLines() {
             />
           ) : (
             <div className="lines-layout">
-              <TrackMap
-                outline={mapLines[0].points}
-                lines={mapLines}
-                marker={
-                  crosshair < mapLines[0].points.length ? mapLines[0].points[crosshair] : null
-                }
-                width={520}
-                height={520}
-              />
+              {colourBy === 'driver' ? (
+                <TrackMap
+                  outline={mapLines[0].points}
+                  lines={mapLines}
+                  marker={
+                    crosshair < mapLines[0].points.length ? mapLines[0].points[crosshair] : null
+                  }
+                  width={520}
+                  height={520}
+                />
+              ) : (
+                <ChannelMap
+                  points={mapLines[0].points}
+                  values={channelValues}
+                  bandEdges={COLOUR_CHANNELS[colourBy].bandEdges}
+                  label={`${active[0]} · ${COLOUR_CHANNELS[colourBy].label}`}
+                  unit={COLOUR_CHANNELS[colourBy].unit ?? ''}
+                  bandLabels={COLOUR_CHANNELS[colourBy].bandLabels ?? null}
+                  formatValue={COLOUR_CHANNELS[colourBy].format}
+                  smooth={COLOUR_CHANNELS[colourBy].smooth}
+                  height={520}
+                />
+              )}
               <div className="traces-column">
                 <TelemetryTrace
                   label="Speed"

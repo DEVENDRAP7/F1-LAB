@@ -12,7 +12,7 @@ import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
 import GGDiagram from '../components/GGDiagram.jsx';
 import EnvelopeChart from '../components/EnvelopeChart.jsx';
-import GripMap from '../components/GripMap.jsx';
+import ChannelMap from '../components/ChannelMap.jsx';
 import { detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 
 // M8 — Aero Explainer, the measurable half.
@@ -311,10 +311,18 @@ export default function AeroExplainer() {
               <p className="panel-note">Select a driver to draw their lap.</p>
             ) : (
               <>
-                <GripMap
+                <ChannelMap
                   points={series[0].points}
-                  lateralG={series[0].trace.lateralG}
-                  speedKph={series[0].trace.speedKph}
+                  values={series[0].trace.lateralG}
+                  // Whole g, with the top band open-ended. Fifths of this
+                  // lap's own peak was the first cut and it collapsed:
+                  // four fifths of the samples fell in the bottom two
+                  // bands and the map came out one colour. Whole g is a
+                  // unit a reader already holds.
+                  bandEdges={[1, 2, 3, 4]}
+                  label="Cornering load"
+                  unit="g"
+                  formatValue={(v) => `${Math.abs(v).toFixed(1)}g`}
                   turns={turns}
                   highlight={highlightTurn}
                   height={520}
