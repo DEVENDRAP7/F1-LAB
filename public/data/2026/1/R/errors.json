@@ -2288,10 +2288,10 @@
     "Laps run under a safety car or red flag are excluded using the published track-status messages, so they are excluded because they were neutralised rather than because they looked slow.",
     "No lock-up, off-track or mid-corner-correction detection. Those need per-lap telemetry for every driver, which this pipeline does not fetch, and at the sampling rate available the detections would be too weak to attach to a named driver."
   ],
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "year": 2026,
   "round": 1,
   "raceName": "Australian Grand Prix",
-  "generated_at": "2026-08-25T04:15:23Z",
+  "generated_at": "2026-08-25T04:19:35Z",
   "source": "OpenF1 session 11234: race control messages + lap times"
 }
