@@ -28,6 +28,10 @@ LIVETIMING_BASE = "https://livetiming.formula1.com"
 JOLPICA_BASE = "https://api.jolpi.ca/ergast/f1"
 # FastF1 3.8 falls back to this mirror on its own when livetiming 403s.
 MIRROR_BASE = "https://livetiming-mirror.fastf1.dev"
+# Independent of the F1 live-timing host, so it is not subject to the
+# same origin block — whether it carries this season is a separate
+# question the probe answers rather than assumes.
+OPENF1_BASE = "https://api.openf1.org/v1"
 
 # FastF1 reaches livetiming with its own UA; a plain requests default UA
 # can be treated differently, so probe with both to tell a UA filter
@@ -115,6 +119,101 @@ def probe_fastf1(year: int, round_: int, session_name: str) -> None:
         traceback.print_exc(file=sys.stdout)
 
 
+def probe_openf1(year: int) -> None:
+    """Probe OpenF1 for the channels livetiming.formula1.com refuses us.
+
+    The 403 finding established that one *source* blocks datacenter IPs.
+    It did not establish that the data is unobtainable, and those are
+    very different conclusions — the first is about a host, the second
+    would justify four permanently empty modules. OpenF1 is an
+    independent public API that publishes car telemetry, car location,
+    stints with compounds, intervals and race-control messages, which is
+    close to the exact list this project is missing.
+
+    So: does it answer from a runner, and does it carry 2026? Everything
+    downstream of that question depends on the answer, so it gets
+    measured rather than assumed. A prior season is probed as a control,
+    exactly as the live-timing probe did, to tell "blocked" apart from
+    "this season is not published".
+    """
+    print(f"\n=== OpenF1 ({year}, with {year - 1} as control) ===")
+
+    for probe_year in (year, year - 1):
+        url = f"{OPENF1_BASE}/sessions?year={probe_year}&session_name=Race"
+        try:
+            resp = requests.get(url, timeout=DEFAULT_TIMEOUT)
+        except Exception as exc:  # noqa: BLE001
+            print(f"  ERR  sessions {probe_year}: {type(exc).__name__}: {exc}")
+            continue
+        if not resp.ok:
+            print(f"  {resp.status_code}  sessions {probe_year}: "
+                  f"{resp.text[:120]!r}")
+            continue
+
+        sessions = resp.json()
+        print(f"  200  sessions {probe_year}: {len(sessions)} race session(s)")
+        if not sessions:
+            continue
+
+        first = sessions[0]
+        last = sessions[-1]
+        print(f"         first: key={first.get('session_key')} "
+              f"{first.get('country_name')} {first.get('date_start')}")
+        print(f"         last:  key={last.get('session_key')} "
+              f"{last.get('country_name')} {last.get('date_start')}")
+        print(f"         session fields: {sorted(first.keys())}")
+
+        # Probe the actual channels against ONE real session key. A
+        # sessions listing that answers proves nothing about whether the
+        # heavy per-car channels are populated for it.
+        key = last.get("session_key")
+        for endpoint, params in (
+            ("drivers", f"session_key={key}"),
+            ("stints", f"session_key={key}"),
+            ("laps", f"session_key={key}&lap_number=1"),
+            ("race_control", f"session_key={key}"),
+            ("intervals", f"session_key={key}"),
+        ):
+            _probe_openf1_channel(endpoint, params)
+
+        # The two big ones, deliberately narrowed to a single driver and
+        # a small window: these are the channels behind racing lines and
+        # the aero fits, and they are large enough that an unfiltered
+        # request is a bad citizen and a slow probe.
+        drivers_url = f"{OPENF1_BASE}/drivers?session_key={key}"
+        try:
+            drv = requests.get(drivers_url, timeout=DEFAULT_TIMEOUT)
+            number = drv.json()[0]["driver_number"] if drv.ok and drv.json() else None
+        except Exception:  # noqa: BLE001
+            number = None
+        if number is not None:
+            _probe_openf1_channel("car_data", f"session_key={key}&driver_number={number}&speed>=300")
+            _probe_openf1_channel("location", f"session_key={key}&driver_number={number}")
+
+
+def _probe_openf1_channel(endpoint: str, params: str) -> None:
+    url = f"{OPENF1_BASE}/{endpoint}?{params}"
+    try:
+        resp = requests.get(url, timeout=60)
+    except Exception as exc:  # noqa: BLE001
+        print(f"    ERR  {endpoint}: {type(exc).__name__}: {exc}")
+        return
+    if not resp.ok:
+        print(f"    {resp.status_code}  {endpoint}: {resp.text[:120]!r}")
+        return
+    rows = resp.json()
+    fields = sorted(rows[0].keys()) if rows else []
+    print(f"    200  {endpoint}: {len(rows)} row(s) fields={fields}")
+    if endpoint == "stints" and rows:
+        compounds = sorted({r.get("compound") for r in rows})
+        print(f"           compounds: {compounds}")
+    if endpoint == "race_control" and rows:
+        categories = sorted({r.get("category") for r in rows})
+        flags = sorted({r.get("flag") for r in rows if r.get("flag")})
+        print(f"           categories: {categories}")
+        print(f"           flags: {flags}")
+
+
 def probe_circuit_history(circuit_id: str, years: list[int]) -> None:
     """Report what past editions of one circuit are actually queryable.
 
@@ -191,10 +290,19 @@ def main() -> int:
         default="",
         help="circuitId to probe past editions of; skipped when empty",
     )
+    parser.add_argument(
+        "--openf1",
+        action="store_true",
+        help="probe OpenF1 for the telemetry channels live timing refuses",
+    )
     args = parser.parse_args()
 
     if args.circuit:
         probe_circuit_history(args.circuit, [args.year - n for n in range(1, 5)])
+        return 0
+
+    if args.openf1:
+        probe_openf1(args.year)
         return 0
 
     probe_http(args.year, args.round)
