@@ -41,6 +41,21 @@ SEVERITY_BANDS = ((10.0, "major"), (4.0, "moderate"), (SLOW_LAP_THRESHOLD_S, "mi
 # because of a specific car, as opposed to session bookkeeping.
 INCIDENT_CATEGORIES = {"Flag", "Other", "CarEvent", "Drs"}
 
+# A blue flag says a faster car is approaching. It is information handed
+# to a driver, not a finding about their conduct, and listing it
+# undifferentiated under a heading a reader scans as a fault list
+# misrepresents it. Kept — it is a real published message — but marked
+# so the UI can separate it from something the driver is answerable for.
+INFORMATIONAL_FLAGS = {"BLUE"}
+
+# The first lap starts from a standing start, so it is slower than a
+# flying lap for everyone by roughly the time it takes to get off the
+# line. On real data every one of 22 drivers was flagged "major" on lap
+# 1, which is not 22 mistakes — it is the definition of a race start.
+# Excluded for the same reason out-laps are: the slowness has a known
+# cause that is not the driver.
+FIRST_RACING_LAP = 2
+
 # Messages in these categories mark the field being neutralised, which is
 # what lets a slow lap be attributed to the race rather than the driver.
 NEUTRALISING_CATEGORIES = {"SafetyCar"}
@@ -108,13 +123,15 @@ def attributed_incidents(race_control: list[dict],
         message = (row.get("message") or "").strip()
         if not message:
             continue
+        flag = row.get("flag")
         incidents.append({
             "kind": "recorded",
+            "nature": "informational" if flag in INFORMATIONAL_FLAGS else "noted",
             "driverCode": code_by_number.get(int(number), str(number)),
             "driverNumber": int(number),
             "lap": row.get("lapNumber"),
             "category": row.get("category"),
-            "flag": row.get("flag"),
+            "flag": flag,
             # Verbatim. Rewording an official message editorialises it.
             "message": message,
             "date": row.get("date"),
@@ -152,8 +169,11 @@ def flag_slow_laps(laps: list[dict], code_by_number: dict[int, str],
     neutralised = neutralised or set()
     by_driver: dict[int, list[dict]] = {}
     for lap in laps:
-        if lap.get("lapDurationS") and not lap.get("isPitOutLap"):
-            by_driver.setdefault(lap["driverNumber"], []).append(lap)
+        if not lap.get("lapDurationS") or lap.get("isPitOutLap"):
+            continue
+        if int(lap.get("lapNumber") or 0) < FIRST_RACING_LAP:
+            continue  # standing start, see FIRST_RACING_LAP
+        by_driver.setdefault(lap["driverNumber"], []).append(lap)
 
     flagged = []
     for number, driver_laps in by_driver.items():
@@ -213,6 +233,11 @@ def build_error_review(laps: list[dict], race_control: list[dict],
         "limitations": [
             "Recorded events are race-control messages, reported verbatim and attributed "
             "by the published car number rather than by reading the message text.",
+            "Blue flags are marked informational: they tell a driver a faster car is "
+            "approaching and say nothing about that driver's own conduct.",
+            "Lap 1 is never flagged. It starts from a standstill, so it is slower than a "
+            "flying lap for every driver, and flagging it would mark a normal race start "
+            "as an event for the whole field.",
             "A flagged lap is a deviation from this driver's own green-flag median in "
             "this race, not a diagnosed mistake: traffic, conditions and pit-wall "
             "instructions produce the same signature as an error.",

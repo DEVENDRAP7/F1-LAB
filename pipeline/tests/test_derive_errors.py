@@ -140,3 +140,36 @@ def test_review_separates_recorded_from_flagged():
     assert len(lec["flagged"]) == 1
     assert lec["recorded"][0]["kind"] == "recorded"
     assert lec["flagged"][0]["kind"] == "flagged"
+
+
+def test_lap_one_is_never_flagged():
+    """A standing start makes lap 1 slower for everyone. On real data
+    this flagged all 22 drivers 'major' on lap 1, which is a race start,
+    not twenty-two mistakes."""
+    laps = [lap(1, 16, 91.0)] + [lap(n, 16, 80.0) for n in range(2, 12)]
+    assert not any(f["lap"] == 1 for f in flag_slow_laps(laps, CODES))
+
+
+def test_lap_one_does_not_drag_the_baseline():
+    """Excluding it from flagging is not enough — it must be out of the
+    median too, or every other lap looks fast by comparison."""
+    laps = [lap(1, 16, 91.0)] + [lap(n, 16, 80.0) for n in range(2, 12)]
+    laps.append(lap(12, 16, 83.0))
+    flagged = flag_slow_laps(laps, CODES)
+    entry = next(f for f in flagged if f["lap"] == 12)
+    assert entry["baselineS"] == 80.0
+
+
+def test_blue_flag_is_marked_informational():
+    """A blue flag is information handed to a driver, not a finding about
+    their conduct."""
+    rows = [
+        rc("2026-07-26T13:15:00", "Flag", "WAVED BLUE FLAG FOR CAR 16 (LEC)",
+           driver=16, lap_number=9, flag="BLUE"),
+        rc("2026-07-26T13:40:00", "Other", "CAR 16 (LEC) TRACK LIMITS - LAP DELETED",
+           driver=16, lap_number=30),
+    ]
+    incidents = attributed_incidents(rows, CODES)
+    by_lap = {i["lap"]: i for i in incidents}
+    assert by_lap[9]["nature"] == "informational"
+    assert by_lap[30]["nature"] == "noted"

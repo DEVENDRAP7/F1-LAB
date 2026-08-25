@@ -105,6 +105,8 @@ export default function ErrorReview() {
 
   const doc = review.data;
   const entry = doc?.drivers?.[driver];
+  const noted = (entry?.recorded ?? []).filter((r) => r.nature !== 'informational');
+  const informational = (entry?.recorded ?? []).filter((r) => r.nature === 'informational');
   const flagged = [...(entry?.flagged ?? [])].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || a.lap - b.lap,
   );
@@ -185,22 +187,47 @@ export default function ErrorReview() {
                 <div className="panel-head">
                   <h2>Recorded by race control</h2>
                   <p className="panel-note">
-                    Official messages naming car {entry.recorded[0]?.driverNumber ?? driver},
-                    quoted exactly as published and attributed by the car number the feed
-                    carries — not by reading the text.
+                    Official messages concerning this car, quoted exactly as published and
+                    attributed by the car number the feed carries — not by reading the
+                    text. Blue flags are separated out below: they are information, not a
+                    finding about this driver.
                   </p>
                 </div>
-                {entry.recorded.length === 0 ? (
-                  <p className="panel-note">No race-control message named this car.</p>
+                {noted.length === 0 ? (
+                  <p className="panel-note">
+                    No race-control message concerning this car's own conduct.
+                  </p>
                 ) : (
                   <ul className="reason-list">
-                    {entry.recorded.map((r, i) => (
+                    {noted.map((r, i) => (
                       <li key={`${r.lap}-${i}`}>
                         {r.lap ? <span className="mono">L{r.lap} </span> : null}
                         {r.message}
                       </li>
                     ))}
                   </ul>
+                )}
+
+                {informational.length > 0 && (
+                  <details className="informational-block">
+                    <summary>
+                      {informational.length} informational message
+                      {informational.length === 1 ? '' : 's'} (blue flags)
+                    </summary>
+                    <p className="panel-note">
+                      A blue flag tells a driver a faster car is approaching. It is
+                      information handed to them, not a finding about their driving, so it
+                      is kept separate from the list above rather than mixed into it.
+                    </p>
+                    <ul className="reason-list">
+                      {informational.map((r, i) => (
+                        <li key={`${r.lap}-${i}`}>
+                          {r.lap ? <span className="mono">L{r.lap} </span> : null}
+                          {r.message}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
                 )}
               </section>
 
