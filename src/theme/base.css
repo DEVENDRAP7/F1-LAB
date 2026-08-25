@@ -763,3 +763,15 @@ tr.is-muted td {
     font-size: 1.35rem;
   }
 }
+
+/* Four short numeric columns stretched across a full-width panel put a
+   hand's width of empty space between a year and its own figures. The
+   table takes its natural width instead and still scrolls on a phone. */
+.table-compact {
+  max-width: min(100%, 34rem);
+}
+
+.table-compact table {
+  width: 100%;
+  min-width: 0;
+}

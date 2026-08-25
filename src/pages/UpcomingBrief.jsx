@@ -179,7 +179,7 @@ export default function UpcomingBrief() {
                 which is why the rows are here.
               </p>
             </div>
-            <div className="table-scroll">
+            <div className="table-scroll table-compact">
               <table>
                 <thead>
                   <tr>
