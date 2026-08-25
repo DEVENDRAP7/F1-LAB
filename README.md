@@ -13,6 +13,10 @@ spec) before contributing.
 
 ## What is live
 
+![The Season Ledger: the 2026 championship, accumulated independently and cross-checked](docs/screenshots/ledger.png)
+
+
+
 - **Season Ledger** — the 2026 championship, accumulated independently
   from each round's results and cross-checked against the published
   standings. The cross-check result is shown either way; a mismatch is a
@@ -56,6 +60,31 @@ spec) before contributing.
   parameters fitted to that race and only for drivers whose real race
   the model reproduces within 1%. It estimates a race time and says
   nothing about finishing position.
+
+Race Strategy — stints coloured by the real compound, with the undercut
+ledger and per-stint pace fits below:
+
+![Race Strategy](docs/screenshots/strategy.png)
+
+Racing Lines — overlaid driven laps, colourable by any published channel,
+with a turn-by-turn account of where the delta was made:
+
+![Racing Lines](docs/screenshots/lines.png)
+
+The Aero Explainer — the driven lap coloured by cornering load, with each
+detected turn numbered and described:
+
+![Aero Explainer](docs/screenshots/aero.png)
+
+The What-If engine — replay the race on a different strategy, on
+parameters fitted to that race:
+
+![What-If Engine](docs/screenshots/whatif.png)
+
+The Circuit Atlas — an outline traced from a real lap, with detected
+turns:
+
+![Circuit Atlas](docs/screenshots/circuits.png)
 
 ## Where the data comes from
 
