@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
+import { MAX_SERIES, seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
+import ProgressionChart from '../components/ProgressionChart.jsx';
 
 // M2 — Season Ledger. Standings are computed by the pipeline and
 // cross-checked against the API at export time (docs/SPEC.md); this page
@@ -8,6 +10,7 @@ import EmptyState from '../components/EmptyState.jsx';
 // computes or guesses a standing itself.
 export default function SeasonLedger() {
   const [state, setState] = useState({ status: 'loading', data: null, error: null });
+  const [selected, setSelected] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -17,7 +20,11 @@ export default function SeasonLedger() {
         return res.json();
       })
       .then((data) => {
-        if (!cancelled) setState({ status: 'ready', data, error: null });
+        if (cancelled) return;
+        setState({ status: 'ready', data, error: null });
+        // Open on the current top of the table rather than an empty
+        // chart — the championship fight is the default question.
+        setSelected(data.standings.slice(0, 3).map((r) => r.driverCode));
       })
       .catch((error) => {
         if (!cancelled) setState({ status: 'empty', data: null, error });
@@ -40,8 +47,19 @@ export default function SeasonLedger() {
     );
   }
 
-  const { standings, generated_at, source_check } = state.data;
+  const { standings, generated_at, source_check, progression, elimination } = state.data;
   const leaderPoints = standings.length > 0 ? standings[0].points : 0;
+  const nameByCode = new Map(standings.map((r) => [r.driverCode, r.driverName]));
+
+  const progressionSeries = selected.map((code, i) => ({
+    code,
+    name: nameByCode.get(code) ?? code,
+    color: seriesColor(i),
+  }));
+
+  const eliminatedCount = elimination
+    ? Object.values(elimination.drivers).filter((d) => d.eliminated).length
+    : 0;
 
   return (
     <section className="page">
@@ -68,6 +86,97 @@ export default function SeasonLedger() {
         </p>
       )}
 
+      {progression && progression.length > 0 && (
+        <section className="panel">
+          <div className="panel-head">
+            <h2>Points progression</h2>
+            <p className="panel-note">
+              Cumulative points after each completed round. Select up to {MAX_SERIES}{' '}
+              drivers; colour is assigned per selection slot and stays with the driver.
+            </p>
+          </div>
+
+          <div className="driver-picker">
+            {standings.slice(0, 12).map((row) => {
+              const idx = selected.indexOf(row.driverCode);
+              const isOn = idx >= 0;
+              return (
+                <label
+                  key={row.driverCode}
+                  className={`driver-chip${isOn ? ' is-on' : ''}`}
+                  style={isOn ? { borderColor: seriesColor(idx) } : undefined}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isOn}
+                    disabled={!isOn && selected.length >= MAX_SERIES}
+                    onChange={(e) =>
+                      setSelected((prev) =>
+                        e.target.checked
+                          ? [...prev, row.driverCode]
+                          : prev.filter((c) => c !== row.driverCode),
+                      )
+                    }
+                  />
+                  {isOn && (
+                    <span
+                      className="legend-swatch"
+                      style={{ background: seriesColor(idx) }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span className="mono">{row.driverCode}</span>
+                </label>
+              );
+            })}
+          </div>
+
+          {progressionSeries.length === 0 ? (
+            <EmptyState
+              title="No drivers selected"
+              reason="Pick a driver above to plot their points across the season."
+            />
+          ) : (
+            <>
+              <ProgressionChart progression={progression} series={progressionSeries} />
+              <div className="chart-legend">
+                {progressionSeries.map((s) => (
+                  <span key={s.code} className="legend-item">
+                    <span
+                      className="legend-swatch"
+                      style={{ background: s.color }}
+                      aria-hidden="true"
+                    />
+                    <span className="mono">{s.code}</span>
+                    <span className="legend-fullname">{s.name}</span>
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+      )}
+
+      {elimination && elimination.remainingRounds > 0 && (
+        <p className="verified-note">
+          {eliminatedCount === 0 ? (
+            <>No driver is mathematically out of the championship yet.</>
+          ) : (
+            <>
+              <strong>{eliminatedCount}</strong> of {standings.length} drivers can no
+              longer win the championship.
+            </>
+          )}{' '}
+          With {elimination.remainingRounds} round
+          {elimination.remainingRounds === 1 ? '' : 's'} left, a maximum of{' '}
+          <span className="mono">{elimination.remainingMaxPoints}</span> points remain, so a
+          driver is only counted out when taking every one of them still leaves them behind
+          the leader's current <span className="mono">{elimination.leaderPoints}</span> —
+          even if the leader never scores again. A driver who could draw level is not
+          counted out.
+        </p>
+      )}
+
       <table className="ledger-table">
         <thead>
           <tr>
@@ -89,6 +198,14 @@ export default function SeasonLedger() {
               <td>
                 <span className="mono driver-code">{row.driverCode ?? '—'}</span>{' '}
                 <span className="driver-fullname">{row.driverName}</span>
+                {elimination?.drivers?.[row.driverCode]?.eliminated && (
+                  <span
+                    className="tag tag-quiet"
+                    title={`Even winning every remaining round (max ${elimination.remainingMaxPoints} points) would leave them short of the leader's current ${elimination.leaderPoints}`}
+                  >
+                    out
+                  </span>
+                )}
               </td>
               <td className="team-cell hide-md">{row.team}</td>
               <td className="tabular hide-sm">{row.wins > 0 ? row.wins : '—'}</td>
