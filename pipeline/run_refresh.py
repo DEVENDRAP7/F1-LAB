@@ -45,57 +45,22 @@ def rounds_due(calendar: list[dict]) -> list[dict]:
     return [r for r in calendar if datetime.date.fromisoformat(r["date"]) <= today]
 
 
-def refresh_circuit(year: int, round_info: dict) -> None:
-    """Build the circuit atlas from qualifying's fastest lap. Skips
-    quietly (with a printed reason) if this round's circuit already has
-    an exported artifact, or if the session can't be loaded — a missing
-    circuit is a per-round gap, not a reason to fail the whole refresh.
-    """
-    circuit_key = round_info["circuitId"]
-    existing = PUBLIC_DATA / "circuits" / f"{circuit_key}.json"
-    if existing.exists():
-        print(f"[circuit] {circuit_key}: already exported, skipping")
-        return
-
-    # The whole per-round derivation sits inside one boundary: FastF1
-    # reports live-timing fetch failures as warnings and session.load()
-    # returns anyway, so the first exception often surfaces later, at
-    # session.laps or inside a derive step — not in fetch_session itself.
-    # (First real run failed exactly this way: every live-timing endpoint
-    # failed, load() returned, and .laps raised DataNotLoadedError past
-    # the old, narrower try block, killing the refresh for every round.)
-    try:
-        bundle = ingest.fetch_session(year, round_info["round"], "Q")
-        session = bundle.session
-        fastest = session.laps.pick_accurate().pick_fastest()
-        if fastest is None:
-            print(f"[circuit] {circuit_key}: no accurate fastest lap available")
-            return
-
-        circuit_info = session.get_circuit_info()
-        rotation = circuit_info.rotation
-
-        outline = derive.build_circuit_outline(fastest, rotation)
-        corners = derive.extract_corners(circuit_info, fastest, rotation)
-        drs_zones = derive.extract_drs_zones(fastest)
-        pit_loss = derive.compute_pit_loss(session.laps)
-    except Exception as exc:  # noqa: BLE001 - a single round's failure must not abort the refresh
-        print(f"[circuit] {circuit_key}: unavailable ({type(exc).__name__}: {exc})")
-        return
-
-    circuit_doc = {
-        "circuitId": circuit_key,
-        "circuitName": round_info["circuitName"],
-        "round": round_info["round"],
-        "outline": outline,
-        "corners": corners,
-        "drsZones": drs_zones,
-        "pitLossS": pit_loss.to_json(),
-        "generated_at": ingest._now_iso(),
-        "source": f"FastF1 {year} round {round_info['round']} qualifying, fastest accurate lap",
-    }
-    export.export_circuit(circuit_key, circuit_doc)
-    print(f"[circuit] {circuit_key}: exported ({len(corners)} corners)")
+# refresh_circuit is gone.
+#
+# It built the circuit atlas from FastF1's qualifying telemetry, and it
+# never once succeeded: FastF1 depends on livetiming.formula1.com, which
+# answers 403 to this network. Every refresh still paid for it — twelve
+# rounds each retrying a blocked host before giving up, which was the
+# bulk of a ~30-minute run that produced nothing from those minutes.
+#
+# refresh_telemetry now writes the same artifact from OpenF1 position
+# data, which works. Keeping a second, permanently failing path to the
+# same file would only cost time and invite the two to disagree.
+#
+# The one thing lost with it is pit_loss_s, which was derived from
+# FastF1 lap data. It was never actually obtained either, so nothing
+# regresses; whenever a real measurement is available it belongs in
+# refresh_telemetry alongside the outline.
 
 
 def refresh_race_laps(year: int, round_info: dict) -> None:
@@ -502,7 +467,6 @@ def main() -> int:
         openf1_sessions = []
 
     for round_info in rounds_due(season_config["calendar"]):
-        refresh_circuit(args.year, round_info)
         refresh_race_laps(args.year, round_info)
         if openf1_sessions:
             refresh_telemetry(args.year, round_info, openf1_sessions)
