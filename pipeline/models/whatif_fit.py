@@ -66,6 +66,11 @@ MIN_GREEN_LAPS = 20
 # 1571 seconds for a "stop" on lap 2 for the whole field.
 MAX_RACING_STOP_S = 120.0
 
+# docs/SPEC.md sets the floor: a counterfactual is reported as a
+# distribution, and a distribution from a couple of hundred runs is a
+# shape with holes in it.
+MONTE_CARLO_ITERATIONS = 1000
+
 # The sport's own bands. A stint whose compound could not be matched gets
 # a per-stint placeholder instead, and a placeholder belongs to the driver
 # whose stint it came from: offering "the compound Norris was on for his
@@ -324,7 +329,7 @@ def build_driver_params(fit: RaceFit, laps: list[dict], stints: list[dict],
         # Lap 1 only. A standing start costs time no term in the model
         # describes, and it is measured on the lap it happened.
         "traffic_penalty_s": [float(start_loss)],
-        "iterations": 200,
+        "iterations": MONTE_CARLO_ITERATIONS,
         "seed": 20260101 + total_laps,
     }
     if reference:

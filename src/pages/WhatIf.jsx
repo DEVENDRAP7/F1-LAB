@@ -4,6 +4,7 @@ import EmptyState from '../components/EmptyState.jsx';
 import StrategyEditor from '../components/StrategyEditor.jsx';
 import OutcomeChart from '../components/OutcomeChart.jsx';
 import { monteCarlo, median } from '../lib/whatifModel.js';
+import { sensitivity } from '../lib/sensitivity.js';
 import { formatDuration, formatDelta } from '../lib/formatTime.js';
 import { driverIndex, driverCode, driverName } from '../lib/driverNames.js';
 
@@ -171,23 +172,32 @@ export default function WhatIf() {
     return summarise(monteCarlo(entry.params));
   }, [entry]);
 
-  const modelled = useMemo(() => {
-    if (!entry || !strategy) return null;
+  // One Monte Carlo run per strategy, with the summary read off it. The
+  // first version ran it twice — once for the tiles and again for the
+  // histogram — so the number on the tile and the shape below it came
+  // from different sets of runs.
+  const totals = useMemo(() => {
+    if (!entry || !strategy) return [];
     const covered = strategy.reduce((sum, s) => sum + s.laps, 0);
-    if (covered !== entry.params.total_laps) return null;
-    if (strategy.some((s) => !(s.compound in entry.params.compounds))) return null;
+    if (covered !== entry.params.total_laps) return [];
+    if (strategy.some((s) => !(s.compound in entry.params.compounds))) return [];
     try {
-      return summarise(monteCarlo({ ...entry.params, strategy }));
+      return monteCarlo({ ...entry.params, strategy });
     } catch {
       // validateParams refuses anything the model cannot honestly run.
-      return null;
+      return [];
     }
   }, [entry, strategy]);
 
-  const totals = useMemo(() => {
-    if (!entry || !strategy || !modelled) return [];
-    return monteCarlo({ ...entry.params, strategy });
-  }, [entry, strategy, modelled]);
+  const modelled = useMemo(
+    () => (totals.length > 0 ? summarise(totals) : null),
+    [totals],
+  );
+
+  const swings = useMemo(
+    () => (entry && strategy && modelled ? sensitivity({ ...entry.params, strategy }) : null),
+    [entry, strategy, modelled],
+  );
 
   const changed = useMemo(() => {
     if (!entry || !strategy) return false;
@@ -407,10 +417,49 @@ export default function WhatIf() {
                   </div>
                 </div>
                 <OutcomeChart totals={totals} actualS={entry.actualTotalS} />
+                <p className="panel-note">
+                  <span className="mono">{totals.length}</span> runs, reported as a
+                  distribution rather than as a single number.
+                </p>
               </>
             )}
           </section>
         </>
+      )}
+
+      {entry && swings && swings.rows.length > 0 && (
+        <section className="panel">
+          <div className="panel-head">
+            <h2>What the answer rests on</h2>
+            <p className="panel-note">
+              Each fitted number moved on its own to the edge of its stated uncertainty,
+              with everything else held still. A row that moves the race time by more than
+              the difference you are trying to read is a row that decides the answer.
+            </p>
+          </div>
+          <div className="table-scroll table-compact">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Input</th>
+                  <th scope="col">Fitted value</th>
+                  <th scope="col" className="tabular">At the low end</th>
+                  <th scope="col" className="tabular">At the high end</th>
+                </tr>
+              </thead>
+              <tbody>
+                {swings.rows.map((row) => (
+                  <tr key={row.label}>
+                    <td>{row.label}</td>
+                    <td className="mono">{row.detail}</td>
+                    <td className="tabular">{formatSecondsDelta(row.low)}</td>
+                    <td className="tabular">{formatSecondsDelta(row.high)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
       {unvalidated.length > 0 && (

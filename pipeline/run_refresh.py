@@ -209,7 +209,7 @@ def refresh_race_laps(year: int, round_info: dict,
 
 # Bumped when the fit or the exported shape changes, so a corrected model
 # reaches rounds that were already written.
-WHATIF_SCHEMA_VERSION = 2
+WHATIF_SCHEMA_VERSION = 3
 
 # The publish gate from docs/SPEC.md: replaying a driver's actual strategy
 # has to reproduce their actual race time this closely. A driver whose
