@@ -185,9 +185,447 @@
       "position": 23
     }
   ],
-  "generated_at": "2026-08-24T20:08:30Z",
+  "generated_at": "2026-08-25T02:43:43Z",
   "source_check": {
     "mismatch": false,
     "details": []
+  },
+  "progression": [
+    {
+      "round": 1,
+      "raceName": "Australian Grand Prix",
+      "points": {
+        "RUS": 25.0,
+        "ANT": 18.0,
+        "LEC": 15.0,
+        "HAM": 12.0,
+        "NOR": 10.0,
+        "VER": 8.0,
+        "BEA": 6.0,
+        "LIN": 4.0,
+        "BOR": 2.0,
+        "GAS": 1.0,
+        "OCO": 0.0,
+        "ALB": 0.0,
+        "LAW": 0.0,
+        "COL": 0.0,
+        "SAI": 0.0,
+        "PER": 0.0,
+        "STR": 0.0,
+        "ALO": 0.0,
+        "BOT": 0.0,
+        "HAD": 0.0,
+        "PIA": 0.0,
+        "HUL": 0.0
+      }
+    },
+    {
+      "round": 2,
+      "raceName": "Chinese Grand Prix",
+      "points": {
+        "RUS": 51.0,
+        "ANT": 47.0,
+        "LEC": 34.0,
+        "HAM": 33.0,
+        "BEA": 17.0,
+        "NOR": 15.0,
+        "GAS": 9.0,
+        "VER": 8.0,
+        "LAW": 8.0,
+        "LIN": 4.0,
+        "HAD": 4.0,
+        "PIA": 3.0,
+        "SAI": 2.0,
+        "BOR": 2.0,
+        "COL": 1.0,
+        "OCO": 0.0,
+        "HUL": 0.0,
+        "ALB": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "ALO": 0.0,
+        "STR": 0.0
+      }
+    },
+    {
+      "round": 3,
+      "raceName": "Japanese Grand Prix",
+      "points": {
+        "ANT": 72.0,
+        "RUS": 63.0,
+        "LEC": 49.0,
+        "HAM": 41.0,
+        "NOR": 25.0,
+        "PIA": 21.0,
+        "BEA": 17.0,
+        "GAS": 15.0,
+        "VER": 12.0,
+        "LAW": 10.0,
+        "LIN": 4.0,
+        "HAD": 4.0,
+        "BOR": 2.0,
+        "SAI": 2.0,
+        "OCO": 1.0,
+        "COL": 1.0,
+        "HUL": 0.0,
+        "ALB": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "ALO": 0.0,
+        "STR": 0.0
+      }
+    },
+    {
+      "round": 4,
+      "raceName": "Miami Grand Prix",
+      "points": {
+        "ANT": 100.0,
+        "RUS": 80.0,
+        "LEC": 59.0,
+        "NOR": 51.0,
+        "HAM": 51.0,
+        "PIA": 43.0,
+        "VER": 26.0,
+        "BEA": 17.0,
+        "GAS": 16.0,
+        "LAW": 10.0,
+        "COL": 7.0,
+        "LIN": 4.0,
+        "HAD": 4.0,
+        "SAI": 4.0,
+        "BOR": 2.0,
+        "OCO": 1.0,
+        "ALB": 1.0,
+        "HUL": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "ALO": 0.0,
+        "STR": 0.0
+      }
+    },
+    {
+      "round": 5,
+      "raceName": "Canadian Grand Prix",
+      "points": {
+        "ANT": 131.0,
+        "RUS": 88.0,
+        "LEC": 75.0,
+        "HAM": 72.0,
+        "NOR": 58.0,
+        "PIA": 48.0,
+        "VER": 43.0,
+        "GAS": 20.0,
+        "BEA": 18.0,
+        "LAW": 16.0,
+        "COL": 15.0,
+        "HAD": 14.0,
+        "SAI": 6.0,
+        "LIN": 5.0,
+        "BOR": 2.0,
+        "OCO": 1.0,
+        "ALB": 1.0,
+        "HUL": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "STR": 0.0,
+        "ALO": 0.0
+      }
+    },
+    {
+      "round": 6,
+      "raceName": "Monaco Grand Prix",
+      "points": {
+        "ANT": 156.0,
+        "HAM": 90.0,
+        "RUS": 88.0,
+        "LEC": 75.0,
+        "PIA": 58.0,
+        "NOR": 58.0,
+        "VER": 43.0,
+        "GAS": 35.0,
+        "HAD": 26.0,
+        "LAW": 24.0,
+        "BEA": 18.0,
+        "COL": 15.0,
+        "LIN": 11.0,
+        "SAI": 6.0,
+        "ALB": 5.0,
+        "OCO": 3.0,
+        "BOR": 2.0,
+        "ALO": 1.0,
+        "HUL": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "STR": 0.0
+      }
+    },
+    {
+      "round": 7,
+      "raceName": "Barcelona Grand Prix",
+      "points": {
+        "ANT": 156.0,
+        "HAM": 115.0,
+        "RUS": 106.0,
+        "LEC": 75.0,
+        "NOR": 73.0,
+        "PIA": 68.0,
+        "VER": 55.0,
+        "GAS": 41.0,
+        "HAD": 34.0,
+        "LAW": 28.0,
+        "BEA": 18.0,
+        "COL": 16.0,
+        "LIN": 13.0,
+        "SAI": 6.0,
+        "ALB": 5.0,
+        "OCO": 3.0,
+        "BOR": 2.0,
+        "ALO": 1.0,
+        "HUL": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "STR": 0.0
+      }
+    },
+    {
+      "round": 8,
+      "raceName": "Austrian Grand Prix",
+      "points": {
+        "ANT": 171.0,
+        "RUS": 131.0,
+        "HAM": 125.0,
+        "PIA": 80.0,
+        "NOR": 79.0,
+        "LEC": 79.0,
+        "VER": 73.0,
+        "HAD": 42.0,
+        "GAS": 41.0,
+        "LAW": 30.0,
+        "BEA": 18.0,
+        "COL": 16.0,
+        "LIN": 14.0,
+        "SAI": 6.0,
+        "ALB": 5.0,
+        "OCO": 3.0,
+        "BOR": 2.0,
+        "ALO": 1.0,
+        "HUL": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "STR": 0.0
+      }
+    },
+    {
+      "round": 9,
+      "raceName": "British Grand Prix",
+      "points": {
+        "ANT": 179.0,
+        "RUS": 154.0,
+        "HAM": 147.0,
+        "LEC": 108.0,
+        "NOR": 97.0,
+        "PIA": 82.0,
+        "VER": 76.0,
+        "HAD": 52.0,
+        "GAS": 42.0,
+        "LAW": 39.0,
+        "LIN": 20.0,
+        "BEA": 18.0,
+        "COL": 18.0,
+        "BOR": 6.0,
+        "SAI": 6.0,
+        "ALB": 5.0,
+        "OCO": 3.0,
+        "ALO": 1.0,
+        "HUL": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "STR": 0.0
+      }
+    },
+    {
+      "round": 10,
+      "raceName": "Belgian Grand Prix",
+      "points": {
+        "ANT": 204.0,
+        "HAM": 159.0,
+        "RUS": 154.0,
+        "LEC": 126.0,
+        "NOR": 103.0,
+        "PIA": 92.0,
+        "VER": 91.0,
+        "HAD": 60.0,
+        "GAS": 42.0,
+        "LAW": 39.0,
+        "LIN": 22.0,
+        "COL": 19.0,
+        "BEA": 18.0,
+        "BOR": 10.0,
+        "SAI": 6.0,
+        "ALB": 5.0,
+        "OCO": 3.0,
+        "ALO": 1.0,
+        "HUL": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0,
+        "STR": 0.0
+      }
+    },
+    {
+      "round": 11,
+      "raceName": "Hungarian Grand Prix",
+      "points": {
+        "ANT": 219.0,
+        "HAM": 169.0,
+        "RUS": 160.0,
+        "LEC": 138.0,
+        "NOR": 128.0,
+        "VER": 109.0,
+        "PIA": 92.0,
+        "HAD": 68.0,
+        "LAW": 43.0,
+        "GAS": 42.0,
+        "LIN": 23.0,
+        "COL": 19.0,
+        "BEA": 18.0,
+        "BOR": 10.0,
+        "SAI": 6.0,
+        "ALB": 5.0,
+        "OCO": 3.0,
+        "HUL": 2.0,
+        "ALO": 1.0,
+        "STR": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0
+      }
+    },
+    {
+      "round": 12,
+      "raceName": "Dutch Grand Prix",
+      "points": {
+        "ANT": 242.0,
+        "RUS": 183.0,
+        "HAM": 183.0,
+        "NOR": 159.0,
+        "LEC": 155.0,
+        "VER": 112.0,
+        "PIA": 104.0,
+        "HAD": 68.0,
+        "LAW": 49.0,
+        "GAS": 44.0,
+        "LIN": 23.0,
+        "COL": 19.0,
+        "BEA": 18.0,
+        "BOR": 10.0,
+        "HUL": 6.0,
+        "SAI": 6.0,
+        "ALB": 5.0,
+        "OCO": 3.0,
+        "ALO": 3.0,
+        "TSU": 0.0,
+        "STR": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0
+      }
+    }
+  ],
+  "elimination": {
+    "remainingRounds": 11,
+    "remainingMaxPoints": 283,
+    "leaderPoints": 242.0,
+    "drivers": {
+      "ANT": {
+        "maxPossible": 525.0,
+        "eliminated": false
+      },
+      "RUS": {
+        "maxPossible": 466.0,
+        "eliminated": false
+      },
+      "HAM": {
+        "maxPossible": 466.0,
+        "eliminated": false
+      },
+      "NOR": {
+        "maxPossible": 442.0,
+        "eliminated": false
+      },
+      "LEC": {
+        "maxPossible": 438.0,
+        "eliminated": false
+      },
+      "VER": {
+        "maxPossible": 395.0,
+        "eliminated": false
+      },
+      "PIA": {
+        "maxPossible": 387.0,
+        "eliminated": false
+      },
+      "HAD": {
+        "maxPossible": 351.0,
+        "eliminated": false
+      },
+      "LAW": {
+        "maxPossible": 332.0,
+        "eliminated": false
+      },
+      "GAS": {
+        "maxPossible": 327.0,
+        "eliminated": false
+      },
+      "LIN": {
+        "maxPossible": 306.0,
+        "eliminated": false
+      },
+      "COL": {
+        "maxPossible": 302.0,
+        "eliminated": false
+      },
+      "BEA": {
+        "maxPossible": 301.0,
+        "eliminated": false
+      },
+      "BOR": {
+        "maxPossible": 293.0,
+        "eliminated": false
+      },
+      "HUL": {
+        "maxPossible": 289.0,
+        "eliminated": false
+      },
+      "SAI": {
+        "maxPossible": 289.0,
+        "eliminated": false
+      },
+      "ALB": {
+        "maxPossible": 288.0,
+        "eliminated": false
+      },
+      "OCO": {
+        "maxPossible": 286.0,
+        "eliminated": false
+      },
+      "ALO": {
+        "maxPossible": 286.0,
+        "eliminated": false
+      },
+      "TSU": {
+        "maxPossible": 283.0,
+        "eliminated": false
+      },
+      "STR": {
+        "maxPossible": 283.0,
+        "eliminated": false
+      },
+      "BOT": {
+        "maxPossible": 283.0,
+        "eliminated": false
+      },
+      "PER": {
+        "maxPossible": 283.0,
+        "eliminated": false
+      }
+    }
   }
 }
