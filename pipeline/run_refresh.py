@@ -235,16 +235,25 @@ def refresh_whatif(year: int, round_info: dict) -> None:
     if not laps_path.exists():
         return
 
+    race = json.loads(laps_path.read_text())
+
     out_path = PUBLIC_DATA / str(year) / str(round_) / "R" / "whatif.json"
     if out_path.exists():
         try:
-            stored = json.loads(out_path.read_text()).get("schemaVersion")
+            stored = json.loads(out_path.read_text())
         except (json.JSONDecodeError, OSError):
-            stored = None
-        if stored == WHATIF_SCHEMA_VERSION:
+            stored = {}
+        # The version alone is not enough. This artifact is derived from
+        # the round's laps.json, so a re-export of that round has to
+        # reach it too — the staleness trap that once left 97 corrected
+        # fits on disk, and that kept a wrong race name in place for a
+        # week, was in both cases a check that only asked one question.
+        fresh = (
+            stored.get("schemaVersion") == WHATIF_SCHEMA_VERSION
+            and stored.get("sourceGeneratedAt") == race.get("generated_at")
+        )
+        if fresh:
             return
-
-    race = json.loads(laps_path.read_text())
     result = whatif_fit.fit_race_params(race["laps"], race["stints"], race["totalLaps"])
 
     drivers = {}
@@ -271,6 +280,7 @@ def refresh_whatif(year: int, round_info: dict) -> None:
         "round": round_,
         "raceName": round_info["raceName"],
         "totalLaps": race["totalLaps"],
+        "sourceGeneratedAt": race.get("generated_at"),
         "drivers": drivers,
         "validatedDrivers": validated,
         "fit": result.get("fit"),
