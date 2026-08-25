@@ -38,7 +38,12 @@ spec) before contributing.
 - **Circuit Atlas** — the verified calendar, plus track outlines traced
   from real position telemetry. Each outline is one measured lap's
   driven path, so it follows the racing line rather than the centre
-  line, and it says so. No corner numbering: the source publishes none.
+  line, and it says so. Turns are detected from that lap and described
+  with entry and minimum speed, gear at the apex and braking point; they
+  are numbered in lap order, not by the circuit's official numbering,
+  which no source here publishes. Elevation is drawn where the feed's own
+  z channel is really elevation — Spa measures 102 m of climb, and a
+  circuit whose z does not vary gets the reason instead of a flat line.
 - **Racing Lines** — per-driver fastest race laps decoded from Int16
   position binaries, with linked speed and throttle traces on a shared
   distance axis, and a turn-by-turn table of where the delta was made.
@@ -151,6 +156,15 @@ substantive ones:
   exclusion counts are shown alongside the table. Windows where the field
   was slowed are flagged rather than deleted, since without a
   track-status channel a neutralised period can only be suspected.
+- **Elevation is published only where it is real.** The position feed
+  carries a z channel that is documented nowhere and flat at some
+  circuits, so the pipeline judges it per round: under 3 m of variation
+  over a whole lap is a constant with noise on it, not a profile. The
+  measured range is published either way, so a refusal can be checked.
+- **No DRS zones.** The feed carries a DRS channel, but turning its
+  integer codes into "the flap was open here" needs a mapping this
+  project has no verified source for — the same rule that keeps corner
+  numbers out.
 - **Curvature is fitted, not differentiated.** Position arrives at about
   3.7 Hz, over 20 m between fixes at racing speed, so a curve is fitted to
   a window of the path that always spans several real fixes. A 2 m finite
