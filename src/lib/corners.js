@@ -156,3 +156,29 @@ export const TURN_DEFAULTS = {
   minLengthM: MIN_LENGTH_M,
   mergeGapM: MERGE_GAP_M,
 };
+
+/**
+ * Time gained or lost through each turn, from a cumulative delta trace.
+ *
+ * `delta` is lib/delta.js's trace: the running time difference between a
+ * comparison lap and the reference, sample by sample. The difference
+ * between its value at the end of a turn and at the start is therefore
+ * exactly the time that turn accounted for — no separate integration,
+ * and no assumption about where a corner "really" begins beyond the
+ * detection itself.
+ *
+ * A turn that spans the start/finish line has its end index before its
+ * start index; the lap's own total is added back so the section is not
+ * reported as the whole lap in reverse.
+ */
+export function turnDeltas(turns, delta) {
+  if (!delta || delta.length === 0) return [];
+  const lapTotal = delta[delta.length - 1];
+  return turns.map((turn) => {
+    const start = delta[turn.startIndex];
+    const end = turn.endIndex >= turn.startIndex
+      ? delta[turn.endIndex]
+      : delta[turn.endIndex] + lapTotal;
+    return { number: turn.number, deltaS: end - start };
+  });
+}

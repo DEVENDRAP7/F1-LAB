@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import { deltaTrace } from '../lib/delta.js';
+import { accelerationTrace } from '../lib/aero.js';
+import { detectTurns, turnDeltas } from '../lib/corners.js';
 import { lineToMapPoints, loadManifest, loadRacingLine } from '../lib/racingLine.js';
 import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
@@ -157,6 +159,39 @@ export default function RacingLines() {
     }));
   }, [active, lines]);
 
+  // Where the delta was made. Turns are detected on the reference lap —
+  // the one everything else is measured against — and each comparison
+  // driver's time through a turn is read straight off the cumulative
+  // delta trace at its ends. Nothing is integrated twice, and the
+  // sections are the ones the geometry actually shows.
+  const turnTable = useMemo(() => {
+    if (active.length < 2 || !manifest.data) return null;
+    const scale = manifest.data.scale;
+    const reference = lines[active[0]];
+    const trace = accelerationTrace({
+      x: Array.from(reference.x, (v) => v / scale.x),
+      y: Array.from(reference.y, (v) => v / scale.y),
+      speed: Array.from(reference.speed, (v) => v / scale.speed),
+    });
+    const turns = detectTurns(trace);
+    if (turns.length === 0) return null;
+
+    const columns = deltaSeries.map((series, i) => ({
+      code: active[i + 1],
+      byTurn: new Map(turnDeltas(turns, series.values).map((t) => [t.number, t.deltaS])),
+    }));
+
+    const rows = turns.map((turn) => ({
+      turn,
+      // Ranked by the largest swing any comparison driver made through
+      // it: that is the corner worth looking at, whichever way it went.
+      worst: Math.max(...columns.map((c) => Math.abs(c.byTurn.get(turn.number) ?? 0))),
+      cells: columns.map((c) => ({ code: c.code, deltaS: c.byTurn.get(turn.number) ?? 0 })),
+    }));
+    rows.sort((a, b) => b.worst - a.worst);
+    return { rows, columns };
+  }, [active, lines, manifest.data, deltaSeries]);
+
   if (season.status === 'loading') {
     return <EmptyState title="Loading calendar…" reason="Fetching public/data/season.json." />;
   }
@@ -301,6 +336,53 @@ export default function RacingLines() {
                 )}
               </div>
             </div>
+          )}
+
+          {turnTable && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>Where the time went</h2>
+                <p className="panel-note">
+                  Turns detected on {active[0]}'s lap, ordered by the largest swing through
+                  them. Each figure is that driver's time against {active[0]} through the
+                  turn alone, read off the delta trace at its two ends — a positive number
+                  is time lost. These are not the circuit's official corner numbers: nothing
+                  this project reads publishes those, so they are numbered in the order this
+                  lap meets them.
+                </p>
+              </div>
+              <div className="table-scroll table-compact">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Turn</th>
+                      <th scope="col" className="tabular">{active[0]} minimum</th>
+                      {turnTable.columns.map((c) => (
+                        <th key={c.code} scope="col" className="tabular">
+                          {c.code}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {turnTable.rows.map(({ turn, cells }) => (
+                      <tr key={turn.number}>
+                        <td className="mono">
+                          T{turn.number} <span className="legend-fullname">{turn.direction}</span>
+                        </td>
+                        <td className="tabular">{Math.round(turn.minSpeedKph)} km/h</td>
+                        {cells.map((cell) => (
+                          <td key={cell.code} className="tabular">
+                            {cell.deltaS >= 0 ? '+' : ''}
+                            {cell.deltaS.toFixed(3)}s
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           )}
         </>
       )}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectTurns } from './corners.js';
+import { detectTurns, turnDeltas } from './corners.js';
 import { accelerationTrace } from './aero.js';
 
 // A synthetic lap: straight, corner, straight, corner, back to the start.
@@ -105,5 +105,34 @@ describe('detectTurns', () => {
       speed: new Array(n).fill(300),
     };
     expect(detectTurns(accelerationTrace(straight))).toEqual([]);
+  });
+});
+
+describe('turnDeltas', () => {
+  const turns = [
+    { number: 1, startIndex: 10, endIndex: 30 },
+    { number: 2, startIndex: 60, endIndex: 80 },
+  ];
+
+  it('reads each turn off the cumulative trace', () => {
+    // A trace that loses a tenth per sample inside turn 1 and nothing
+    // anywhere else.
+    const delta = new Float64Array(100);
+    for (let i = 0; i < 100; i += 1) {
+      delta[i] = i <= 10 ? 0 : Math.min(i, 30) === i ? (i - 10) * 0.1 : 2.0;
+    }
+    const [first, second] = turnDeltas(turns, delta);
+    expect(first.deltaS).toBeCloseTo(2.0, 6);
+    expect(second.deltaS).toBeCloseTo(0, 6);
+  });
+
+  it('handles a turn that spans the start of the lap', () => {
+    const delta = new Float64Array(100);
+    for (let i = 0; i < 100; i += 1) delta[i] = i * 0.01; // 1s over the lap
+    const wrapped = [{ number: 1, startIndex: 95, endIndex: 5 }];
+    const [turn] = turnDeltas(wrapped, delta);
+    // Four steps from sample 95 to the last one, then five more past the
+    // line, at 0.01s each.
+    expect(turn.deltaS).toBeCloseTo(0.09, 6);
   });
 });
