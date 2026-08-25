@@ -1,0 +1,744 @@
+{
+  "drivers": {
+    "ALO": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 28,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 15:58:05",
+          "date": "2026-07-19T13:58:06+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 28,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 15:58:45",
+          "date": "2026-07-19T13:58:46+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 29,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:00:30",
+          "date": "2026-07-19T14:00:31+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 30,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:02:44",
+          "date": "2026-07-19T14:02:45+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 32,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:05:18",
+          "date": "2026-07-19T14:05:19+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 32,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:05:30",
+          "date": "2026-07-19T14:05:30+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 35,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:11:15",
+          "date": "2026-07-19T14:11:15+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 39,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:17:48",
+          "date": "2026-07-19T14:17:48+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 39,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:19:10",
+          "date": "2026-07-19T14:19:11+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 42,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:23:36",
+          "date": "2026-07-19T14:23:36+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 42,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:23:58",
+          "date": "2026-07-19T14:23:58+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 43,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:26:22",
+          "date": "2026-07-19T14:26:22+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 44,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:28:00",
+          "date": "2026-07-19T14:28:00+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 44,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 14 (ALO) TIMED AT 16:28:04",
+          "date": "2026-07-19T14:28:04+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 5,
+          "lapTimeS": 118.326,
+          "baselineS": 116.128,
+          "estimatedLossS": 2.198,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 17,
+          "lapTimeS": 119.748,
+          "baselineS": 116.128,
+          "estimatedLossS": 3.62,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 19,
+          "lapTimeS": 122.62,
+          "baselineS": 116.128,
+          "estimatedLossS": 6.492,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 28,
+          "lapTimeS": 118.746,
+          "baselineS": 116.128,
+          "estimatedLossS": 2.618,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 29,
+          "lapTimeS": 122.041,
+          "baselineS": 116.128,
+          "estimatedLossS": 5.913,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 31,
+          "lapTimeS": 124.124,
+          "baselineS": 116.128,
+          "estimatedLossS": 7.996,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "BOT": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "BOT",
+          "driverNumber": 77,
+          "lap": 33,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 77 (BOT) TIMED AT 16:07:49",
+          "date": "2026-07-19T14:07:49+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "BOT",
+          "driverNumber": 77,
+          "lap": 35,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 77 (BOT) TIMED AT 16:11:42",
+          "date": "2026-07-19T14:11:42+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "BOT",
+          "driverNumber": 77,
+          "lap": 39,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 77 (BOT) TIMED AT 16:18:41",
+          "date": "2026-07-19T14:18:42+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "BOT",
+          "driverNumber": 77,
+          "lap": 39,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 77 (BOT) TIMED AT 16:19:02",
+          "date": "2026-07-19T14:19:03+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "BOT",
+          "driverNumber": 77,
+          "lap": 5,
+          "lapTimeS": 116.851,
+          "baselineS": 114.664,
+          "estimatedLossS": 2.187,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BOT",
+          "driverNumber": 77,
+          "lap": 32,
+          "lapTimeS": 121.245,
+          "baselineS": 114.664,
+          "estimatedLossS": 6.581,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "OCO": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 44,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 31 (OCO) TIMED AT 16:28:23",
+          "date": "2026-07-19T14:28:24+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 5,
+          "lapTimeS": 115.886,
+          "baselineS": 112.466,
+          "estimatedLossS": 3.419,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 6,
+          "lapTimeS": 114.728,
+          "baselineS": 112.466,
+          "estimatedLossS": 2.261,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 16,
+          "lapTimeS": 118.022,
+          "baselineS": 112.466,
+          "estimatedLossS": 5.556,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "STR": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 26,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 18 (STR) TIMED AT 15:54:53",
+          "date": "2026-07-19T13:54:54+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 26,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 18 (STR) TIMED AT 15:55:25",
+          "date": "2026-07-19T13:55:25+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 17,
+          "lapTimeS": 121.724,
+          "baselineS": 116.29,
+          "estimatedLossS": 5.434,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 19,
+          "lapTimeS": 122.29,
+          "baselineS": 116.29,
+          "estimatedLossS": 6.0,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 25,
+          "lapTimeS": 129.921,
+          "baselineS": 116.29,
+          "estimatedLossS": 13.631,
+          "severity": "major",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "BOR": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 5,
+          "lapTimeS": 113.849,
+          "baselineS": 111.252,
+          "estimatedLossS": 2.597,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 15,
+          "lapTimeS": 113.46,
+          "baselineS": 111.252,
+          "estimatedLossS": 2.208,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "COL": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "COL",
+          "driverNumber": 43,
+          "lap": 15,
+          "lapTimeS": 117.406,
+          "baselineS": 111.888,
+          "estimatedLossS": 5.519,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "GAS": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 14,
+          "lapTimeS": 116.937,
+          "baselineS": 111.861,
+          "estimatedLossS": 5.076,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 30,
+          "lapTimeS": 114.174,
+          "baselineS": 111.861,
+          "estimatedLossS": 2.314,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "HAD": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "HAD",
+          "driverNumber": 6,
+          "lap": 5,
+          "lapTimeS": 113.796,
+          "baselineS": 110.215,
+          "estimatedLossS": 3.581,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAD",
+          "driverNumber": 6,
+          "lap": 8,
+          "lapTimeS": 112.369,
+          "baselineS": 110.215,
+          "estimatedLossS": 2.154,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAD",
+          "driverNumber": 6,
+          "lap": 9,
+          "lapTimeS": 113.145,
+          "baselineS": 110.215,
+          "estimatedLossS": 2.93,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "HAM": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "HAM",
+          "driverNumber": 44,
+          "lap": 19,
+          "lapTimeS": 112.803,
+          "baselineS": 110.199,
+          "estimatedLossS": 2.604,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "LAW": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "LAW",
+          "driverNumber": 30,
+          "lap": 15,
+          "lapTimeS": 116.581,
+          "baselineS": 112.006,
+          "estimatedLossS": 4.575,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LAW",
+          "driverNumber": 30,
+          "lap": 30,
+          "lapTimeS": 114.109,
+          "baselineS": 112.006,
+          "estimatedLossS": 2.103,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "LIN": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "LIN",
+          "driverNumber": 41,
+          "lap": 12,
+          "lapTimeS": 113.151,
+          "baselineS": 111.095,
+          "estimatedLossS": 2.056,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LIN",
+          "driverNumber": 41,
+          "lap": 16,
+          "lapTimeS": 116.679,
+          "baselineS": 111.095,
+          "estimatedLossS": 5.584,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "NOR": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "NOR",
+          "driverNumber": 1,
+          "lap": 5,
+          "lapTimeS": 113.047,
+          "baselineS": 110.83,
+          "estimatedLossS": 2.217,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "NOR",
+          "driverNumber": 1,
+          "lap": 30,
+          "lapTimeS": 115.056,
+          "baselineS": 110.83,
+          "estimatedLossS": 4.226,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "PER": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 5,
+          "lapTimeS": 117.076,
+          "baselineS": 114.24,
+          "estimatedLossS": 2.835,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 12,
+          "lapTimeS": 129.156,
+          "baselineS": 114.24,
+          "estimatedLossS": 14.916,
+          "severity": "major",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "PIA": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "PIA",
+          "driverNumber": 81,
+          "lap": 19,
+          "lapTimeS": 112.84,
+          "baselineS": 110.718,
+          "estimatedLossS": 2.122,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "SAI": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "SAI",
+          "driverNumber": 55,
+          "lap": 13,
+          "lapTimeS": 114.265,
+          "baselineS": 112.193,
+          "estimatedLossS": 2.072,
+          "severity": "minor",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "SAI",
+          "driverNumber": 55,
+          "lap": 14,
+          "lapTimeS": 117.774,
+          "baselineS": 112.193,
+          "estimatedLossS": 5.581,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "VER": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "VER",
+          "driverNumber": 3,
+          "lap": 17,
+          "lapTimeS": 115.718,
+          "baselineS": 110.338,
+          "estimatedLossS": 5.38,
+          "severity": "moderate",
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    }
+  },
+  "neutralisedLaps": [
+    1,
+    2,
+    3,
+    4,
+    18,
+    20,
+    21
+  ],
+  "thresholds": {
+    "slowLapS": 2.0,
+    "severityBands": [
+      {
+        "atLeastS": 10.0,
+        "label": "major"
+      },
+      {
+        "atLeastS": 4.0,
+        "label": "moderate"
+      },
+      {
+        "atLeastS": 2.0,
+        "label": "minor"
+      }
+    ]
+  },
+  "limitations": [
+    "Recorded events are race-control messages, reported verbatim and attributed by the published car number rather than by reading the message text.",
+    "Blue flags are marked informational: they tell a driver a faster car is approaching and say nothing about that driver's own conduct.",
+    "Lap 1 is never flagged. It starts from a standstill, so it is slower than a flying lap for every driver, and flagging it would mark a normal race start as an event for the whole field.",
+    "A flagged lap is a deviation from this driver's own green-flag median in this race, not a diagnosed mistake: traffic, conditions and pit-wall instructions produce the same signature as an error.",
+    "Laps run under a safety car or red flag are excluded using the published track-status messages, so they are excluded because they were neutralised rather than because they looked slow.",
+    "No lock-up, off-track or mid-corner-correction detection. Those need per-lap telemetry for every driver, which this pipeline does not fetch, and at the sampling rate available the detections would be too weak to attach to a named driver."
+  ],
+  "schemaVersion": 2,
+  "year": 2026,
+  "round": 10,
+  "raceName": "Belgian Grand Prix",
+  "generated_at": "2026-08-25T04:06:13Z",
+  "source": "OpenF1 session 11334: race control messages + lap times"
+}
