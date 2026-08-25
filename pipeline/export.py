@@ -91,6 +91,23 @@ def export_racing_line(year: int, round_: int, session_name: str, driver_code: s
     return bin_path
 
 
+def annotate_line_manifest(year: int, round_: int, session_name: str, extra: dict) -> Path:
+    """Merge session-level metadata into a lines manifest.
+
+    Kept separate from upsert_manifest_driver, which owns the per-driver
+    point counts: this writes the facts that belong to the session as a
+    whole — the measured position unit, which lap each line is, and what
+    the source does not provide. Merging rather than replacing matters
+    because the per-driver entries are written first and must survive.
+    """
+    path = PUBLIC_DATA / str(year) / str(round_) / session_name / "lines" / "manifest.json"
+    manifest = json.loads(path.read_text()) if path.exists() else {}
+    manifest.update(extra)
+    path.write_text(json.dumps(manifest, indent=2))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_race_laps(year: int, round_: int, payload: dict) -> Path:
     """Lap times, stints and degradation fits for one race, under the
     round's R session directory so the frontend lazy-loads it per round."""

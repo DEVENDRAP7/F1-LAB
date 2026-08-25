@@ -20,9 +20,11 @@ import json
 import sys
 
 import ingest
+import ingest_openf1
 import derive
+import derive_telemetry
 import export
-from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR
+from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
 
 
 # Bumped whenever the shape or the model behind an exported laps.json
@@ -263,6 +265,176 @@ def refresh_standings(year: int, calendar: list[dict]) -> None:
 
 HISTORY_SEASONS = 4
 
+# How many drivers get a racing line exported per round. The spec's
+# Racing Lines module overlays up to 4 at once; exporting a few more than
+# that gives the picker something to choose between without turning one
+# round into a multi-megabyte download.
+LINE_DRIVERS_PER_ROUND = 6
+
+TELEMETRY_SCHEMA_VERSION = 1
+
+
+def _match_openf1_session(round_info: dict, sessions: list[dict]) -> dict | None:
+    """Pair a calendar round with its OpenF1 race session.
+
+    Matched on date rather than name: the two sources spell events
+    differently ("Belgian Grand Prix" against a country of "Belgium"),
+    while the date of a race is the same fact in both. A day of slack
+    absorbs the timezone difference between a local race date and a UTC
+    session start.
+    """
+    target = datetime.date.fromisoformat(round_info["date"])
+    for session in sessions:
+        started = session.get("dateStart")
+        if not started:
+            continue
+        try:
+            session_date = datetime.datetime.fromisoformat(started).date()
+        except ValueError:
+            continue
+        if abs((session_date - target).days) <= 1:
+            return session
+    return None
+
+
+def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> None:
+    """Track geometry and racing lines for one round, from real position data.
+
+    This is the module that was empty for the whole project so far. It was
+    empty because livetiming.formula1.com 403s this network, which was
+    then over-read as "position data is unobtainable" — it is not, and
+    OpenF1 serves it.
+
+    Degrades per round like every other step: a round whose telemetry is
+    missing leaves the previous artifacts alone and says why.
+    """
+    round_ = round_info["round"]
+    circuit_key = round_info["circuitId"]
+    out_dir = PUBLIC_DATA / str(year) / str(round_) / "R" / "lines"
+    manifest = out_dir / "manifest.json"
+    if manifest.exists():
+        try:
+            stored = json.loads(manifest.read_text()).get("schemaVersion", 0)
+        except (json.JSONDecodeError, OSError):
+            stored = 0
+        if stored == TELEMETRY_SCHEMA_VERSION:
+            print(f"[telemetry] round {round_}: already exported, skipping")
+            return
+
+    session = _match_openf1_session(round_info, sessions)
+    if session is None:
+        print(f"[telemetry] round {round_}: no OpenF1 race session matches "
+              f"{round_info['date']}")
+        return
+
+    session_key = session["sessionKey"]
+    try:
+        laps = ingest_openf1.fetch_laps(session_key)
+        drivers = ingest_openf1.fetch_drivers(session_key)
+    except Exception as exc:  # noqa: BLE001 - one round must not abort the refresh
+        print(f"[telemetry] round {round_}: unavailable ({type(exc).__name__}: {exc})")
+        return
+
+    if not laps:
+        print(f"[telemetry] round {round_}: OpenF1 has no laps for session {session_key}")
+        return
+
+    code_by_number = {d["driverNumber"]: (d.get("code") or str(d["driverNumber"]))
+                      for d in drivers}
+    fastest = ingest_openf1.pick_fastest_laps(laps)
+    ranked = sorted(fastest.items(), key=lambda kv: kv[1]["lapDurationS"])
+    selected = ranked[:LINE_DRIVERS_PER_ROUND]
+
+    scale: SourcedValue | None = None
+    exported = []
+    best_line = None
+
+    for driver_number, lap in selected:
+        code = code_by_number.get(driver_number, str(driver_number))
+        try:
+            location = ingest_openf1.fetch_lap_location(session_key, driver_number, lap)
+            car_data = ingest_openf1.fetch_lap_car_data(session_key, driver_number, lap)
+        except Exception as exc:  # noqa: BLE001 - degrade per driver, not per round
+            print(f"[telemetry] round {round_} {code}: fetch failed "
+                  f"({type(exc).__name__}: {exc})")
+            continue
+
+        aligned = derive_telemetry.align_to_location(location, car_data)
+        if not aligned:
+            print(f"[telemetry] round {round_} {code}: no position samples")
+            continue
+
+        # The unit is measured once per round, off the first lap that can
+        # support the measurement, and then applied to every driver: it is
+        # a property of the feed, not of a driver, and re-measuring it per
+        # driver would let two lines end up on subtly different scales.
+        if scale is None:
+            scale = derive_telemetry.estimate_position_scale(aligned)
+            if scale is None:
+                print(f"[telemetry] round {round_} {code}: cannot measure the "
+                      "position unit without speed; skipping this driver")
+                continue
+            print(f"[telemetry] round {round_}: position unit measured at "
+                  f"{scale.value:.3f} raw units/m over {scale.sample_size} samples")
+
+        line = derive_telemetry.build_racing_line(aligned, scale.value)
+        if line is None:
+            print(f"[telemetry] round {round_} {code}: lap capture too partial to publish")
+            continue
+
+        export.export_racing_line(year, round_, "R", code, line)
+        exported.append({
+            "code": code,
+            "driverNumber": driver_number,
+            "lapNumber": lap.get("lapNumber"),
+            "lapTimeS": lap.get("lapDurationS"),
+        })
+        if best_line is None:
+            best_line = line
+
+    if not exported or best_line is None or scale is None:
+        print(f"[telemetry] round {round_}: nothing publishable")
+        return
+
+    export.annotate_line_manifest(year, round_, "R", {
+        "schemaVersion": TELEMETRY_SCHEMA_VERSION,
+        "source": f"OpenF1 session {session_key} ({session.get('countryName')})",
+        "positionUnitsPerMetre": scale.to_json(),
+        "laps": exported,
+        "limitations": [
+            "Each line is one driver's fastest non-out lap of the race, not an "
+            "average or an ideal line.",
+            "Position samples arrive at roughly 3.7 Hz and are resampled onto a "
+            "fixed distance grid, so the line is interpolated between samples.",
+            "Corner numbering is not published by this source, so the map carries "
+            "the driven path and no official corner labels.",
+        ],
+    })
+
+    export.export_circuit(circuit_key, {
+        "circuitId": circuit_key,
+        "circuitName": round_info["circuitName"],
+        "round": round_,
+        "outline": derive_telemetry.build_outline_from_line(best_line),
+        "corners": [],
+        "drsZones": [],
+        "generated_at": ingest._now_iso(),
+        "source": (
+            f"OpenF1 position trace, session {session_key}, fastest race lap "
+            f"({exported[0]['code']}, lap {exported[0]['lapNumber']})"
+        ),
+        "positionUnitsPerMetre": scale.to_json(),
+        "limitations": [
+            "The outline is one measured lap's driven path, so it follows the "
+            "racing line rather than the centre line or the track edges.",
+            "No corner numbering or DRS zones: this source publishes neither, and "
+            "numbering them from memory would be invented detail.",
+        ],
+    })
+
+    print(f"[telemetry] round {round_}: exported {len(exported)} racing line(s) "
+          f"and a measured outline for {circuit_key}")
+
 
 def refresh_upcoming(year: int, calendar: list[dict]) -> None:
     """Export the brief for the next round that has not happened yet.
@@ -319,9 +491,21 @@ def main() -> int:
     season_config = json.loads((CONFIG_DIR / f"season_{args.year}.json").read_text())
     export.export_season(season_config)
 
+    # Fetched once and shared across rounds: the season's race sessions
+    # are one listing, and re-requesting it per round would be 23 calls
+    # for one answer.
+    try:
+        openf1_sessions = ingest_openf1.fetch_race_sessions(args.year)
+        print(f"OpenF1: {len(openf1_sessions)} race session(s) run so far")
+    except Exception as exc:  # noqa: BLE001 - telemetry is additive, never fatal
+        print(f"OpenF1 unavailable, skipping telemetry this run ({exc})")
+        openf1_sessions = []
+
     for round_info in rounds_due(season_config["calendar"]):
         refresh_circuit(args.year, round_info)
         refresh_race_laps(args.year, round_info)
+        if openf1_sessions:
+            refresh_telemetry(args.year, round_info, openf1_sessions)
 
     refresh_standings(args.year, season_config["calendar"])
     refresh_upcoming(args.year, season_config["calendar"])
