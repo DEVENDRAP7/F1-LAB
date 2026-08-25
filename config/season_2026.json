@@ -396,8 +396,22 @@
       "givenName": "Yuki",
       "familyName": "Tsunoda",
       "permanentNumber": "22"
+    },
+    {
+      "code": "VER",
+      "driverId": "max_verstappen",
+      "givenName": "Max",
+      "familyName": "Verstappen",
+      "permanentNumber": "3"
+    },
+    {
+      "code": null,
+      "driverId": "frederik_vesti",
+      "givenName": "Frederik",
+      "familyName": "Vesti",
+      "permanentNumber": null
     }
   ],
-  "generated_at": "2026-08-25T06:31:54Z",
+  "generated_at": "2026-08-25T08:13:15Z",
   "source": "https://api.jolpi.ca/ergast/f1/2026"
 }
