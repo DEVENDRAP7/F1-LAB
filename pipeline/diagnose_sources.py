@@ -18,6 +18,7 @@ Read-only: it fetches and prints, and writes nothing to the repo.
 from __future__ import annotations
 
 import argparse
+import datetime
 import logging
 import sys
 import traceback
@@ -156,17 +157,29 @@ def probe_openf1(year: int) -> None:
             continue
 
         first = sessions[0]
-        last = sessions[-1]
         print(f"         first: key={first.get('session_key')} "
               f"{first.get('country_name')} {first.get('date_start')}")
-        print(f"         last:  key={last.get('session_key')} "
-              f"{last.get('country_name')} {last.get('date_start')}")
         print(f"         session fields: {sorted(first.keys())}")
 
-        # Probe the actual channels against ONE real session key. A
-        # sessions listing that answers proves nothing about whether the
-        # heavy per-car channels are populated for it.
-        key = last.get("session_key")
+        # Probe the channels against the most recent session that has
+        # ACTUALLY BEEN RUN, not simply the last one listed. The first
+        # version of this probe took sessions[-1], which for the current
+        # season is a race months in the future: every channel answered
+        # 404 "No results found" and the season looked unsupported when
+        # the truth was only that the race had not happened. The entry
+        # list is published ahead of time and answers 200 for a future
+        # session, which made the mistake look like a partial outage
+        # rather than an empty question.
+        now = datetime.datetime.now(datetime.timezone.utc)
+        run = [s for s in sessions if _session_started(s) and _session_started(s) < now]
+        if not run:
+            print(f"         no {probe_year} race session has been run yet; "
+                  "nothing to probe")
+            continue
+        target = max(run, key=_session_started)
+        print(f"         latest run: key={target.get('session_key')} "
+              f"{target.get('country_name')} {target.get('date_start')}")
+        key = target.get("session_key")
         for endpoint, params in (
             ("drivers", f"session_key={key}"),
             ("stints", f"session_key={key}"),
@@ -189,6 +202,16 @@ def probe_openf1(year: int) -> None:
         if number is not None:
             _probe_openf1_channel("car_data", f"session_key={key}&driver_number={number}&speed>=300")
             _probe_openf1_channel("location", f"session_key={key}&driver_number={number}")
+
+
+def _session_started(session: dict) -> datetime.datetime | None:
+    raw = session.get("date_start")
+    if not raw:
+        return None
+    try:
+        return datetime.datetime.fromisoformat(raw)
+    except ValueError:
+        return None
 
 
 def _probe_openf1_channel(endpoint: str, params: str) -> None:
