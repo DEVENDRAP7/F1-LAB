@@ -1,17 +1,50 @@
 /*
  * Design tokens only — no inline colors anywhere else in the app.
- * Palette: dark instrument base. Color carries sport semantics
- * (sector green/yellow/purple, compound bands) and nothing else.
+ *
+ * Two colour jobs, kept apart on purpose:
+ *
+ *   CHROME    surfaces, nav, headings, rules, focus. Free to carry hue
+ *             and warmth, because it encodes nothing — it is the room
+ *             the data sits in.
+ *   SEMANTIC  series, stint ramp, status, podium, sector. Each of these
+ *             means something, is validated against both surfaces, and
+ *             is never borrowed for decoration.
+ *
+ * The earlier palette had the semantic half right and almost no chrome,
+ * so every page read as grey text on grey panels with the colour locked
+ * inside the charts. The fix is more chrome, not louder data.
  */
 :root {
-  --bg-0: #0a0c10;
-  --bg-1: #12151b;
-  --bg-2: #1a1e26;
-  --line: #262b35;
+  /* Surfaces carry a slight blue cast rather than pure neutral grey:
+   * a flat #12151b panel on a #0a0c10 page is the "pale" complaint —
+   * there is no temperature anywhere for the eye to hold on to. */
+  --bg-0: #07090e;
+  --bg-1: #101520;
+  --bg-2: #182031;
+  --bg-3: #202a3e;
+  --line: #26314a;
+  --line-strong: #35446a;
 
-  --ink-0: #e8eaee;
-  --ink-1: #9aa2b1;
-  --ink-2: #5c6474;
+  --ink-0: #f2f5fa;
+  --ink-1: #a9b4c9;
+  --ink-2: #6b7791;
+
+  /* Signature accent. Used for interactive state, active nav, focus
+   * rings and heading rules — never to encode a value. */
+  --accent-0: #4da3ff;
+  --accent-1: #2b7fe0;
+  --accent-glow: rgba(77, 163, 255, 0.16);
+  --accent-edge: rgba(77, 163, 255, 0.42);
+
+  /* A warm counterweight, so the whole site is not one cool hue. */
+  --hot-0: #ff7a3d;
+  --hot-glow: rgba(255, 122, 61, 0.14);
+
+  --grad-head: linear-gradient(96deg, var(--accent-0), var(--hot-0));
+  --grad-panel: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 6px 20px rgba(0, 0, 0, 0.45);
 
   --sector-green: #16c172;
   --sector-yellow: #e8c547;
@@ -23,9 +56,23 @@
   --compound-inter: #2fae4e;
   --compound-wet: #2b7fd6;
 
-  --accent: #3b8ef0;
+  --accent: var(--accent-0);
   --warn: #e07a3f;
   --danger: #d1373b;
+
+  /* Status ramp — reserved. Never reused as a series colour. Every use
+   * pairs the colour with a text label, which is what carries the
+   * meaning on surfaces where a step falls below 3:1. */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+
+  /* Podium. Sport semantics — finishing position, not team identity,
+   * and deliberately not any team's colours (docs/SPEC.md: no liveries). */
+  --pos-1: #f2c14b;
+  --pos-2: #c6cedd;
+  --pos-3: #cf8a4b;
 
   /* Categorical series colours for up to 4 simultaneously compared
    * drivers. Distinct from the sector green/yellow/purple and from the
@@ -58,13 +105,30 @@
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme='dark']) {
-    --bg-0: #f4f5f7;
+    --bg-0: #eef1f6;
     --bg-1: #ffffff;
-    --bg-2: #eceef2;
-    --line: #d7dae0;
-    --ink-0: #14161a;
-    --ink-1: #4a5160;
-    --ink-2: #7a8394;
+    --bg-2: #f5f7fb;
+    --bg-3: #e6ebf4;
+    --line: #d2d9e6;
+    --line-strong: #b3bfd4;
+    --ink-0: #0d1117;
+    --ink-1: #465063;
+    --ink-2: #6e7a92;
+
+    --accent-0: #1e6fd9;
+    --accent-1: #17579f;
+    --accent-glow: rgba(30, 111, 217, 0.1);
+    --accent-edge: rgba(30, 111, 217, 0.35);
+    --hot-0: #e2591c;
+    --hot-glow: rgba(226, 89, 28, 0.1);
+
+    --grad-panel: linear-gradient(180deg, #ffffff, var(--bg-2));
+    --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --shadow-2: 0 8px 24px rgba(16, 24, 40, 0.1);
+
+    --pos-1: #b8860b;
+    --pos-2: #6b7689;
+    --pos-3: #a6642c;
 
     /* Light mode is stepped from the same hue rather than flipped: the
      * ramp still runs light -> dark with stint ordinal, but it must

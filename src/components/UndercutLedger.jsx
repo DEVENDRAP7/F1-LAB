@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatDelta } from '../lib/formatTime.js';
 
 // M4 undercut/overcut ledger. Each row is one stop measured against one
 // rival who was close and had not yet stopped: how the gap stood before,
@@ -15,13 +16,13 @@ function Net({ seconds }) {
   const gained = seconds > 0;
   return (
     <span className={gained ? 'net-gain' : 'net-loss'}>
-      {gained ? '+' : ''}
-      {seconds.toFixed(2)}s
+      {formatDelta(seconds, { decimals: 2 })}
     </span>
   );
 }
 
-export default function UndercutLedger({ undercuts, excluded, driverFilter }) {
+export default function UndercutLedger({ undercuts, excluded, driverFilter, codeFor }) {
+  const label = (id) => (codeFor ? codeFor(id) : id);
   const [showNeutralised, setShowNeutralised] = useState(false);
 
   const filtered = undercuts.filter(
@@ -77,11 +78,11 @@ export default function UndercutLedger({ undercuts, excluded, driverFilter }) {
                 className={e.neutralisedWindow ? 'is-muted' : ''}
               >
                 <td className="tabular">{e.stopLap}</td>
-                <td className="mono">{e.driverId}</td>
-                <td className="mono">{e.rivalId}</td>
+                <td className="mono">{label(e.driverId)}</td>
+                <td className="mono">{label(e.rivalId)}</td>
                 <td className="tabular">{e.rivalStopLap}</td>
-                <td className="tabular">{e.gapBeforeS.toFixed(2)}s</td>
-                <td className="tabular">{e.gapAfterS.toFixed(2)}s</td>
+                <td className="tabular">{formatDelta(e.gapBeforeS, { decimals: 2, sign: false })}</td>
+                <td className="tabular">{formatDelta(e.gapAfterS, { decimals: 2, sign: false })}</td>
                 <td className="tabular">
                   <Net seconds={e.netS} />
                   {e.neutralisedWindow && (

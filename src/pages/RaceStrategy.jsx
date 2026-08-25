@@ -5,6 +5,8 @@ import EmptyState from '../components/EmptyState.jsx';
 import StintChart from '../components/StintChart.jsx';
 import LapTimeChart from '../components/LapTimeChart.jsx';
 import UndercutLedger from '../components/UndercutLedger.jsx';
+import { formatLapTime } from '../lib/formatTime.js';
+import { driverCode, driverIndex, driverName } from '../lib/driverNames.js';
 
 // M4 — Tyre Strategy Board, on the data that actually exists.
 //
@@ -14,13 +16,6 @@ import UndercutLedger from '../components/UndercutLedger.jsx';
 // with it. What the source cannot supply — tyre compound, a track-status
 // channel, a fuel-corrected degradation rate — is stated rather than
 // filled in, both in the limitations panel and per-figure.
-
-function formatLapTime(seconds) {
-  if (seconds == null) return '—';
-  const m = Math.floor(seconds / 60);
-  const s = seconds - m * 60;
-  return m > 0 ? `${m}:${s.toFixed(3).padStart(6, '0')}` : s.toFixed(3);
-}
 
 export default function RaceStrategy() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
@@ -56,6 +51,14 @@ export default function RaceStrategy() {
 
   const data = race.data;
 
+  // Identity comes from the published entry list. Deriving a code from
+  // the id (`slice(0, 3)`) produced MAX for Verstappen and ARV for
+  // Lindblad — abbreviations that look official and are not.
+  const names = useMemo(
+    () => driverIndex(season.data?.entryList ?? []),
+    [season.data],
+  );
+
   // Finishing order from the final lap's classification: the order the
   // stint rows are drawn in, so the chart reads like a results sheet.
   const driverOrder = useMemo(() => {
@@ -77,7 +80,8 @@ export default function RaceStrategy() {
       if (byDriver.has(lap.driverId)) byDriver.get(lap.driverId).push(lap);
     }
     return selected.map((driverId, i) => ({
-      code: driverId.slice(0, 3).toUpperCase(),
+      code: driverCode(names, driverId),
+      name: driverName(names, driverId),
       driverId,
       color: seriesColor(i),
       points: (byDriver.get(driverId) ?? []).sort((a, b) => a.lap - b.lap),
@@ -162,6 +166,7 @@ export default function RaceStrategy() {
               </p>
             </div>
             <StintChart
+              codeFor={(id) => driverCode(names, id)}
               stints={data.stints}
               totalLaps={data.totalLaps}
               driverOrder={driverOrder}
@@ -219,7 +224,7 @@ export default function RaceStrategy() {
                         aria-hidden="true"
                       />
                     )}
-                    <span className="mono">{driverId.slice(0, 3).toUpperCase()}</span>
+                    <span className="mono">{driverCode(names, driverId)}</span>
                   </label>
                 );
               })}
@@ -301,6 +306,7 @@ export default function RaceStrategy() {
                 </p>
               </div>
               <UndercutLedger
+              codeFor={(id) => driverCode(names, id)}
                 undercuts={data.undercuts.entries ?? data.undercuts}
                 excluded={data.undercuts.excluded}
                 driverFilter={new Set(selected)}
@@ -332,7 +338,7 @@ export default function RaceStrategy() {
                 <tbody>
                   {degradationRows.map((d) => (
                     <tr key={`${d.driverId}-${d.stint}`} className={d.reliable ? '' : 'is-muted'}>
-                      <td className="mono">{d.driverId}</td>
+                      <td className="mono">{driverCode(names, d.driverId)}</td>
                       <td className="tabular">{d.stint}</td>
                       <td className="tabular">
                         {d.reliable && d.deg_rate_s_per_lap != null

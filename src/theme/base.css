@@ -2,14 +2,40 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+/* A single wide wash behind the page. Costs nothing, and stops the
+   background reading as one flat slab of near-black. */
+.app-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(1100px 520px at 12% -8%, var(--accent-glow), transparent 70%),
+    radial-gradient(900px 460px at 92% 4%, var(--hot-glow), transparent 72%);
+}
+
+.app-shell > * {
+  position: relative;
+  z-index: 1;
 }
 
 .app-nav {
   display: flex;
-  gap: 1.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: 0.35rem;
+  padding: 0.6rem 1.25rem;
   border-bottom: 1px solid var(--line);
-  background: var(--bg-1);
+  /* A lit edge along the top of the app, so the shell reads as an
+     instrument rather than a plain document. */
+  background:
+    linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  box-shadow: var(--shadow-1);
+  position: sticky;
+  top: 0;
+  z-index: 20;
   /* Labels never wrap mid-word ("Season / Ledger"); when the row is
      tighter than its items it scrolls sideways instead. */
   flex-wrap: nowrap;
@@ -17,18 +43,39 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.app-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: var(--grad-head);
+  opacity: 0.85;
+}
+
 .app-nav a {
   color: var(--ink-1);
   text-decoration: none;
   font-family: var(--font-display);
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   flex: 0 0 auto;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
-.app-nav a.active,
 .app-nav a:hover {
   color: var(--ink-0);
+  background: var(--bg-3);
+}
+
+.app-nav a.active {
+  color: var(--accent-0);
+  background: var(--accent-glow);
+  border-color: var(--accent-edge);
 }
 
 main {
@@ -48,8 +95,28 @@ td {
   text-align: left;
 }
 
+thead th {
+  color: var(--ink-1);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom-color: var(--line-strong);
+}
+
+/* Zebra plus a hover row: on a table this dense, banding is what lets
+   the eye track across a row without a ruler. */
+tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--bg-2) 45%, transparent);
+}
+
+tbody tr:hover {
+  background: var(--accent-glow);
+}
+
 .empty-state {
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--line-strong);
+  background: color-mix(in srgb, var(--bg-1) 70%, transparent);
   border-radius: var(--radius);
   padding: 2rem;
   max-width: 42rem;
@@ -68,12 +135,14 @@ td {
 }
 
 .warning-banner {
-  background: color-mix(in srgb, var(--warn) 15%, var(--bg-1));
-  border: 1px solid var(--warn);
+  background: color-mix(in srgb, var(--warn) 14%, var(--bg-1));
+  border: 1px solid transparent;
+  border-left: 3px solid var(--warn);
   border-radius: var(--radius);
-  padding: 0.75rem 1rem;
+  padding: 0.8rem 1rem;
   margin-bottom: 1rem;
   color: var(--ink-0);
+  box-shadow: var(--shadow-1);
 }
 
 .generated-at {
@@ -110,10 +179,21 @@ td {
   align-items: center;
   gap: 0.35rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 0.25rem 0.6rem;
-  background: var(--bg-1);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  background: var(--bg-2);
+  color: var(--ink-1);
   cursor: pointer;
+  font-weight: 600;
+  transition: color 120ms ease, background 120ms ease,
+    border-color 120ms ease, transform 120ms ease;
+}
+
+.driver-chip:hover {
+  color: var(--ink-0);
+  background: var(--bg-3);
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
 }
 
 .lines-layout {
@@ -177,13 +257,38 @@ td {
 /* ---------- page + panel scaffolding ---------- */
 
 .page-head {
-  margin-bottom: 1.25rem;
+  position: relative;
+  margin-bottom: 1.5rem;
+  padding-left: 0.95rem;
+}
+
+/* A pseudo-element rather than border-image: border-image needs every
+   side sized to paint reliably, and with only border-left set it drew
+   nothing at all. */
+.page-head::before {
+  content: '';
+  position: absolute;
+  inset: 0.15rem auto 0.4rem 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--grad-head);
 }
 
 .page-head h1 {
-  margin: 0 0 0.25rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  margin: 0 0 0.3rem;
+  font-weight: 700;
+  font-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.3rem);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  /* The title is the one place the accent gradient sits on type: it
+     names the page and encodes nothing. Both transparent properties are
+     needed — `color` alone leaves WebKit painting its own fill and the
+     gradient never shows. */
+  background: var(--grad-head);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
 .page-sub {
@@ -192,11 +297,24 @@ td {
 }
 
 .panel {
+  position: relative;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--bg-1);
+  border-radius: calc(var(--radius) * 2);
+  background: var(--grad-panel);
   padding: 1rem 1.25rem 1.25rem;
   margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+}
+
+/* A hairline of accent along the top edge gives each panel a lit
+   leading edge, which is what separates a card from a grey rectangle. */
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent-edge), transparent 55%);
 }
 
 .panel-head {
@@ -204,11 +322,26 @@ td {
 }
 
 .panel-head h2 {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
-  letter-spacing: 0.04em;
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-0);
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+/* A short accent tick before every panel title — cheap, consistent, and
+   it gives the eye a repeating landmark down a long page. */
+.panel-head h2::before {
+  content: '';
+  width: 3px;
+  height: 0.95em;
+  border-radius: 2px;
+  background: var(--grad-head);
+  flex: 0 0 auto;
 }
 
 .panel-note {
@@ -600,13 +733,13 @@ tr.is-muted td {
    only colour on the row — never colour alone: the number keeps its own
    +/- sign and the column header states the direction. */
 .net-gain {
-  color: var(--sector-green);
-  font-weight: 600;
+  color: var(--status-good);
+  font-weight: 700;
 }
 
 .net-loss {
-  color: var(--warn);
-  font-weight: 600;
+  color: var(--status-critical);
+  font-weight: 700;
 }
 
 .ledger-footnotes {
@@ -712,9 +845,28 @@ tr.is-muted td {
 }
 
 .figure {
+  position: relative;
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  padding: 0.8rem 0.9rem;
+  background: var(--bg-2);
+  overflow: hidden;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.figure:hover {
+  border-color: var(--accent-edge);
+  transform: translateY(-1px);
+}
+
+.figure::after {
+  content: '';
+  position: absolute;
+  inset: auto auto 0 0;
+  width: 34%;
+  height: 2px;
+  background: var(--grad-head);
+  opacity: 0.7;
 }
 
 .figure-label {
@@ -724,10 +876,12 @@ tr.is-muted td {
 }
 
 .figure-value {
-  font-size: 1.6rem;
-  line-height: 1.2;
-  margin: 0.15rem 0 0.1rem;
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0.2rem 0 0.15rem;
   text-align: left;
+  color: var(--accent-0);
 }
 
 .figure-sample {
@@ -802,21 +956,42 @@ tr.is-muted td {
   padding: 0.1rem 0.4rem;
 }
 
+.tag-major,
+.tag-moderate,
+.tag-minor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Severity is a status scale, so it wears the reserved status ramp
+   rather than borrowing a series colour. Every tag keeps its text label:
+   the label is what carries the meaning, the colour only ranks it. */
 .tag-major {
-  background: var(--stint-1);
-  color: #fff;
+  background: color-mix(in srgb, var(--status-critical) 20%, transparent);
+  border: 1px solid var(--status-critical);
+  color: var(--status-critical);
 }
 
 .tag-moderate {
-  background: var(--stint-3);
-  color: #000;
+  background: color-mix(in srgb, var(--status-serious) 18%, transparent);
+  border: 1px solid var(--status-serious);
+  color: var(--status-serious);
 }
 
 .tag-minor {
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--ink-2);
+  background: color-mix(in srgb, var(--status-warning) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--status-warning) 55%, transparent);
+  color: var(--status-warning);
 }
+
+.loss-cell {
+  color: var(--status-serious);
+  font-weight: 700;
+}
+
 
 .field {
   align-items: center;
@@ -837,4 +1012,44 @@ tr.is-muted td {
   color: var(--ink-2);
   cursor: pointer;
   font-size: 0.8rem;
+}
+
+
+/* ---------- ledger emphasis ---------- */
+
+/* Finishing position is sport semantics, not team identity — the spec
+   rules out liveries, and these are deliberately not any team's colours.
+   The medal tint is paired with the position number itself, so it never
+   carries the meaning alone. */
+.ledger-table tbody tr:nth-child(1) td:first-child { color: var(--pos-1); font-weight: 700; }
+.ledger-table tbody tr:nth-child(2) td:first-child { color: var(--pos-2); font-weight: 700; }
+.ledger-table tbody tr:nth-child(3) td:first-child { color: var(--pos-3); font-weight: 700; }
+
+.ledger-table tbody tr:nth-child(-n + 3) {
+  background: color-mix(in srgb, var(--pos-1) 5%, transparent);
+}
+
+.points-cell {
+  color: var(--ink-0);
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+.ledger-table tbody tr:nth-child(1) .points-cell {
+  color: var(--pos-1);
+}
+
+.driver-fullname {
+  font-weight: 600;
+}
+
+.gap-bar {
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-0));
+}
+
+.verified-note {
+  border-left: 3px solid var(--status-good);
+  padding: 0.55rem 0.85rem;
+  background: color-mix(in srgb, var(--status-good) 9%, transparent);
+  border-radius: var(--radius);
 }

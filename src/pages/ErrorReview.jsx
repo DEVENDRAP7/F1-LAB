@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
+import { formatDelta, formatLapTime } from '../lib/formatTime.js';
 
 // M7 — Driver Error Review.
 //
@@ -263,9 +264,9 @@ export default function ErrorReview() {
                         {flagged.map((f) => (
                           <tr key={f.lap}>
                             <td className="tabular">{f.lap}</td>
-                            <td className="tabular">{f.lapTimeS.toFixed(3)}s</td>
-                            <td className="tabular">{f.baselineS.toFixed(3)}s</td>
-                            <td className="tabular">+{f.estimatedLossS.toFixed(3)}s</td>
+                            <td className="tabular">{formatLapTime(f.lapTimeS)}</td>
+                            <td className="tabular">{formatLapTime(f.baselineS)}</td>
+                            <td className="tabular loss-cell">{formatDelta(f.estimatedLossS)}</td>
                             <td>
                               <span className={`tag tag-${f.severity}`}>{f.severity}</span>
                             </td>

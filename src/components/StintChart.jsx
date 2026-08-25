@@ -42,7 +42,7 @@ function stintLabelInk(stintNumber) {
   return STINT_LABEL_INK[stepIndex(stintNumber)];
 }
 
-export default function StintChart({ stints, totalLaps, driverOrder, onHoverStint }) {
+export default function StintChart({ stints, totalLaps, driverOrder, onHoverStint, codeFor }) {
   const [hovered, setHovered] = useState(null);
 
   const byDriver = new Map();
@@ -77,7 +77,7 @@ export default function StintChart({ stints, totalLaps, driverOrder, onHoverStin
           return (
             <div className="stint-row" key={driverId} style={{ height: ROW_HEIGHT }}>
               <span className="stint-row-label mono">
-                {driverId.slice(0, 3).toUpperCase()}
+                {codeFor ? codeFor(driverId) : driverId}
               </span>
               <div className="stint-row-track">
                 {rows.map((s) => {

@@ -114,8 +114,22 @@ def fetch_season_calendar(year: int = SEASON_YEAR) -> list[dict]:
 
 
 def fetch_entry_list(year: int = SEASON_YEAR) -> list[dict]:
-    data = _jolpica_get(f"{year}/drivers")
-    drivers = data["MRData"]["DriverTable"]["Drivers"]
+    """Every driver entered this season — paginated.
+
+    This read the endpoint unpaged and got exactly 30 rows back, which is
+    the API's default page size, not the size of the field. The list is
+    ordered by driverId, so the truncation silently dropped whoever
+    sorted last — in 2026 that was Verstappen, who then had no published
+    three-letter code anywhere in the site and fell back to a long name
+    in columns of short codes.
+
+    A cut-off list is worse than a failed fetch here: it looks complete.
+    """
+
+    def extract(mrdata):
+        return mrdata["DriverTable"]["Drivers"]
+
+    drivers = _jolpica_paged(f"{year}/drivers", extract)
     return [
         {
             "code": d.get("code"),

@@ -1,3 +1,4 @@
+import { formatLapTime } from '../lib/formatTime.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cssToken } from '../theme/palette.js';
 
@@ -192,7 +193,7 @@ export default function LapTimeChart({ series, totalLaps, height = 300 }) {
               <span className="tooltip-swatch" style={{ background: r.color }} aria-hidden="true" />
               <span className="mono">{r.code}</span>{' '}
               <span className="mono tabular">
-                {r.timeS == null ? '—' : r.timeS.toFixed(3)}
+                {formatLapTime(r.timeS)}
               </span>
             </span>
           ))}
