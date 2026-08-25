@@ -140,8 +140,51 @@ def check_upcoming_brief() -> list[str]:
     return errors
 
 
+def check_whatif() -> list[str]:
+    """Re-run every published what-if against the race it was fitted to.
+
+    This is the model self-check the spec makes a hard gate. The page
+    offers a counterfactual only for drivers whose real strategy the model
+    reproduces within 1%, so a driver marked validated who does not
+    reproduce is not a bad estimate — it is the gate itself being broken,
+    and the site would then be publishing counterfactuals it has no
+    standing to publish.
+
+    The check re-simulates from the exported parameters rather than
+    trusting the stored figure, because the stored figure is exactly what
+    would be wrong if the export or the model drifted.
+    """
+    from models.whatif import median, monte_carlo
+
+    errors = []
+    for path in sorted(PUBLIC_DATA.glob("*/*/R/whatif.json")):
+        data = json.loads(path.read_text())
+        for driver_id, entry in (data.get("drivers") or {}).items():
+            validation = entry.get("validation") or {}
+            if not validation.get("validated"):
+                continue
+            actual = entry["actualTotalS"]
+            model_median = median(monte_carlo(entry["params"]))
+            error = abs(model_median - actual) / actual
+            if error >= 0.01:
+                errors.append(
+                    f"{path}: {driver_id} is marked validated but the model lands on "
+                    f"{model_median:.1f}s against an actual {actual:.1f}s ({error:.2%})"
+                )
+
+        if not data.get("drivers") and not data.get("skipped"):
+            errors.append(f"{path}: no drivers and no reason given for having none")
+
+    return errors
+
+
 def main() -> int:
-    errors = check_budgets() + check_standings_cross_check() + check_upcoming_brief()
+    errors = (
+        check_budgets()
+        + check_standings_cross_check()
+        + check_upcoming_brief()
+        + check_whatif()
+    )
 
     if errors:
         print("VALIDATION FAILED:", file=sys.stderr)

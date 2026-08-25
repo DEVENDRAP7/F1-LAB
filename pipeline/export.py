@@ -119,6 +119,21 @@ def export_error_review(year: int, round_: int, payload: dict) -> Path:
     return path
 
 
+def export_whatif(year: int, round_: int, payload: dict) -> Path:
+    """Fitted what-if parameters for one race, per driver.
+
+    Written even when no driver could be fitted: the payload then carries
+    the reason, and the page says why there is nothing to run rather than
+    rendering as though the round had not happened yet.
+    """
+    out_dir = PUBLIC_DATA / str(year) / str(round_) / "R"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "whatif.json"
+    path.write_text(json.dumps(payload, separators=(",", ":")))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_race_laps(year: int, round_: int, payload: dict) -> Path:
     """Lap times, stints and degradation fits for one race, under the
     round's R session directory so the frontend lazy-loads it per round."""

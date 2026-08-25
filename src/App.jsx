@@ -6,6 +6,7 @@ import RaceStrategy from './pages/RaceStrategy.jsx';
 import UpcomingBrief from './pages/UpcomingBrief.jsx';
 import ErrorReview from './pages/ErrorReview.jsx';
 import AeroExplainer from './pages/AeroExplainer.jsx';
+import WhatIf from './pages/WhatIf.jsx';
 
 // HashRouter, not BrowserRouter: GitHub Pages has no server-side rewrite,
 // so deep links must live entirely in the URL fragment.
@@ -20,6 +21,7 @@ export default function App() {
           <NavLink to="/lines">Racing Lines</NavLink>
           <NavLink to="/errors">Error Review</NavLink>
           <NavLink to="/aero">Aero</NavLink>
+          <NavLink to="/whatif">What-If</NavLink>
           <NavLink to="/upcoming">Upcoming</NavLink>
         </nav>
         <main>
@@ -30,6 +32,7 @@ export default function App() {
             <Route path="/lines" element={<RacingLines />} />
             <Route path="/errors" element={<ErrorReview />} />
             <Route path="/aero" element={<AeroExplainer />} />
+            <Route path="/whatif" element={<WhatIf />} />
             <Route path="/upcoming" element={<UpcomingBrief />} />
           </Routes>
         </main>

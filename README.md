@@ -38,6 +38,20 @@ spec) before contributing.
 - **Racing Lines** — per-driver fastest race laps decoded from Int16
   position binaries, with linked speed and throttle traces on a shared
   distance axis. The position unit is measured per round, not assumed.
+- **Driver Error Review** — race-control messages quoted verbatim and
+  attributed by the published car number, kept strictly separate from
+  this project's own observation that a lap ran slower than the same
+  driver's green-flag median. A flag is not a verdict, and the page is
+  built so the two can never be read as the same thing.
+- **Aero Explainer** — lateral and longitudinal acceleration for a
+  driver's fastest lap, computed from the published racing line: a g-g
+  diagram and the lateral g the car sustained at each speed. No
+  downforce figure, because that needs constants no source here
+  publishes.
+- **What-If Engine** — replay a race with a different strategy, on
+  parameters fitted to that race and only for drivers whose real race
+  the model reproduces within 1%. It estimates a race time and says
+  nothing about finishing position.
 
 ## Where the data comes from
 
@@ -120,14 +134,53 @@ substantive ones:
   2022 and `Lapped` in 2025, so matching on status would have counted
   every lapped 2025 finisher as a retirement.
 
-## Not built yet
+## The What-If engine, and the gate it had to clear
 
-The What-If engine's core exists (`pipeline/models/whatif.py`, ported
-line-for-line to `src/lib/whatifModel.js` and pinned by a two-sided
-parity test) but is **not wired into any page**: the spec gates it on
-reproducing a real race's time within 1% using the actual strategy, and
-that test currently skips for want of fitted per-race parameters. It
-stays unpublished until it passes.
+The model itself (`pipeline/models/whatif.py`, ported line-for-line to
+`src/lib/whatifModel.js` and pinned by a two-sided parity test) existed
+for months with no numbers in it. What it needed was parameters fitted to
+a real race, and a demonstration that those parameters reproduce that
+race — the spec makes that a publish gate, not a nice-to-have.
+
+`pipeline/models/whatif_fit.py` fits them from the lap data already
+ingested:
+
+- **One fit per race, across the whole field**, not per driver. Within a
+  stint, tyre life counts up by one exactly as laps remaining counts
+  down by one, so their sum is a constant the stint's intercept absorbs:
+  fitted driver by driver the design matrix is rank deficient, and every
+  single-stop race in this season came back unfittable. Across the field
+  it is identifiable, because different drivers ran the same compound
+  over different parts of the race. Pace stays a per-driver term; fuel
+  burn and compound degradation are shared, which is also what they
+  physically are.
+- **Fuel and track evolution are not separated.** Both are linear in lap
+  number and one race cannot tell them apart, so the whole coefficient
+  is published as fuel and the evolution rate is zero rather than
+  guessed.
+- **Pit loss, the standing-start loss and the cost of a neutralised lap
+  are measured, not fitted** — each is the excess of specific laps over
+  what the fit says they should have taken.
+- **Red-flagged races are refused.** A suspension leaves the cars
+  stationary with the clock running (round 12 carries a 1758-second lap
+  3), the model has no term for that, and a race total containing one is
+  not a quantity it can be checked against. Four of this season's twelve
+  races are excluded for this, each with the lap time that caused it on
+  record.
+
+The gate then runs per driver: replay their real strategy, compare the
+model's median against their real race time, and offer a counterfactual
+only if it lands within 1%. Eighty-one driver-races across eight rounds
+clear it. Drivers who do not clear it are published anyway, with their
+error, because "the model does not describe this race" is the useful
+fact about them. `pipeline/validate_export.py` re-simulates every
+published case from its exported parameters on each run, so a drift in
+the model or the export fails the build rather than reaching the site.
+
+The page never computes a finishing position, because it has no rivals
+and no traffic model. It reports a race time and the spread around it.
+
+## Not built yet
 
 The **Aero Explainer** ships only its measurable half. Lateral and
 longitudinal acceleration are computed from the published racing line —

@@ -107,10 +107,32 @@ class TestLapsSchemaVersioning:
 
     def test_skips_a_round_already_at_the_current_version(self, tmp_path, monkeypatch, capsys):
         run_refresh, _ = self._round(
-            tmp_path, monkeypatch, {"schemaVersion": run_refresh_version()}
+            tmp_path, monkeypatch,
+            {"schemaVersion": run_refresh_version(), "raceName": "Australian Grand Prix",
+             "compounds": {"attempted": True}},
         )
-        run_refresh.refresh_race_laps(2026, {"round": 1, "raceName": "X"})
+        run_refresh.refresh_race_laps(
+            2026, {"round": 1, "raceName": "Australian Grand Prix"}
+        )
         assert "skipping" in capsys.readouterr().out
+
+    def test_re_exports_when_the_stored_race_name_no_longer_matches(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Round 1 sat in the repository named "X" — a name from a test
+        fixture — because the version check alone had nothing to notice
+        once the calendar was regenerated."""
+        run_refresh, _ = self._round(
+            tmp_path, monkeypatch,
+            {"schemaVersion": run_refresh_version(), "raceName": "X",
+             "compounds": {"attempted": True}},
+        )
+        run_refresh.refresh_race_laps(
+            2026, {"round": 1, "raceName": "Australian Grand Prix"}
+        )
+        out = capsys.readouterr().out
+        assert "no longer matches the calendar" in out
+        assert "skipping" not in out
 
     def test_re_exports_a_round_written_at_an_older_version(self, tmp_path, monkeypatch, capsys):
         run_refresh, _ = self._round(tmp_path, monkeypatch, {"schemaVersion": 1})

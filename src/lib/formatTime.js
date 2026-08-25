@@ -45,7 +45,28 @@ export function formatDelta(seconds, { decimals = MILLIS_DP, sign = true } = {})
   return `${prefix}${formatLapTime(seconds, { decimals })}`;
 }
 
-/** A duration with no sub-second meaning (pit-stop time, session length). */
+/**
+ * A duration: a pit stop, a session, or a whole race.
+ *
+ * Past an hour it carries the hour, because a race distance quoted as
+ * "100:14.9" reads as a hundred-minute lap. Under an hour it falls
+ * through to the lap form, which is what a pit stop or a stint wants.
+ */
 export function formatDuration(seconds, { decimals = 1 } = {}) {
-  return formatLapTime(seconds, { decimals });
+  if (seconds == null || !Number.isFinite(seconds)) return '—';
+  const negative = seconds < 0;
+  const total = Math.abs(seconds);
+  if (total < 3600) return formatLapTime(seconds, { decimals });
+
+  const hours = Math.floor(total / 3600);
+  const rest = total - hours * 3600;
+  const restText = formatLapTime(rest < 60 ? rest + 60 : rest, { decimals });
+  // formatLapTime drops the leading zero on a minute, and an hour needs
+  // it: 1:2:03.4 is not a time anyone writes.
+  const [minutes, secondsText] = restText.split(':');
+  const carried = Number(minutes) - (rest < 60 ? 1 : 0);
+  if (carried >= 60) {
+    return `${negative ? '-' : ''}${hours + 1}:00:${secondsText}`;
+  }
+  return `${negative ? '-' : ''}${hours}:${pad(carried, 2)}:${secondsText}`;
 }

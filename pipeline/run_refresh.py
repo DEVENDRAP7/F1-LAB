@@ -79,10 +79,18 @@ def refresh_race_laps(year: int, round_info: dict,
     out_path = PUBLIC_DATA / str(year) / str(round_) / "R" / "laps.json"
     if out_path.exists():
         try:
-            existing_version = json.loads(out_path.read_text()).get("schemaVersion", 0)
+            existing = json.loads(out_path.read_text())
         except (json.JSONDecodeError, OSError):
-            existing_version = 0  # unreadable: treat as stale and rebuild
-        if existing_version == LAPS_SCHEMA_VERSION:
+            existing = {}  # unreadable: treat as stale and rebuild
+        existing_version = existing.get("schemaVersion", 0)
+        stale_name = existing.get("raceName") != round_info["raceName"]
+        if existing_version == LAPS_SCHEMA_VERSION and stale_name:
+            # Round 1 sat in the repository as raceName "X" because the
+            # calendar was regenerated after the export and the version
+            # check alone had nothing to notice.
+            print(f"[laps] round {round_}: re-exporting, stored name "
+                  f"{existing.get('raceName')!r} no longer matches the calendar")
+        elif existing_version == LAPS_SCHEMA_VERSION:
             # A round at the current version is still stale if the
             # compound join never actually ran for it — a transient
             # OpenF1 failure would otherwise freeze that round with no
@@ -90,9 +98,8 @@ def refresh_race_laps(year: int, round_info: dict,
             # once kept 97 corrected fits off disk. "Ran and found
             # nothing" is a real answer and is not retried.
             try:
-                attempted = json.loads(out_path.read_text()).get(
-                    "compounds", {}).get("attempted", False)
-            except (json.JSONDecodeError, OSError):
+                attempted = existing.get("compounds", {}).get("attempted", False)
+            except AttributeError:
                 attempted = False
             if attempted or openf1_sessions is None:
                 print(f"[laps] round {round_}: already exported at v{existing_version}, skipping")
@@ -198,6 +205,101 @@ def refresh_race_laps(year: int, round_info: dict,
     export.export_race_laps(year, round_, payload)
     print(f"[laps] round {round_}: exported {len(laps)} laps, {len(stints)} stints, "
           f"{len(deg_fits)} fits, {len(pitstops)} stops, {len(undercuts)} undercut pairs")
+
+
+# Bumped when the fit or the exported shape changes, so a corrected model
+# reaches rounds that were already written.
+WHATIF_SCHEMA_VERSION = 2
+
+# The publish gate from docs/SPEC.md: replaying a driver's actual strategy
+# has to reproduce their actual race time this closely. A driver whose
+# race the model cannot reproduce gets no counterfactual — the page has
+# nothing to offer them, and says so.
+WHATIF_MAX_ERROR = 0.01
+
+
+def refresh_whatif(year: int, round_info: dict) -> None:
+    """Fit the what-if model to a race that has already been exported.
+
+    Reads the round's own laps.json rather than re-fetching: the fit needs
+    exactly the laps and stints that were published, and re-fetching would
+    let the two drift apart. Runs on its own schema version so a corrected
+    fit reaches rounds already written — the lesson from the error review,
+    which for a while rode inside the telemetry step and therefore never
+    reached the rounds furthest along.
+    """
+    from models import whatif, whatif_fit
+
+    round_ = round_info["round"]
+    laps_path = PUBLIC_DATA / str(year) / str(round_) / "R" / "laps.json"
+    if not laps_path.exists():
+        return
+
+    out_path = PUBLIC_DATA / str(year) / str(round_) / "R" / "whatif.json"
+    if out_path.exists():
+        try:
+            stored = json.loads(out_path.read_text()).get("schemaVersion")
+        except (json.JSONDecodeError, OSError):
+            stored = None
+        if stored == WHATIF_SCHEMA_VERSION:
+            return
+
+    race = json.loads(laps_path.read_text())
+    result = whatif_fit.fit_race_params(race["laps"], race["stints"], race["totalLaps"])
+
+    drivers = {}
+    validated = 0
+    for driver_id, built in result["drivers"].items():
+        totals = whatif.monte_carlo(built["params"])
+        model_median = whatif.median(totals)
+        actual = built["actualTotalS"]
+        error = (model_median - actual) / actual
+        built["validation"] = {
+            "modelMedianS": model_median,
+            "actualTotalS": actual,
+            "errorPct": error * 100.0,
+            "validated": abs(error) < WHATIF_MAX_ERROR,
+            "thresholdPct": WHATIF_MAX_ERROR * 100.0,
+        }
+        if built["validation"]["validated"]:
+            validated += 1
+        drivers[driver_id] = built
+
+    payload = {
+        "schemaVersion": WHATIF_SCHEMA_VERSION,
+        "year": year,
+        "round": round_,
+        "raceName": round_info["raceName"],
+        "totalLaps": race["totalLaps"],
+        "drivers": drivers,
+        "validatedDrivers": validated,
+        "fit": result.get("fit"),
+        "neutralisedLaps": result.get("neutralisedLaps", []),
+        "skipped": result.get("skipped"),
+        "generated_at": ingest._now_iso(),
+        "source": f"fitted to Jolpica-F1 {year} round {round_} lap times and stints",
+        "limitations": [
+            "Parameters are fitted to this race and nothing else. They describe the "
+            "car, tyres and track as they were on the day, and carry no claim about "
+            "any other round.",
+            "Fuel burn and track evolution are both linear in lap number and cannot be "
+            "told apart from one race, so the whole coefficient is published as fuel "
+            "and the evolution rate is zero rather than guessed.",
+            "Pit loss, the standing-start loss and the cost of a neutralised lap are "
+            "measured against the fit, not fitted as free parameters.",
+            "A stint starting on used tyres is modelled as starting on fresh ones: the "
+            "source publishes the age but this model has no term for it, so the "
+            "compound's offset absorbs the average.",
+            "Only drivers whose replayed real strategy reproduces their real race time "
+            f"within {WHATIF_MAX_ERROR:.0%} are offered as a what-if. The rest are "
+            "listed with the error, because a model that cannot reproduce what "
+            "happened has no standing to say what would have.",
+        ],
+    }
+
+    export.export_whatif(year, round_, payload)
+    note = result.get("skipped") or f"{validated}/{len(drivers)} driver(s) validated"
+    print(f"[whatif] round {round_}: {note}")
 
 
 def refresh_standings(year: int, calendar: list[dict]) -> None:
@@ -616,6 +718,7 @@ def main() -> int:
     # merely early.
     for round_info in reversed(rounds_due(season_config["calendar"])):
         refresh_race_laps(args.year, round_info, openf1_sessions)
+        refresh_whatif(args.year, round_info)
         if openf1_sessions:
             refresh_error_review(args.year, round_info, openf1_sessions)
         if openf1_sessions and telemetry_budget > 0:

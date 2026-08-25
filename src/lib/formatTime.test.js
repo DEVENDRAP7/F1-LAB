@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDelta, formatLapTime } from './formatTime.js';
+import { formatDelta, formatLapTime, formatDuration } from './formatTime.js';
 
 describe('formatLapTime', () => {
   it('keeps sub-minute times in seconds, as timing screens do', () => {
@@ -44,5 +44,27 @@ describe('formatDelta', () => {
 
   it('switches a large delta to the minute form too', () => {
     expect(formatDelta(86.542)).toBe('+1:26.542');
+  });
+});
+
+describe('formatDuration past an hour', () => {
+  it('carries the hour so a race time is not read as a lap time', () => {
+    // 1:40:14.9 — a real race distance. Quoted as "100:14.9" it reads as
+    // a hundred-minute lap, which is what this page shipped first.
+    expect(formatDuration(6014.9)).toBe('1:40:14.9');
+  });
+
+  it('keeps a two-digit minute after the hour', () => {
+    expect(formatDuration(3723.4)).toBe('1:02:03.4');
+  });
+
+  it('handles the first minute of an hour without borrowing', () => {
+    expect(formatDuration(3600)).toBe('1:00:00.0');
+    expect(formatDuration(3612.3)).toBe('1:00:12.3');
+  });
+
+  it('leaves anything under an hour in the lap form', () => {
+    expect(formatDuration(75.4)).toBe('1:15.4');
+    expect(formatDuration(22.31)).toBe('22.3');
   });
 });

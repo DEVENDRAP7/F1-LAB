@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { COMPOUND_FILL, COMPOUND_INK } from '../lib/compounds.js';
 
 // M4 stint chart: one row per driver, each stint a span across the race
 // distance. The x-axis is lap number, so bar length *is* stint length —
@@ -33,28 +34,6 @@ const STINT_STEPS = ['var(--stint-1)', 'var(--stint-2)', 'var(--stint-3)', 'var(
 // label colour for the whole ramp cannot: it fails at one end or the
 // other.
 const STINT_LABEL_INK = ['#ffffff', '#ffffff', '#000000', '#000000'];
-
-// The sport's compound bands. Hard is a light neutral rather than pure
-// white so it still reads as a band on a light surface; intermediate and
-// wet are included even though a dry race never shows them, because a
-// wet race must not fall back to the ordinal ramp for want of a colour.
-const COMPOUND_FILL = {
-  SOFT: 'var(--compound-soft)',
-  MEDIUM: 'var(--compound-medium)',
-  HARD: 'var(--compound-hard)',
-  INTERMEDIATE: 'var(--compound-inter)',
-  WET: 'var(--compound-wet)',
-};
-
-// Ink chosen per band against that band, so the label clears 4.5:1 on
-// every one rather than being legible on some and grey mush on others.
-const COMPOUND_INK = {
-  SOFT: '#ffffff',
-  MEDIUM: '#141414',
-  HARD: '#141414',
-  INTERMEDIATE: '#0d0d0d',
-  WET: '#ffffff',
-};
 
 export function compoundOf(stint) {
   const c = (stint?.compound || '').toUpperCase();
