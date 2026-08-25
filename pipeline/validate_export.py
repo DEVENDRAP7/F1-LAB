@@ -83,8 +83,65 @@ def check_standings_cross_check() -> list[str]:
     return []
 
 
+def check_upcoming_brief() -> list[str]:
+    """Self-check the Upcoming Race Brief's arithmetic before it ships.
+
+    The brief's numbers are not cross-checkable against a published
+    table the way standings are, so the gate checks them against each
+    other instead. The failure this is really guarding against already
+    happened once in development: classification was keyed off the
+    finishing-status text, whose wording changes between seasons, which
+    silently reclassified every lapped finisher as a retirement. That
+    produces a brief that is internally plausible and wrong — exactly
+    the shape of error a reader cannot catch — but it shows up here as
+    a finish rate that no longer squares with its own per-edition rows.
+    """
+    path = PUBLIC_DATA / "upcoming.json"
+    if not path.exists():
+        return []
+
+    data = json.loads(path.read_text())
+    history = data.get("history")
+    if history is None:
+        return []  # a brief that states why it has no history is valid
+
+    errors = []
+    per_edition = history.get("perEdition", [])
+
+    if history.get("editions") != len(per_edition):
+        errors.append(
+            f"upcoming.json claims {history.get('editions')} editions but carries "
+            f"{len(per_edition)} per-edition rows"
+        )
+
+    finish = history.get("finishRate", {})
+    classified_sum = sum(e.get("classified", 0) for e in per_edition)
+    starters_sum = sum(e.get("starters", 0) for e in per_edition)
+    if finish.get("classified") != classified_sum or finish.get("starters") != starters_sum:
+        errors.append(
+            f"upcoming.json finish rate ({finish.get('classified')}/{finish.get('starters')}) "
+            f"does not match the sum of its per-edition rows ({classified_sum}/{starters_sum})"
+        )
+
+    for edition in per_edition:
+        if edition.get("classified", 0) > edition.get("starters", 0):
+            errors.append(
+                f"upcoming.json {edition.get('year')}: {edition['classified']} cars classified "
+                f"out of {edition['starters']} starters — more finishers than starters"
+            )
+
+    n = history.get("positionChange", {}).get("n", 0)
+    if n > classified_sum:
+        errors.append(
+            f"upcoming.json position-change sample ({n}) exceeds the number of classified "
+            f"finishes ({classified_sum}) it can be drawn from"
+        )
+
+    return errors
+
+
 def main() -> int:
-    errors = check_budgets() + check_standings_cross_check()
+    errors = check_budgets() + check_standings_cross_check() + check_upcoming_brief()
 
     if errors:
         print("VALIDATION FAILED:", file=sys.stderr)

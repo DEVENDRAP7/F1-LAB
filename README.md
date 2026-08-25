@@ -20,6 +20,17 @@ spec) before contributing.
 - **Race Strategy** — twelve races of real lap times (14,066 laps), with
   a stint chart, a lap-pace comparison for up to four drivers, an
   undercut ledger, and per-stint pace-trend fits.
+  The ledger also carries a points-progression chart and a
+  mathematical-elimination calculator, the latter on the most
+  conservative bound available: a driver is counted out only when
+  maximum points from every remaining round still leaves them short of
+  the leader's current total.
+- **Upcoming** — a brief for the next round, built only from past
+  editions of the same circuit: finish rate, places moved from the grid,
+  the winner's grid slot and stops per driver, each shown with the
+  sample it came from. It is a record, not a forecast, and the page
+  leads with that — 2026 is a regulation reset, so the cars behind those
+  numbers are not the cars about to race.
 - **Circuit Atlas** — the verified calendar. No track geometry; see
   "Where the data stops" below.
 
@@ -79,6 +90,13 @@ substantive ones:
   track-status channel a neutralised period can only be suspected.
 - **No track-status channel at all**, so safety-car and traffic laps are
   excluded from fits by an outlier rule rather than by flag.
+- **The Upcoming brief's priors are weak by construction.** They come
+  from at most four past editions of one circuit, under a different set
+  of technical regulations, and every figure is rendered with its sample
+  count for that reason. Classification keys off `positionText`, not the
+  status text: the same lapped-but-classified finisher reads `+1 Lap` in
+  2022 and `Lapped` in 2025, so matching on status would have counted
+  every lapped 2025 finisher as a retirement.
 
 ## Not built yet
 

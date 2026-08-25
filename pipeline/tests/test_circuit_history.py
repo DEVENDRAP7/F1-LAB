@@ -115,3 +115,35 @@ def test_unavailable_priors_are_named_rather_than_omitted():
     assert "safetyCar" in summary["unavailable"]
     assert "tyreCompounds" in summary["unavailable"]
     assert summary["editions"] == 0
+
+
+def test_summary_passes_its_own_gate_arithmetic():
+    """The gate's self-check must agree with what the summariser produces,
+    so a regression in either surfaces as a failure rather than as two
+    plausible numbers that quietly disagree."""
+    editions = [
+        {
+            "year": 2025,
+            "results": [
+                result(1, "1", 2, "Finished"),
+                result(2, "2", 1, "Lapped"),
+                result(3, "R", 3, "Retired"),
+                result(4, "W", 4, "Did not start"),
+            ],
+            "pitstops": [{"driverId": "a", "lap": 20, "stop": 1}],
+        },
+        {
+            "year": 2024,
+            "results": [result(1, "1", 1, "Finished"), result(2, "R", 2, "Engine")],
+            "pitstops": None,
+        },
+    ]
+    summary = summarise_circuit_history(editions)
+
+    per_edition = summary["perEdition"]
+    assert summary["editions"] == len(per_edition)
+    assert summary["finishRate"]["classified"] == sum(e["classified"] for e in per_edition)
+    assert summary["finishRate"]["starters"] == sum(e["starters"] for e in per_edition)
+    for edition in per_edition:
+        assert edition["classified"] <= edition["starters"]
+    assert summary["positionChange"]["n"] <= summary["finishRate"]["classified"]
