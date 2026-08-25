@@ -37,7 +37,8 @@ spec) before contributing.
   line, and it says so. No corner numbering: the source publishes none.
 - **Racing Lines** — per-driver fastest race laps decoded from Int16
   position binaries, with linked speed and throttle traces on a shared
-  distance axis. The position unit is measured per round, not assumed.
+  distance axis, and a turn-by-turn table of where the delta was made.
+  The position unit is measured per round, not assumed.
 - **Driver Error Review** — race-control messages quoted verbatim and
   attributed by the published car number, kept strictly separate from
   this project's own observation that a lap ran slower than the same
