@@ -12,6 +12,7 @@ import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
 import GGDiagram from '../components/GGDiagram.jsx';
 import EnvelopeChart from '../components/EnvelopeChart.jsx';
+import GripMap from '../components/GripMap.jsx';
 
 // M8 — Aero Explainer, the measurable half.
 //
@@ -137,6 +138,10 @@ export default function AeroExplainer() {
           code,
           color: seriesColor(i),
           trace,
+          // The same x/y the trace was computed from, in metres, so the
+          // map and the physics can never disagree about where a sample
+          // was.
+          points: Array.from(ch.x, (v, p) => [v / scale.x, ch.y[p] / scale.y]),
           envelope: lateralEnvelope(trace),
           peaks: peaks(trace),
         };
@@ -277,6 +282,29 @@ export default function AeroExplainer() {
                   ))}
                 </div>
               </>
+            )}
+          </section>
+
+          <section className="panel">
+            <div className="panel-head">
+              <h2>Where the load is</h2>
+              <p className="panel-note">
+                {series[0]?.code ?? 'The'} driven lap, coloured by the lateral g being
+                carried at each point of it. The braking zones and the corner apexes are
+                not labelled here — they are simply where the colour changes. Colour is
+                smoothed over about 20 m of track so a corner reads as a corner; hover
+                the line for the unsmoothed figure at a point.
+              </p>
+            </div>
+            {series.length === 0 ? (
+              <p className="panel-note">Select a driver to draw their lap.</p>
+            ) : (
+              <GripMap
+                points={series[0].points}
+                lateralG={series[0].trace.lateralG}
+                speedKph={series[0].trace.speedKph}
+                height={520}
+              />
             )}
           </section>
 

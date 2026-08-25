@@ -96,6 +96,19 @@
   --series-3: #1f9d9d;
   --series-4: #b845c4;
 
+  /* Sequential ramp for cornering load on the track map. Magnitude, so
+   * one hue stepped low -> high, and a different hue from the stint ramp
+   * because the two encode different quantities on different pages —
+   * reusing the blue would invite "darker means later stint" to be read
+   * off a map where darker means more grip. Steps are validated against
+   * this surface: monotone lightness, a visible gap between steps, and a
+   * low end that still clears the surface it is drawn on. */
+  --grip-1: #7a3d1f;
+  --grip-2: #a1522a;
+  --grip-3: #c76835;
+  --grip-4: #e58044;
+  --grip-5: #ffa163;
+
   /* Sequential ramp for stint ordinal (1st stint -> last). One hue,
    * monotonic in lightness (adjacent dL >= 0.083), both ends clearing
    * 2:1 against the dark surface. Magnitude encoding — it says "how far
@@ -162,6 +175,14 @@
     /* Light mode is stepped from the same hue rather than flipped: the
      * ramp still runs light -> dark with stint ordinal, but it must
      * darken (not brighten) to stay legible on a white surface. */
+    /* Light-mode steps for the grip ramp: selected against the light
+     * surface, not an inversion of the dark ones. */
+    --grip-1: #f0a273;
+    --grip-2: #e2762f;
+    --grip-3: #c85f1c;
+    --grip-4: #a34710;
+    --grip-5: #733007;
+
     --stint-1: #a8c6de;
     --stint-2: #7ba6c9;
     --stint-3: #4f83aa;

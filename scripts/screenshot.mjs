@@ -88,6 +88,17 @@ const light = await browser.newPage({ viewport: { width: 1280, height: 1000 }, c
 await openStrategy(light, 3);
 await light.screenshot({ path: '/tmp/strategy-light.png', fullPage: false });
 
+// Light mode is a selected palette, not an inversion, so every page that
+// carries a colour ramp has to be looked at in it — the grip map's light
+// steps are different colours, not the dark ones lightened.
+for (const [route, name] of [['/aero', 'aero'], ['/whatif', 'whatif'], ['/', 'ledger']]) {
+  const l2 = await browser.newPage({ viewport: { width: 1280, height: 1000 }, colorScheme: 'light' });
+  await l2.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
+  await l2.waitForTimeout(900);
+  await l2.screenshot({ path: `/tmp/${name}-light.png`, fullPage: true });
+  await l2.close();
+}
+
 // Every route, so a page that regressed is not missed just because the
 // one under active development still renders.
 for (const [route, name] of [['/', 'ledger'], ['/circuits', 'circuits'], ['/lines', 'lines'], ['/upcoming', 'upcoming'], ['/errors', 'errors'], ['/aero', 'aero'], ['/whatif', 'whatif']]) {
