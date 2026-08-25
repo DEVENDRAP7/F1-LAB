@@ -115,12 +115,66 @@ def probe_fastf1(year: int, round_: int, session_name: str) -> None:
         traceback.print_exc(file=sys.stdout)
 
 
+def probe_circuit_history(circuit_id: str, years: list[int]) -> None:
+    """Report what past editions of one circuit are actually queryable.
+
+    The Upcoming Race Brief is built from priors at the circuit the next
+    round visits, so before any of it is written the question is which
+    circuit-scoped endpoints answer and what shape they answer in. Prints
+    the record count and the keys of one record per endpoint, because
+    writing a parser against a remembered schema is how a field ends up
+    silently absent.
+    """
+    print(f"\n=== Jolpica-F1 circuit history: {circuit_id} ===")
+    for year in years:
+        for endpoint in ("results", "pitstops", "qualifying"):
+            url = f"{JOLPICA_BASE}/{year}/circuits/{circuit_id}/{endpoint}.json?limit=100"
+            try:
+                resp = requests.get(url, timeout=DEFAULT_TIMEOUT)
+            except Exception as exc:  # noqa: BLE001
+                print(f"  ERR  {year} {endpoint}: {type(exc).__name__}: {exc}")
+                continue
+            if not resp.ok:
+                print(f"  {resp.status_code}  {year} {endpoint}")
+                continue
+            mrdata = resp.json()["MRData"]
+            races = mrdata.get("RaceTable", {}).get("Races", [])
+            total = mrdata.get("total")
+            if not races:
+                print(f"  200  {year} {endpoint}: total={total}, no races")
+                continue
+            race = races[0]
+            listkey = next(
+                (k for k in ("Results", "PitStops", "QualifyingResults") if k in race),
+                None,
+            )
+            rows = race.get(listkey, []) if listkey else []
+            sample = sorted(rows[0].keys()) if rows else []
+            print(
+                f"  200  {year} {endpoint}: total={total} round={race.get('round')} "
+                f"rows={len(rows)} key={listkey} fields={sample}"
+            )
+            if endpoint == "results" and rows:
+                statuses = sorted({r.get("status") for r in rows})
+                print(f"         statuses: {statuses}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--year", type=int, default=2026)
     parser.add_argument("--round", type=int, default=1)
     parser.add_argument("--session", type=str, default="Q")
+    parser.add_argument(
+        "--circuit",
+        type=str,
+        default="",
+        help="circuitId to probe past editions of; skipped when empty",
+    )
     args = parser.parse_args()
+
+    if args.circuit:
+        probe_circuit_history(args.circuit, [args.year - n for n in range(1, 5)])
+        return 0
 
     probe_http(args.year, args.round)
     probe_fastf1(args.year, args.round, args.session)

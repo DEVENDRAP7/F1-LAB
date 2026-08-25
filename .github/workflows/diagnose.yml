@@ -18,6 +18,10 @@ on:
         description: FastF1 session identifier (FP1, Q, R, ...)
         required: false
         default: 'Q'
+      circuit:
+        description: circuitId to probe past editions of instead of the live-timing probe
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -41,4 +45,5 @@ jobs:
           python diagnose_sources.py \
             --year "${{ inputs.year }}" \
             --round "${{ inputs.round }}" \
-            --session "${{ inputs.session }}"
+            --session "${{ inputs.session }}" \
+            --circuit "${{ inputs.circuit }}"
