@@ -4040,7 +4040,7 @@
     "source": "OpenF1 position z, on the same measured unit as x and y; relative to the feed's own datum, not to sea level"
   },
   "drsZones": [],
-  "generated_at": "2026-08-25T20:48:35Z",
+  "generated_at": "2026-08-25T20:53:29Z",
   "source": "OpenF1 position trace, session 11326, fastest race lap (ANT, lap 37)",
   "positionUnitsPerMetre": {
     "value": 10.015831031080383,

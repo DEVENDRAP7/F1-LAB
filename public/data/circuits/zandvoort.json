@@ -4476,7 +4476,7 @@
     "source": "OpenF1 position z, on the same measured unit as x and y; relative to the feed's own datum, not to sea level"
   },
   "drsZones": [],
-  "generated_at": "2026-08-25T20:47:11Z",
+  "generated_at": "2026-08-25T20:52:36Z",
   "source": "OpenF1 position trace, session 11353, fastest race lap (LEC, lap 60)",
   "positionUnitsPerMetre": {
     "value": 9.97494133563387,
