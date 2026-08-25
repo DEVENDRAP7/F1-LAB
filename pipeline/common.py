@@ -27,10 +27,13 @@ MAX_RACING_LINE_BYTES = 60 * 1024
 # Racing-line channel layout. Order here is authoritative: export.py packs
 # channels in this order and writes it into every manifest.json so the JS
 # decoder never has to guess it.
-LINE_CHANNELS = ("x", "y", "speed", "throttle", "brake", "gear")
+LINE_CHANNELS = ("x", "y", "z", "speed", "throttle", "brake", "gear")
 LINE_SCALE = {
     "x": 10,        # decimetres -> metres
     "y": 10,
+    # Elevation, in the same unit as x and y. Published only for a lap
+    # where the feed's z actually varies — see derive_telemetry.
+    "z": 10,
     "speed": 10,    # km/h * 10
     "throttle": 1,  # 0-100
     "brake": 1,     # 0/1 bitmask

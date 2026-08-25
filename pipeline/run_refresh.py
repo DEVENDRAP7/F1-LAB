@@ -411,7 +411,7 @@ HISTORY_SEASONS = 4
 # round into a multi-megabyte download.
 LINE_DRIVERS_PER_ROUND = 4
 
-TELEMETRY_SCHEMA_VERSION = 1
+TELEMETRY_SCHEMA_VERSION = 2
 
 # How many rounds may have their telemetry built in a single refresh.
 #
@@ -567,6 +567,7 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
 
     scale: SourcedValue | None = None
     exported = []
+    built: list[tuple[str, dict]] = []
     best_line = None
 
     for driver_number, lap in selected:
@@ -602,7 +603,7 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
             print(f"[telemetry] round {round_} {code}: lap capture too partial to publish")
             continue
 
-        export.export_racing_line(year, round_, "R", code, line)
+        built.append((code, line))
         exported.append({
             "code": code,
             "driverNumber": driver_number,
@@ -616,10 +617,27 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
         print(f"[telemetry] round {round_}: nothing publishable")
         return True
 
+    # Elevation is decided once for the round, not per driver: the
+    # manifest declares one channel list for the session, so a lap that
+    # kept z beside one that dropped it would leave the decoder reading
+    # every other driver's line off by a channel.
+    elevation = derive_telemetry.elevation_summary(best_line)
+    if not elevation["usable"]:
+        for _, line in built:
+            line.pop("z", None)
+        print(f"[telemetry] round {round_}: no elevation — {elevation['reason']}")
+    else:
+        print(f"[telemetry] round {round_}: elevation over {elevation['rangeM']:.0f}m "
+              "published")
+
+    for code, line in built:
+        export.export_racing_line(year, round_, "R", code, line)
+
     export.annotate_line_manifest(year, round_, "R", {
         "schemaVersion": TELEMETRY_SCHEMA_VERSION,
         "source": f"OpenF1 session {session_key} ({session.get('countryName')})",
         "positionUnitsPerMetre": scale.to_json(),
+        "elevation": elevation,
         "laps": exported,
         "limitations": [
             "Each line is one driver's fastest non-out lap of the race, not an "
@@ -636,7 +654,11 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
         "circuitName": round_info["circuitName"],
         "round": round_,
         "outline": derive_telemetry.build_outline_from_line(best_line),
-        "corners": [],
+        "elevation": elevation,
+        # Turns are detected in the browser from the published line rather
+        # than stored here: one implementation of the detection, and no
+        # stored corner list that can fall out of step with the lap it
+        # was read from.
         "drsZones": [],
         "generated_at": ingest._now_iso(),
         "source": (
@@ -647,8 +669,12 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
         "limitations": [
             "The outline is one measured lap's driven path, so it follows the "
             "racing line rather than the centre line or the track edges.",
-            "No corner numbering or DRS zones: this source publishes neither, and "
-            "numbering them from memory would be invented detail.",
+            "No official corner numbering: this source publishes none. The atlas "
+            "detects turns from the published line and numbers them in lap order, "
+            "which is this lap's own sequence rather than the circuit's names.",
+            "No DRS zones: the feed carries a DRS channel, but turning its integer "
+            "codes into 'the flap was open here' needs a mapping this project has no "
+            "verified source for.",
         ],
     })
 

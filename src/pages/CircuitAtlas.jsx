@@ -5,6 +5,8 @@ import TrackMap from '../components/TrackMap.jsx';
 import { loadManifest, loadRacingLine } from '../lib/racingLine.js';
 import { accelerationTrace } from '../lib/aero.js';
 import { describeTurns, detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
+import TelemetryTrace from '../components/TelemetryTrace.jsx';
+import { seriesColor } from '../theme/palette.js';
 
 // M1 — Circuit Atlas. The outline is a real driven lap: the position
 // trace of the fastest race lap, in metres, thinned but not smoothed.
@@ -74,6 +76,7 @@ export default function CircuitAtlas() {
   }, [selected]);
 
   const [turns, setTurns] = useState({ status: 'idle', rows: [], code: null });
+  const [elevationCursor, setElevationCursor] = useState(0);
 
   // The circuit file records the round it was traced from, so the lap
   // behind the outline is fetchable — and the turns are then detected on
@@ -104,6 +107,13 @@ export default function CircuitAtlas() {
           status: detected.length > 0 ? 'ready' : 'empty',
           rows: detected,
           code,
+          // Published only for a round whose z channel actually varies,
+          // so its absence here is the pipeline's answer rather than a
+          // missing feature.
+          elevation: manifest.elevation?.usable ? channels.z ?? null : null,
+          elevationScale: scale.z ?? 10,
+          elevationRangeM: manifest.elevation?.rangeM ?? null,
+          spacingM: 2,
           points: Array.from(channels.x, (v, i) => [v / scale.x, channels.y[i] / scale.y]),
           lapTimeS: manifest.laps?.find((l) => l.code === code)?.lapTimeS ?? null,
         });
@@ -219,6 +229,39 @@ export default function CircuitAtlas() {
               </div>
             )}
           </div>
+
+          {turns.status === 'ready' && turns.elevation && (
+            <>
+              <div className="panel-head">
+                <h3>Elevation</h3>
+                <p className="panel-note">
+                  The lap's height, over{' '}
+                  <span className="mono">{Math.round(turns.elevationRangeM)}m</span> from its
+                  lowest point to its highest. It is the position feed's own z channel on
+                  the same measured unit as x and y, relative to whatever datum that feed
+                  uses — not a height above sea level. A round whose z does not vary gets no
+                  profile here rather than a flat line drawn at full scale.
+                </p>
+              </div>
+              <TelemetryTrace
+                label="Elevation"
+                unit=" m"
+                series={[{
+                  code: turns.code,
+                  color: seriesColor(0),
+                  values: turns.elevation,
+                }]}
+                spacingM={turns.spacingM}
+                crosshairIndex={elevationCursor}
+                onCrosshair={setElevationCursor}
+                formatValue={(v) => (v / turns.elevationScale).toFixed(1)}
+              />
+            </>
+          )}
+
+          {turns.status === 'ready' && !turns.elevation && doc.elevation?.reason && (
+            <p className="panel-note">Elevation: {doc.elevation.reason}.</p>
+          )}
 
           {turns.status === 'ready' && (
             <>

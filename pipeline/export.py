@@ -86,7 +86,13 @@ def export_racing_line(year: int, round_: int, session_name: str, driver_code: s
     point_count = write_line_binary(bin_path, quantized)
     check_file_budget(bin_path, MAX_RACING_LINE_BYTES)
 
-    upsert_manifest_driver(out_dir / "manifest.json", driver_code, point_count)
+    # The manifest declares the channels this round actually wrote, not
+    # every channel the project knows about: elevation is published only
+    # where the feed's z varies, and a manifest promising a channel the
+    # binary does not carry reads every later channel off by one.
+    written = tuple(name for name in LINE_CHANNELS if name in quantized)
+    upsert_manifest_driver(
+        out_dir / "manifest.json", driver_code, point_count, channels=written)
 
     return bin_path
 

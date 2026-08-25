@@ -156,3 +156,66 @@ def test_outline_thins_without_smoothing_corners_away():
     # of neighbours.
     xs = set(round(float(v), 1) for v in line["x"])
     assert all(point[0] in xs for point in outline)
+
+
+class TestElevation:
+    """Elevation is published only where the feed's z is really elevation.
+
+    The z channel is documented nowhere and is flat at some circuits, so
+    the pipeline judges it on the lap rather than trusting or dismissing
+    it — and states the number it judged on either way.
+    """
+
+    def test_a_climbing_lap_is_published_with_its_range(self):
+        import numpy as np
+        from derive_telemetry import elevation_summary
+
+        z = np.linspace(0, 40, 500)  # a lap that climbs 40 m
+        summary = elevation_summary({"z": z})
+        assert summary["usable"] is True
+        assert summary["rangeM"] == 40.0
+        assert "sea level" in summary["source"]
+
+    def test_a_flat_channel_is_refused_with_the_number_it_refused_on(self):
+        import numpy as np
+        from derive_telemetry import elevation_summary
+
+        z = np.full(500, 12.0)
+        z[10] = 13.2  # a metre of noise is not a circuit
+        summary = elevation_summary({"z": z})
+        assert summary["usable"] is False
+        assert summary["rangeM"] == 1.2
+        assert "below the 3m floor" in summary["reason"]
+
+    def test_a_lap_with_no_elevation_channel_says_so(self):
+        from derive_telemetry import elevation_summary
+
+        summary = elevation_summary({"x": [1, 2, 3]})
+        assert summary["usable"] is False
+        assert "no elevation" in summary["reason"]
+
+
+def test_align_carries_elevation_when_the_feed_publishes_it():
+    from derive_telemetry import align_to_location
+
+    location = [
+        {"date": "2026-08-23T13:00:00.000000+00:00", "x": 0, "y": 0, "z": 100},
+        {"date": "2026-08-23T13:00:00.250000+00:00", "x": 10, "y": 0, "z": 140},
+        {"date": "2026-08-23T13:00:00.500000+00:00", "x": 20, "y": 0, "z": 180},
+    ]
+    aligned = align_to_location(location, [])
+    assert "z" in aligned
+    assert list(aligned["z"]) == [100.0, 140.0, 180.0]
+
+
+def test_align_drops_a_partial_elevation_channel_rather_than_guessing():
+    """A feed that publishes z for some samples and not others would give
+    a profile with invented gaps filled in; better to have none."""
+    from derive_telemetry import align_to_location
+
+    location = [
+        {"date": "2026-08-23T13:00:00.000000+00:00", "x": 0, "y": 0, "z": 100},
+        {"date": "2026-08-23T13:00:00.250000+00:00", "x": 10, "y": 0, "z": None},
+        {"date": "2026-08-23T13:00:00.500000+00:00", "x": 20, "y": 0, "z": 180},
+    ]
+    assert "z" not in align_to_location(location, [])

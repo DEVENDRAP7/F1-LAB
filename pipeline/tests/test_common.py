@@ -35,9 +35,11 @@ def test_quantize_int16_clips_instead_of_wrapping():
 
 def test_write_line_binary_roundtrips_with_manifest(tmp_path):
     point_count = 10
+    # Every channel this project can write, elevation included.
     channels = {
         "x": quantize_int16(np.arange(point_count), 10),
         "y": quantize_int16(np.zeros(point_count), 10),
+        "z": quantize_int16(np.full(point_count, 12), 10),
         "speed": quantize_int16(np.full(point_count, 250), 10),
         "throttle": quantize_int16(np.full(point_count, 100), 1),
         "brake": quantize_int16(np.zeros(point_count), 1),
@@ -57,6 +59,40 @@ def test_write_line_binary_roundtrips_with_manifest(tmp_path):
     # so it should read back as 0, 10, 20, ... at stride len(channels)
     x_values = raw[0 :: len(LINE_CHANNELS)]
     assert list(x_values) == [i * 10 for i in range(point_count)]
+
+
+def test_a_round_without_elevation_writes_a_shorter_stride(tmp_path):
+    """Elevation is published only where the feed's z varies, so a round
+    can legitimately carry six channels while another carries seven. The
+    manifest has to declare what was actually written: promising a
+    channel the binary does not have reads every later channel off by
+    one, silently, for every driver in the session."""
+    point_count = 6
+    channels = {
+        "x": quantize_int16(np.arange(point_count), 10),
+        "y": quantize_int16(np.zeros(point_count), 10),
+        "speed": quantize_int16(np.full(point_count, 200), 10),
+        "throttle": quantize_int16(np.full(point_count, 50), 1),
+        "brake": quantize_int16(np.zeros(point_count), 1),
+        "gear": quantize_int16(np.full(point_count, 6), 1),
+    }
+    bin_path = tmp_path / "LEC.bin"
+    manifest_path = tmp_path / "manifest.json"
+
+    written = tuple(name for name in LINE_CHANNELS if name in channels)
+    count = write_line_binary(bin_path, channels)
+    upsert_manifest_driver(manifest_path, "LEC", count, channels=written)
+
+    raw = np.frombuffer(bin_path.read_bytes(), dtype="<i2")
+    assert raw.size == point_count * len(written)
+
+    manifest = json.loads(manifest_path.read_text())
+    assert "z" not in manifest["channels"]
+    assert manifest["channels"] == list(written)
+    # Decoding by the manifest's own stride recovers x, which is the
+    # property that actually matters to the frontend.
+    stride = len(manifest["channels"])
+    assert list(raw[0::stride]) == [i * 10 for i in range(point_count)]
 
 
 def test_manifest_upsert_keeps_other_drivers(tmp_path):

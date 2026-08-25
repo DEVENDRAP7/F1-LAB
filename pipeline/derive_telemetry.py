@@ -61,6 +61,16 @@ def align_to_location(location: list[dict], car_data: list[dict]) -> dict:
         "y": np.array([r["y"] for r in location], dtype=float),
     }
 
+    # Elevation, when the feed carries it. It is documented nowhere and
+    # is flat at some circuits, so it is carried through here and judged
+    # later, on the lap itself, rather than trusted or dismissed now.
+    z = np.array(
+        [np.nan if r.get("z") is None else float(r["z"]) for r in location],
+        dtype=float,
+    )
+    if np.isfinite(z).all() and z.size:
+        out["z"] = z
+
     if not car_data:
         return out
 
@@ -182,8 +192,11 @@ def build_racing_line(aligned: dict, units_per_metre: float) -> dict | None:
     distance = distance[keep]
 
     channels = {"x": x[keep], "y": y[keep]}
+    if "z" in aligned:
+        # Same raw unit as x and y, so the same measured scale applies.
+        channels["z"] = (aligned["z"] / units_per_metre)[keep]
     for name in LINE_CHANNELS:
-        if name in ("x", "y"):
+        if name in ("x", "y", "z"):
             continue
         if name in aligned:
             channels[name] = aligned[name][keep]
@@ -207,3 +220,57 @@ def build_outline_from_line(line: dict, max_points: int = 1200) -> list[list[flo
     y = np.asarray(line["y"])
     step = max(1, int(np.ceil(len(x) / max_points)))
     return [[round(float(a), 1), round(float(b), 1)] for a, b in zip(x[::step], y[::step])]
+
+
+# An elevation channel that varies by less than this over a whole lap is
+# not elevation: it is the feed reporting a constant, or noise around
+# one. Spa climbs about 100 m and Zandvoort about 15, so a real profile
+# clears this by an order of magnitude — and a circuit that genuinely is
+# flat is better described as having no published profile than as having
+# a two-metre one drawn at full scale.
+MIN_ELEVATION_RANGE_M = 3.0
+
+
+def elevation_summary(line: dict) -> dict:
+    """Whether this lap's z channel carries a usable elevation profile.
+
+    Returns the range either way: a refusal that states the number it
+    refused on is checkable, and a silent absence is not.
+    """
+    z = line.get("z") if line else None
+    if z is None or len(z) == 0:
+        return {
+            "usable": False,
+            "reason": "the position feed published no elevation for this lap",
+        }
+
+    z = np.asarray(z, dtype=float)
+    finite = z[np.isfinite(z)]
+    if finite.size < 2:
+        return {
+            "usable": False,
+            "reason": "the elevation channel is empty for this lap",
+        }
+
+    span = float(finite.max() - finite.min())
+    if span < MIN_ELEVATION_RANGE_M:
+        return {
+            "usable": False,
+            "rangeM": round(span, 2),
+            "reason": (
+                f"the elevation channel varies by only {span:.1f}m over the lap, "
+                f"below the {MIN_ELEVATION_RANGE_M:.0f}m floor this project treats "
+                "as a real profile"
+            ),
+        }
+
+    return {
+        "usable": True,
+        "rangeM": round(span, 2),
+        "minM": round(float(finite.min()), 2),
+        "maxM": round(float(finite.max()), 2),
+        "source": (
+            "OpenF1 position z, on the same measured unit as x and y; relative to "
+            "the feed's own datum, not to sea level"
+        ),
+    }
