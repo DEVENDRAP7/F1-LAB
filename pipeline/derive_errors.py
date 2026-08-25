@@ -78,8 +78,8 @@ def neutralised_laps(race_control: list[dict]) -> set[int]:
     probed rather than guessed after a guessed version marked 41 of about
     72 laps at Zandvoort as neutralised:
 
-        [SafetyCar] VSC DEPLOYED  /  VSC ENDING      <- the real pairs
-        [Other]     SAFETY CAR LIGHTS ON            <- NOT a period start
+        [SafetyCar] VSC DEPLOYED  /  VSC ENDING      <- explicit pairs
+        [Other]     SAFETY CAR LIGHTS ON            <- real, but no "off"
         [Flag]      GREEN LIGHT - PIT EXIT OPEN     <- NOT a restart
 
     Only the SafetyCar category opens and closes a period. The first
@@ -108,6 +108,17 @@ def neutralised_laps(race_control: list[dict]) -> set[int]:
                     open_at = None
             elif "DEPLOYED" in message and lap:
                 open_at = int(lap)
+        elif "SAFETY CAR LIGHTS ON" in message and lap:
+            # A real safety car, but this message has no published "off"
+            # counterpart, so it opens a BOUNDED period rather than a
+            # latching one. Ignoring it entirely was the overcorrection
+            # after the latch: it left the genuine start-of-race safety
+            # car at Zandvoort unexcluded, and laps behind it showed as
+            # +69s and +86s "major" flags against a named driver.
+            if open_at is None:
+                open_at = int(lap)
+                intervals.append((open_at, open_at + MAX_UNTERMINATED_NEUTRAL_LAPS))
+                open_at = None
         elif row.get("flag") == "RED" and lap:
             # A red flag stops the race; treat the lap it fell on as
             # neutralised and let a later restart close it.

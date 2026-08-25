@@ -76,12 +76,11 @@ def test_vsc_period_covers_its_own_laps():
     assert neutralised_laps(rows) == {55, 56, 57}
 
 
-def test_safety_car_lights_on_does_not_open_a_period():
-    """The bug that marked 41 of ~72 Zandvoort laps as neutralised.
-    'SAFETY CAR LIGHTS ON' is published under Other during the start
-    procedure and never has a matching 'off', so treating it as a period
-    start left one open — and a race carries hundreds of lap-numbered
-    messages to sweep in behind it."""
+def test_safety_car_lights_on_opens_a_bounded_period_not_a_latch():
+    """Both extremes have been wrong here. Latching on this message
+    swallowed 41 of ~72 Zandvoort laps; ignoring it left that race's real
+    start-of-race safety car unexcluded, showing +69s and +86s as 'major'
+    flags against a named driver. It opens a bounded period."""
     rows = [
         rc("2026-08-23T13:00:00", "Other", "SAFETY CAR LIGHTS ON", lap_number=1),
         rc("2026-08-23T13:02:00", "Other", "SAFETY CAR LIGHTS ON", lap_number=3),
@@ -90,7 +89,12 @@ def test_safety_car_lights_on_does_not_open_a_period():
         rc("2026-08-23T13:50:00", "SafetyCar", "VSC DEPLOYED", lap_number=70),
         rc("2026-08-23T13:51:00", "SafetyCar", "VSC ENDING", lap_number=70),
     ]
-    assert neutralised_laps(rows) == {70}
+    laps = neutralised_laps(rows)
+    # The real start-of-race neutralisation is covered...
+    assert {2, 4, 5} <= laps
+    # ...but it does not run away into the middle of the race.
+    assert 40 not in laps
+    assert 70 in laps
 
 
 def test_green_pit_exit_message_is_not_a_restart():
