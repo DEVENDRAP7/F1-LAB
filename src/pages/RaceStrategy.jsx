@@ -107,6 +107,16 @@ export default function RaceStrategy() {
     return order.filter((c) => present.has(c));
   }, [data]);
 
+  // Open on the most recent race that has been run, the way the other
+  // per-round pages do. Defaulting to round 1 meant the page opened on
+  // the oldest race in the season by accident.
+  useEffect(() => {
+    if (season.status !== 'ready' || round) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const run = season.data.calendar.filter((r) => r.date <= today);
+    if (run.length > 0) setRound(String(run[run.length - 1].round));
+  }, [season, round]);
+
   const degradationRows = useMemo(() => {
     if (!data) return [];
     const wanted = selected.length > 0 ? new Set(selected) : null;

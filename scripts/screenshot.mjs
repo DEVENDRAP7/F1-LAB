@@ -53,7 +53,9 @@ async function openStrategy(page, driverCount) {
   page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
   page.on('response', (r) => r.status() >= 400 && problems.push(`HTTP ${r.status()} ${r.url()}`));
   await page.goto(`http://localhost:${PORT}${BASE}/#/strategy`, { waitUntil: 'networkidle' });
-  await page.selectOption('select', '1');
+  // Round 12 is the newest race and the one with a matched compound set,
+  // so the shot shows the tyre colouring rather than the fallback ramp.
+  await page.selectOption('select', '12');
   await page.waitForTimeout(1200);
   const chips = await page.$$('.driver-chip input');
   for (const chip of chips.slice(0, driverCount)) {
