@@ -34,32 +34,43 @@ spec) before contributing.
 - **Circuit Atlas** — the verified calendar. No track geometry; see
   "Where the data stops" below.
 
-## Where the data stops
+## Where the data comes from
 
-The site draws on two sources, and only one of them answers.
+Three public sources, none of them official.
 
 **Jolpica-F1** (the Ergast successor) serves the schedule, entry list,
-results, standings, lap times and pit stops. Everything live on the site
-comes from it.
+results, standings, lap times and pit stops — the whole championship
+side of the site, plus the historical priors behind the Upcoming brief.
 
-**The Formula 1 live-timing service** is the only public source of car
-position and telemetry — the channel behind racing lines, track maps,
-corner analysis, tyre compounds and any aerodynamic estimate. It returns
-**HTTP 403 to every request from a datacenter IP**, including its own
-root and a prior-season control, so this is the network origin being
-refused rather than anything specific to 2026. FastF1's own fallback
-mirror answers but does not carry this season.
+**OpenF1** serves car position (x/y/z), car telemetry (speed, throttle,
+brake, gear, DRS, rpm), stints with tyre compounds, race-control flags
+including safety cars, and intervals. The track outlines and racing
+lines are built from it.
 
-That was measured, not assumed. `pipeline/diagnose_sources.py` probes
-every endpoint and prints the status codes; run it via the "Diagnose data
-sources" workflow whenever the telemetry side goes quiet.
+**The Formula 1 live-timing service** returns **HTTP 403 to every
+request from a datacenter IP**, including its own root and a
+prior-season control, so this is the network origin being refused rather
+than anything specific to this season. FastF1 depends on it and is
+therefore unavailable here.
 
-The consequence is deliberate and visible in the UI: modules that need
-telemetry (Circuit Atlas geometry, Racing Lines, Driver Error Review,
-Aero Explainer) show an empty state explaining the block. Drawing
-approximate track outlines or inventing tyre compounds would look
-finished and would be fabricated. Unblocking this needs ingest from a
-residential IP or a self-hosted runner.
+That last finding is measured, not assumed — `pipeline/diagnose_sources.py`
+probes every endpoint and prints status codes; run it via the "Diagnose
+data sources" workflow.
+
+### A correction worth recording
+
+For most of this project's life that 403 was documented here as the
+reason four modules shipped permanently empty. That was an overreach.
+The 403 establishes that *one host* refuses this network; it says
+nothing about whether the underlying data is obtainable elsewhere, and
+nobody had checked. OpenF1 answers 200 from the same runners and carries
+the same channels, so Racing Lines and Circuit Atlas geometry are now
+built from real position traces.
+
+The lesson is kept in the repo rather than quietly edited away: a
+measurement ("this host refuses us") and a conclusion ("this data cannot
+be had") are different claims, and the gap between them cost this
+project four modules.
 
 ## Model limitations
 

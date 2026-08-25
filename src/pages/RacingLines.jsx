@@ -19,7 +19,10 @@ const SESSIONS = ['FP1', 'FP2', 'FP3', 'Q', 'S', 'R'];
 export default function RacingLines() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
   const [round, setRound] = useState('');
-  const [session, setSession] = useState('Q');
+  // Defaults to the race: that is the session the pipeline exports
+  // position data for, so opening on any other one would show an empty
+  // state on a page that does have data.
+  const [session, setSession] = useState('R');
   const [manifest, setManifest] = useState({ status: 'idle', data: null, error: null });
   const [selected, setSelected] = useState([]);
   const [lines, setLines] = useState({});

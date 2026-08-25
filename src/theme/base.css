@@ -775,3 +775,15 @@ tr.is-muted td {
   width: 100%;
   min-width: 0;
 }
+
+/* ---------- circuit atlas ---------- */
+
+.track-map-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 1rem;
+}
+
+.track-map-wrap .track-map {
+  max-width: 560px;
+}

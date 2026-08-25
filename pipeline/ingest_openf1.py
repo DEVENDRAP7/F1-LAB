@@ -38,6 +38,7 @@ import datetime
 import time
 
 import requests
+from urllib.parse import urlencode
 
 OPENF1_BASE = "https://api.openf1.org/v1"
 
@@ -57,7 +58,26 @@ TIMEOUT_S = 60
 LAP_WINDOW_PAD_S = 1.5
 
 
-def _get(path: str, params: dict) -> list[dict]:
+def _range_filter(field: str, op: str, value: str) -> str:
+    """Build one of OpenF1's comparison filters as a raw query fragment.
+
+    These cannot go through requests' `params`. OpenF1 spells a range
+    filter `date>2026-08-23T13:00:00`, with the operator as a literal
+    character in the query string, and percent-encoding it to `date%3E=`
+    stops it matching — the API then ignores the filter and returns the
+    whole session. That failure is silent and expensive in exactly the
+    wrong way: the request still answers 200 with plausible rows, so a
+    "one lap" fetch quietly becomes a whole race, and the racing line
+    derived from it would be the entire race's path rather than a lap.
+
+    The timestamp is normalised to naive UTC for the same reason: a
+    '+00:00' offset encodes to '%2B00:00' and breaks the comparison.
+    """
+    stamp = value.replace("+00:00", "").replace("Z", "")
+    return f"{field}{op}{stamp}"
+
+
+def _get(path: str, params: dict, raw_filters: list[str] | None = None) -> list[dict]:
     """One OpenF1 GET, retrying through rate limiting.
 
     A 404 here means "no rows matched", not "endpoint missing" — OpenF1
@@ -67,6 +87,12 @@ def _get(path: str, params: dict) -> list[dict]:
     the caller decides whether emptiness is a problem.
     """
     url = f"{OPENF1_BASE}/{path}"
+    if raw_filters:
+        encoded = urlencode(params)
+        url = f"{url}?{encoded}&{'&'.join(raw_filters)}" if encoded else \
+              f"{url}?{'&'.join(raw_filters)}"
+        params = None
+
     for attempt in range(MAX_RETRIES):
         resp = requests.get(url, params=params, timeout=TIMEOUT_S)
         if resp.status_code == 429:
@@ -237,12 +263,11 @@ def fetch_lap_location(session_key: int, driver_number: int, lap: dict) -> list[
     if window is None:
         return []
     begin, end = window
-    rows = _get("location", {
-        "session_key": session_key,
-        "driver_number": driver_number,
-        "date>": begin,
-        "date<": end,
-    })
+    rows = _get(
+        "location",
+        {"session_key": session_key, "driver_number": driver_number},
+        [_range_filter("date", ">", begin), _range_filter("date", "<", end)],
+    )
     out = []
     for r in rows:
         if r.get("x") is None or r.get("y") is None:
@@ -254,7 +279,37 @@ def fetch_lap_location(session_key: int, driver_number: int, lap: dict) -> list[
             "z": r.get("z"),
         })
     out.sort(key=lambda r: r["date"] or "")
+    _assert_window_honoured(out, lap, "location")
     return out
+
+
+def _assert_window_honoured(rows: list[dict], lap: dict, channel: str) -> None:
+    """Fail loudly if the API returned far more than the lap asked for.
+
+    The range filter is a query-string convention, not a typed parameter:
+    if its spelling ever stops matching, OpenF1 does not error, it just
+    ignores the filter and returns the whole session with a 200. The
+    result still parses, still looks like telemetry, and would quietly
+    turn a one-lap racing line into the entire race's path.
+
+    Comparing the span of what came back against the lap that was
+    requested turns that silent corruption into a visible failure.
+    """
+    duration = lap.get("lapDurationS")
+    if not rows or not duration:
+        return
+    first = _parse_iso(rows[0].get("date"))
+    last = _parse_iso(rows[-1].get("date"))
+    if first is None or last is None:
+        return
+    span = (last - first).total_seconds()
+    allowed = float(duration) + 4 * LAP_WINDOW_PAD_S
+    if span > allowed * 2:
+        raise RuntimeError(
+            f"OpenF1 {channel} ignored the lap window: asked for ~{duration:.1f}s "
+            f"and got {span:.1f}s of samples. The range filter is not matching — "
+            "check that the operator is a literal '>' and not percent-encoded."
+        )
 
 
 def fetch_lap_car_data(session_key: int, driver_number: int, lap: dict) -> list[dict]:
@@ -262,12 +317,11 @@ def fetch_lap_car_data(session_key: int, driver_number: int, lap: dict) -> list[
     if window is None:
         return []
     begin, end = window
-    rows = _get("car_data", {
-        "session_key": session_key,
-        "driver_number": driver_number,
-        "date>": begin,
-        "date<": end,
-    })
+    rows = _get(
+        "car_data",
+        {"session_key": session_key, "driver_number": driver_number},
+        [_range_filter("date", ">", begin), _range_filter("date", "<", end)],
+    )
     out = [
         {
             "date": r.get("date"),
@@ -281,4 +335,5 @@ def fetch_lap_car_data(session_key: int, driver_number: int, lap: dict) -> list[
         for r in rows
     ]
     out.sort(key=lambda r: r["date"] or "")
+    _assert_window_honoured(out, lap, "car_data")
     return out
