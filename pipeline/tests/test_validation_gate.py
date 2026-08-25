@@ -96,9 +96,30 @@ class TestLapsSchemaVersioning:
     """
 
     def _round(self, tmp_path, monkeypatch, existing: dict | None):
+        """A round on disk under a temporary public/data, with no network.
+
+        Both halves of that matter, and the second one was learned the
+        hard way. These tests only exercise the decision to rebuild, but
+        `refresh_race_laps` goes on to fetch and export, and `export` holds
+        its own reference to PUBLIC_DATA — redirecting run_refresh's alone
+        left the write pointing at the repository. On CI, where the
+        network works, this suite therefore re-exported round 1 into the
+        real public/data with the fixture's raceName, and "X" was
+        committed as the Australian Grand Prix on every refresh.
+        """
+        import export
+        import ingest
         import run_refresh
 
         monkeypatch.setattr(run_refresh, "PUBLIC_DATA", tmp_path)
+        monkeypatch.setattr(export, "PUBLIC_DATA", tmp_path)
+
+        def no_network(*args, **kwargs):
+            raise RuntimeError("network is not used by this test")
+
+        monkeypatch.setattr(ingest, "fetch_laps", no_network)
+        monkeypatch.setattr(ingest, "fetch_pitstops", no_network)
+
         out = tmp_path / "2026" / "1" / "R"
         out.mkdir(parents=True)
         if existing is not None:
@@ -136,8 +157,8 @@ class TestLapsSchemaVersioning:
 
     def test_re_exports_a_round_written_at_an_older_version(self, tmp_path, monkeypatch, capsys):
         run_refresh, _ = self._round(tmp_path, monkeypatch, {"schemaVersion": 1})
-        # Network is unavailable in tests, so it fails after deciding to
-        # rebuild — the decision itself is what matters here.
+        # The fetch is stubbed out, so it fails after deciding to rebuild
+        # — the decision itself is what matters here.
         run_refresh.refresh_race_laps(2026, {"round": 1, "raceName": "X"})
         out = capsys.readouterr().out
         assert "re-exporting" in out
