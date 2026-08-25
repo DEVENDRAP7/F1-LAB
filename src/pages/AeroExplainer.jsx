@@ -13,6 +13,7 @@ import EmptyState from '../components/EmptyState.jsx';
 import GGDiagram from '../components/GGDiagram.jsx';
 import EnvelopeChart from '../components/EnvelopeChart.jsx';
 import GripMap from '../components/GripMap.jsx';
+import { detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 
 // M8 — Aero Explainer, the measurable half.
 //
@@ -43,6 +44,7 @@ export default function AeroExplainer() {
   const [manifest, setManifest] = useState({ status: 'idle', data: null });
   const [selected, setSelected] = useState([]);
   const [lines, setLines] = useState({});
+  const [highlightTurn, setHighlightTurn] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -147,6 +149,15 @@ export default function AeroExplainer() {
         };
       });
   }, [manifest, selected, lines]);
+
+  // Turns are detected for the driver whose lap the map is drawing. They
+  // are not comparable between drivers: the count and the numbering both
+  // depend on where that driver's stored lap begins and on whether a
+  // given kink loaded their car enough to register.
+  const turns = useMemo(
+    () => (series[0] ? detectTurns(series[0].trace) : []),
+    [series],
+  );
 
   const pastRounds = useMemo(() => {
     if (!season.data) return [];
@@ -290,21 +301,76 @@ export default function AeroExplainer() {
               <h2>Where the load is</h2>
               <p className="panel-note">
                 {series[0]?.code ?? 'The'} driven lap, coloured by the lateral g being
-                carried at each point of it. The braking zones and the corner apexes are
-                not labelled here — they are simply where the colour changes. Colour is
-                smoothed over about 20 m of track so a corner reads as a corner; hover
-                the line for the unsmoothed figure at a point.
+                carried at each point of it — the braking zones and the corner exits are
+                where the colour changes. Markers sit at the strongest point of each
+                detected turn. Colour is smoothed over about 20 m of track so a corner
+                reads as a corner; hover the line for the unsmoothed figure at a point.
               </p>
             </div>
             {series.length === 0 ? (
               <p className="panel-note">Select a driver to draw their lap.</p>
             ) : (
-              <GripMap
-                points={series[0].points}
-                lateralG={series[0].trace.lateralG}
-                speedKph={series[0].trace.speedKph}
-                height={520}
-              />
+              <>
+                <GripMap
+                  points={series[0].points}
+                  lateralG={series[0].trace.lateralG}
+                  speedKph={series[0].trace.speedKph}
+                  turns={turns}
+                  highlight={highlightTurn}
+                  height={520}
+                />
+                {turns.length > 0 && (
+                  <>
+                    <p className="panel-note">
+                      {turns.length} turns detected on this lap: a stretch carrying at least{' '}
+                      <span className="mono">{TURN_DEFAULTS.gThreshold.toFixed(1)}g</span> of
+                      lateral load for at least{' '}
+                      <span className="mono">{TURN_DEFAULTS.minLengthM}m</span>, with a brief
+                      release in the middle treated as one turn rather than two. These are
+                      not the circuit's official corner numbers — no source here publishes
+                      those — so they are numbered in the order this lap meets them, and the
+                      numbering does not carry across drivers.
+                    </p>
+                    <div className="table-scroll table-compact">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th scope="col">Turn</th>
+                            <th scope="col">Direction</th>
+                            <th scope="col" className="tabular">Entry</th>
+                            <th scope="col" className="tabular">Minimum</th>
+                            <th scope="col" className="tabular">Sustained load</th>
+                            <th scope="col" className="tabular">Length</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {turns.map((turn) => (
+                            <tr
+                              key={turn.number}
+                              className={highlightTurn === turn.number ? 'is-on' : undefined}
+                              onMouseEnter={() => setHighlightTurn(turn.number)}
+                              onMouseLeave={() => setHighlightTurn(null)}
+                            >
+                              <td className="mono">T{turn.number}</td>
+                              <td>{turn.direction}</td>
+                              <td className="tabular">
+                                {Math.round(turn.entrySpeedKph)} km/h
+                              </td>
+                              <td className="tabular">
+                                {Math.round(turn.minSpeedKph)} km/h
+                              </td>
+                              <td className="tabular">
+                                {turn.sustainedLateralG.toFixed(1)}g
+                              </td>
+                              <td className="tabular">{turn.lengthM} m</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </>
             )}
           </section>
 

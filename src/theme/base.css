@@ -1255,3 +1255,8 @@ tr.is-muted td {
   margin-top: 0.7rem;
   padding-top: 0.6rem;
 }
+
+/* A row the reader is pointing at, echoed on the map beside it. */
+tbody tr.is-on {
+  background: var(--accent-glow);
+}

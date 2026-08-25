@@ -62,7 +62,7 @@ function bandFor(value) {
   return band;
 }
 
-export default function GripMap({ points, lateralG, speedKph, height = 420 }) {
+export default function GripMap({ points, lateralG, speedKph, turns = [], highlight = null, height = 420 }) {
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
   const [width, setWidth] = useState(560);
@@ -150,6 +150,26 @@ export default function GripMap({ points, lateralG, speedKph, height = 420 }) {
       ctx.stroke();
     }
 
+    // Detected turns, numbered in lap order. The number is this project's
+    // own count, not the circuit's official corner numbering — nothing
+    // here publishes that — and the page says so beside the table.
+    ctx.font = '600 11px ui-monospace, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const turn of turns) {
+      const [tx, ty] = project(points[turn.apexIndex]);
+      const on = highlight === turn.number;
+      ctx.beginPath();
+      ctx.arc(tx, ty, on ? 11 : 9, 0, Math.PI * 2);
+      ctx.fillStyle = on ? cssToken('--accent-0') : cssToken('--bg-1');
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = on ? cssToken('--accent-0') : cssToken('--line-strong');
+      ctx.stroke();
+      ctx.fillStyle = on ? cssToken('--bg-0') : cssToken('--ink-1');
+      ctx.fillText(String(turn.number), tx, ty + 0.5);
+    }
+
     if (hover != null) {
       const [hx, hy] = project(points[hover]);
       ctx.strokeStyle = cssToken('--ink-0');
@@ -158,7 +178,7 @@ export default function GripMap({ points, lateralG, speedKph, height = 420 }) {
       ctx.arc(hx, hy, 6, 0, Math.PI * 2);
       ctx.stroke();
     }
-  }, [points, shaded, project, size, hover]);
+  }, [points, shaded, project, size, hover, turns, highlight]);
 
   if (!bounds || !points || points.length < 2) return null;
 
