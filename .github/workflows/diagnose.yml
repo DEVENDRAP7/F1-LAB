@@ -32,6 +32,11 @@ on:
         type: boolean
         required: false
         default: false
+      race_control:
+        description: print the race-control message vocabulary actually published
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -58,4 +63,5 @@ jobs:
             --session "${{ inputs.session }}" \
             --circuit "${{ inputs.circuit }}" \
             ${{ inputs.openf1 && '--openf1' || '' }} \
-            ${{ inputs.openf1_window && '--openf1-window' || '' }}
+            ${{ inputs.openf1_window && '--openf1-window' || '' }} \
+            ${{ inputs.race_control && '--race-control' || '' }}

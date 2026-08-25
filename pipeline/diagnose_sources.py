@@ -284,6 +284,42 @@ def probe_openf1_window(year: int) -> None:
     print(f"  car_data rows={len(car)}")
 
 
+def probe_race_control(year: int) -> None:
+    """Print the race-control vocabulary actually published.
+
+    The neutralised-lap detector was written against guessed phrases and
+    latched on: it never saw an end message it recognised, so it marked
+    41 of ~72 laps at Zandvoort as run under a safety car. Rather than
+    guess the wording a second time, this prints the real messages so the
+    parser can be written against them.
+    """
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent))
+    import ingest_openf1
+
+    print(f"\n=== Race control vocabulary ({year}) ===")
+    sessions = ingest_openf1.fetch_race_sessions(year)
+    if not sessions:
+        print("  no sessions run")
+        return
+    for session in sessions[-2:]:
+        key = session["sessionKey"]
+        print(f"\n  session {key} {session['countryName']}")
+        rows = ingest_openf1.fetch_race_control(key)
+        cats = {}
+        for r in rows:
+            cats.setdefault(r.get("category"), []).append(r)
+        for cat, items in sorted(cats.items(), key=lambda kv: str(kv[0])):
+            print(f"    {cat}: {len(items)}")
+        for r in rows:
+            msg = (r.get("message") or "")
+            if "SAFETY CAR" in msg.upper() or r.get("category") == "SafetyCar" \
+               or r.get("flag") in ("RED", "GREEN"):
+                print(f"      L{r.get('lapNumber')} [{r.get('category')}]"
+                      f"[{r.get('flag')}] {msg[:88]}")
+
+
 def probe_circuit_history(circuit_id: str, years: list[int]) -> None:
     """Report what past editions of one circuit are actually queryable.
 
@@ -370,6 +406,11 @@ def main() -> int:
         action="store_true",
         help="check that OpenF1's lap-window range filter is actually applied",
     )
+    parser.add_argument(
+        "--race-control",
+        action="store_true",
+        help="print the race-control message vocabulary actually published",
+    )
     args = parser.parse_args()
 
     if args.circuit:
@@ -382,6 +423,10 @@ def main() -> int:
 
     if args.openf1_window:
         probe_openf1_window(args.year)
+        return 0
+
+    if args.race_control:
+        probe_race_control(args.year)
         return 0
 
     probe_http(args.year, args.round)
