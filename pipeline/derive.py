@@ -512,3 +512,70 @@ def racing_line_channels(lap) -> dict:
     _, resampled = resample_by_distance(distance, x_dm, y_dm, speed_x10, throttle, brake, gear)
     names = ("x", "y", "speed", "throttle", "brake", "gear")
     return dict(zip(names, resampled))
+
+
+def compute_points_progression(per_round: list[dict], points_system: dict) -> list[dict]:
+    """Cumulative points per driver after each completed round.
+
+    `per_round` is ordered: [{"round", "raceName", "sessions": [...]}]
+    where each session entry matches compute_standings_from_results'
+    input. Each snapshot re-runs that same engine on the prefix of
+    sessions so far — quadratic in rounds, which is nothing at 24, and it
+    guarantees the progression can never disagree with the standings
+    logic because there is only one implementation of the points rules.
+    """
+    progression = []
+    prefix: list[dict] = []
+    for round_entry in per_round:
+        prefix.extend(round_entry["sessions"])
+        snapshot = compute_standings_from_results(prefix, points_system)
+        progression.append(
+            {
+                "round": round_entry["round"],
+                "raceName": round_entry["raceName"],
+                "points": {row["driverCode"]: row["points"] for row in snapshot},
+            }
+        )
+    return progression
+
+
+def compute_elimination(standings: list[dict], remaining_rounds: list[dict],
+                        points_system: dict) -> dict:
+    """Who can no longer win the championship, on the most conservative
+    bound there is: a driver is eliminated only if taking maximum points
+    in every remaining round still leaves them short of the leader's
+    CURRENT total — i.e. even if the leader never scores again. Anything
+    weaker would be a prediction; this is arithmetic.
+
+    A driver exactly level on that bound is NOT eliminated: ties resolve
+    by countback, which depends on results that have not happened.
+    """
+    race_points = {int(k): v for k, v in points_system["race_points_by_position"].items()}
+    sprint_points = {int(k): v for k, v in points_system["sprint_points_by_position"].items()}
+    fastest_lap = points_system["fastest_lap_point"]["points"]
+
+    max_per_race = max(race_points.values()) + fastest_lap  # winner can also take FL
+    max_per_sprint = max(sprint_points.values())
+
+    remaining_max = 0
+    for round_entry in remaining_rounds:
+        remaining_max += max_per_race
+        if round_entry.get("sprint"):
+            remaining_max += max_per_sprint
+
+    leader_points = standings[0]["points"] if standings else 0.0
+
+    drivers = {}
+    for row in standings:
+        max_possible = row["points"] + remaining_max
+        drivers[row["driverCode"]] = {
+            "maxPossible": max_possible,
+            "eliminated": max_possible < leader_points,
+        }
+
+    return {
+        "remainingRounds": len(remaining_rounds),
+        "remainingMaxPoints": remaining_max,
+        "leaderPoints": leader_points,
+        "drivers": drivers,
+    }

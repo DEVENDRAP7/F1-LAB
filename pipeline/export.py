@@ -38,13 +38,17 @@ def export_season(season_config: dict) -> Path:
     return path
 
 
-def export_standings(standings: list[dict], generated_at: str, source_check: dict) -> Path:
+def export_standings(standings: list[dict], generated_at: str, source_check: dict,
+                     progression: list[dict] | None = None,
+                     elimination: dict | None = None) -> Path:
     PUBLIC_DATA.mkdir(parents=True, exist_ok=True)
     path = PUBLIC_DATA / "standings.json"
-    path.write_text(json.dumps(
-        {"standings": standings, "generated_at": generated_at, "source_check": source_check},
-        indent=2,
-    ))
+    payload = {"standings": standings, "generated_at": generated_at, "source_check": source_check}
+    if progression is not None:
+        payload["progression"] = progression
+    if elimination is not None:
+        payload["elimination"] = elimination
+    path.write_text(json.dumps(payload, indent=2))
     check_file_budget(path, MAX_FILE_BYTES)
     return path
 

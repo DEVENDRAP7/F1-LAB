@@ -183,6 +183,7 @@ def refresh_standings(year: int, calendar: list[dict]) -> None:
     """
     points_system = load_points_system()
     results_by_round = []
+    per_round = []  # ordered, for the points-progression snapshots
     failed_rounds = []
 
     for round_info in rounds_due(calendar):
@@ -197,10 +198,16 @@ def refresh_standings(year: int, calendar: list[dict]) -> None:
             print(f"[standings] round {round_info['round']}: could not fetch results ({exc})")
             failed_rounds.append(round_info["round"])
             continue
+        sessions = []
         if sprint_results["results"]:
-            results_by_round.append({"session": "sprint", "results": sprint_results["results"]})
+            sessions.append({"session": "sprint", "results": sprint_results["results"]})
         if race_results["results"]:
-            results_by_round.append({"session": "race", "results": race_results["results"]})
+            sessions.append({"session": "race", "results": race_results["results"]})
+        results_by_round.extend(sessions)
+        if sessions:
+            per_round.append(
+                {"round": round_info["round"], "raceName": round_info["raceName"], "sessions": sessions}
+            )
 
     if failed_rounds:
         print(
@@ -228,8 +235,30 @@ def refresh_standings(year: int, calendar: list[dict]) -> None:
         "note": "API standings unavailable this run — cross-check skipped, not passed",
     }
 
-    export.export_standings(computed, ingest._now_iso(), source_check)
-    print(f"[standings] exported {len(computed)} drivers, mismatch={source_check['mismatch']}")
+    progression = derive.compute_points_progression(per_round, points_system)
+
+    # The progression's final snapshot and the standings table come from
+    # the same engine over the same sessions, so any disagreement means a
+    # bug — fail the run (no commit happens) rather than publish two
+    # tables that contradict each other.
+    if progression:
+        final = progression[-1]["points"]
+        table = {row["driverCode"]: row["points"] for row in computed}
+        if final != table:
+            raise RuntimeError(
+                "points progression's final snapshot disagrees with the standings table — "
+                f"diff keys: {sorted(set(final) ^ set(table)) or 'values differ'}"
+            )
+
+    today = datetime.date.today()
+    remaining = [r for r in calendar if datetime.date.fromisoformat(r["date"]) > today]
+    elimination = derive.compute_elimination(computed, remaining, points_system)
+
+    export.export_standings(computed, ingest._now_iso(), source_check,
+                            progression=progression, elimination=elimination)
+    eliminated = sum(1 for d in elimination["drivers"].values() if d["eliminated"])
+    print(f"[standings] exported {len(computed)} drivers, mismatch={source_check['mismatch']}, "
+          f"{len(progression)} progression rounds, {eliminated} mathematically out")
 
 
 def main() -> int:
