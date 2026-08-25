@@ -56,9 +56,10 @@ INFORMATIONAL_FLAGS = {"BLUE"}
 # cause that is not the driver.
 FIRST_RACING_LAP = 2
 
-# Messages in these categories mark the field being neutralised, which is
-# what lets a slow lap be attributed to the race rather than the driver.
-NEUTRALISING_CATEGORIES = {"SafetyCar"}
+# How far an unterminated neutralisation is allowed to extend. Bounding
+# it matters because the alternative — running to the end of the race —
+# is exactly how a stuck period once swallowed 41 laps.
+MAX_UNTERMINATED_NEUTRAL_LAPS = 5
 
 
 def _parse(raw: str | None) -> datetime.datetime | None:
@@ -71,35 +72,57 @@ def _parse(raw: str | None) -> datetime.datetime | None:
 
 
 def neutralised_laps(race_control: list[dict]) -> set[int]:
-    """Laps run under a safety car or a red flag, from the real feed.
+    """Laps run under a virtual or full safety car, or a red flag.
 
-    Every neutralised lap this project excluded before today was
-    *guessed* at, by an outlier rule over field median pace, because no
-    track-status channel was reachable. This reads it off the published
-    messages instead, so a slow lap under a safety car is excluded
-    because it was under a safety car — not because it looked slow.
+    Written against the vocabulary the feed actually publishes, which was
+    probed rather than guessed after a guessed version marked 41 of about
+    72 laps at Zandvoort as neutralised:
+
+        [SafetyCar] VSC DEPLOYED  /  VSC ENDING      <- the real pairs
+        [Other]     SAFETY CAR LIGHTS ON            <- NOT a period start
+        [Flag]      GREEN LIGHT - PIT EXIT OPEN     <- NOT a restart
+
+    Only the SafetyCar category opens and closes a period. The first
+    version also opened one on any message containing "SAFETY CAR", which
+    caught "SAFETY CAR LIGHTS ON" — published on laps 1 and 3 as part of
+    the start procedure and never followed by an "off" message. The
+    period then stayed open, and because a race carries hundreds of
+    lap-numbered messages (Zandvoort had 252 blue flags alone), every
+    subsequent lap was swept in.
+
+    A period with no end is bounded rather than left open, so the same
+    class of mistake cannot silently swallow a race again.
     """
-    laps: set[int] = set()
-    active = False
+    intervals: list[tuple[int, int]] = []
+    open_at: int | None = None
+
     for row in sorted(race_control, key=lambda r: r.get("date") or ""):
-        category = row.get("category")
-        message = (row.get("message") or "").upper()
         lap = row.get("lapNumber")
+        message = (row.get("message") or "").upper()
+        category = row.get("category")
 
-        if category in NEUTRALISING_CATEGORIES or "SAFETY CAR" in message:
-            # "IN THIS LAP" / "SAFETY CAR IN THIS LAP" ends the period;
-            # anything else deploying it starts one.
-            if "IN THIS LAP" in message or "ENDING" in message:
-                active = False
-            else:
-                active = True
-        if row.get("flag") == "RED":
-            active = True
-        if row.get("flag") == "GREEN":
-            active = False
+        if category == "SafetyCar":
+            if "ENDING" in message or "IN THIS LAP" in message:
+                if open_at is not None and lap:
+                    intervals.append((open_at, int(lap)))
+                    open_at = None
+            elif "DEPLOYED" in message and lap:
+                open_at = int(lap)
+        elif row.get("flag") == "RED" and lap:
+            # A red flag stops the race; treat the lap it fell on as
+            # neutralised and let a later restart close it.
+            intervals.append((int(lap), int(lap)))
 
-        if active and lap:
-            laps.add(int(lap))
+    if open_at is not None:
+        # Never terminated. Bound it instead of running to the flag: a
+        # neutralisation that is genuinely this long is rare, and
+        # assuming it swallows the rest of the race is the failure this
+        # function already had once.
+        intervals.append((open_at, open_at + MAX_UNTERMINATED_NEUTRAL_LAPS))
+
+    laps: set[int] = set()
+    for start, end in intervals:
+        laps.update(range(min(start, end), max(start, end) + 1))
     return laps
 
 

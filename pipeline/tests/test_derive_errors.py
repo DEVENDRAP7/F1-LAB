@@ -66,21 +66,60 @@ def test_messages_naming_no_car_are_not_attributed():
     assert attributed_incidents(rows, CODES) == []
 
 
-def test_safety_car_laps_are_read_from_the_feed():
+def test_vsc_period_covers_its_own_laps():
+    """The real vocabulary, probed from the feed: VSC DEPLOYED / ENDING
+    under the SafetyCar category."""
     rows = [
-        rc("2026-08-23T13:05:00", "SafetyCar", "SAFETY CAR DEPLOYED", lap_number=5),
-        rc("2026-08-23T13:08:00", "SafetyCar", "SAFETY CAR IN THIS LAP", lap_number=8),
+        rc("2026-08-23T13:05:00", "SafetyCar", "VSC DEPLOYED", lap_number=55),
+        rc("2026-08-23T13:08:00", "SafetyCar", "VSC ENDING", lap_number=57),
     ]
+    assert neutralised_laps(rows) == {55, 56, 57}
+
+
+def test_safety_car_lights_on_does_not_open_a_period():
+    """The bug that marked 41 of ~72 Zandvoort laps as neutralised.
+    'SAFETY CAR LIGHTS ON' is published under Other during the start
+    procedure and never has a matching 'off', so treating it as a period
+    start left one open — and a race carries hundreds of lap-numbered
+    messages to sweep in behind it."""
+    rows = [
+        rc("2026-08-23T13:00:00", "Other", "SAFETY CAR LIGHTS ON", lap_number=1),
+        rc("2026-08-23T13:02:00", "Other", "SAFETY CAR LIGHTS ON", lap_number=3),
+        rc("2026-08-23T13:30:00", "Flag", "WAVED BLUE FLAG FOR CAR 16 (LEC)",
+           driver=16, lap_number=40, flag="BLUE"),
+        rc("2026-08-23T13:50:00", "SafetyCar", "VSC DEPLOYED", lap_number=70),
+        rc("2026-08-23T13:51:00", "SafetyCar", "VSC ENDING", lap_number=70),
+    ]
+    assert neutralised_laps(rows) == {70}
+
+
+def test_green_pit_exit_message_is_not_a_restart():
+    """'GREEN LIGHT - PIT EXIT OPEN' is published on lap 1 and is not a
+    race restart, so it must not close a period that is genuinely open."""
+    rows = [
+        rc("2026-08-23T13:00:00", "SafetyCar", "VSC DEPLOYED", lap_number=5),
+        rc("2026-08-23T13:00:30", "Flag", "GREEN LIGHT - PIT EXIT OPEN",
+           lap_number=5, flag="GREEN"),
+        rc("2026-08-23T13:02:00", "SafetyCar", "VSC ENDING", lap_number=7),
+    ]
+    assert neutralised_laps(rows) == {5, 6, 7}
+
+
+def test_unterminated_period_is_bounded_not_left_running():
+    """Running an unterminated period to the flag is how it swallowed a
+    race once already."""
+    rows = [rc("2026-08-23T13:05:00", "SafetyCar", "VSC DEPLOYED", lap_number=10)]
     laps = neutralised_laps(rows)
-    assert 5 in laps
-    assert 8 not in laps
+    assert 10 in laps
+    assert max(laps) - 10 <= 5
+    assert 60 not in laps
 
 
 def test_slow_lap_under_safety_car_is_not_flagged():
     """The whole reason the track-status feed was worth having: a slow
     lap behind a safety car is the race, not the driver."""
-    laps = [lap(n, 16, 80.0) for n in range(1, 11)]
-    laps.append(lap(11, 16, 110.0))  # 30s slower, but neutralised
+    laps = [lap(n, 16, 80.0) for n in range(1, 12)]
+    laps[10] = lap(11, 16, 110.0)  # 30s slower, but neutralised
 
     without = flag_slow_laps(laps, CODES, neutralised=set())
     assert any(f["lap"] == 11 for f in without)
