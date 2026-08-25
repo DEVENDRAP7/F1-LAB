@@ -936,6 +936,17 @@ tr.is-muted td {
   min-width: 0;
 }
 
+/* Six columns do not fit in the compact width: the turn tables lost
+   their last column off the edge with no scrollbar to say so. */
+.table-wide {
+  max-width: min(100%, 56rem);
+}
+
+.table-wide table {
+  width: 100%;
+  min-width: 0;
+}
+
 /* ---------- circuit atlas ---------- */
 
 .track-map-wrap {

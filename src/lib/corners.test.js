@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectTurns, turnDeltas } from './corners.js';
+import { describeTurns, detectTurns, turnDeltas } from './corners.js';
 import { accelerationTrace } from './aero.js';
 
 // A synthetic lap: straight, corner, straight, corner, back to the start.
@@ -134,5 +134,45 @@ describe('turnDeltas', () => {
     // Four steps from sample 95 to the last one, then five more past the
     // line, at 0.01s each.
     expect(turn.deltaS).toBeCloseTo(0.09, 6);
+  });
+});
+
+describe('describeTurns', () => {
+  const channels = {
+    gear: new Int16Array(100),
+    brake: new Int16Array(100),
+  };
+  channels.gear.fill(7);
+  channels.gear[30] = 3; // apex gear
+  // On the brakes from 20 to 28, off again through the corner.
+  for (let i = 20; i < 28; i += 1) channels.brake[i] = 1;
+
+  const turns = [{ number: 1, startIndex: 28, endIndex: 40, apexIndex: 30 }];
+
+  it('reads the gear at the apex and the distance from the braking point', () => {
+    const [turn] = describeTurns(turns, channels);
+    expect(turn.gearAtApex).toBe(3);
+    expect(turn.apexDistanceM).toBe(60);
+    // Brake went on at sample 20 and the turn starts at 28: eight
+    // samples of 2 m before the turn, not counting the run to the apex.
+    expect(turn.brakingDistanceM).toBe(16);
+  });
+
+  it('says a turn was taken without braking rather than inventing a point', () => {
+    const noBrake = { gear: channels.gear, brake: new Int16Array(100) };
+    const [turn] = describeTurns(turns, noBrake);
+    expect(turn.brakingDistanceM).toBeNull();
+    expect(turn.brakingIndex).toBeNull();
+  });
+
+  it('finds a braking point that falls before the start of the lap', () => {
+    const wrapped = { gear: channels.gear, brake: new Int16Array(100) };
+    for (let i = 95; i < 99; i += 1) wrapped.brake[i] = 1;
+    const [turn] = describeTurns(
+      [{ number: 1, startIndex: 2, endIndex: 10, apexIndex: 4 }],
+      wrapped,
+    );
+    // On the brakes at 95, turn starts at 2: seven samples across the line.
+    expect(turn.brakingDistanceM).toBe(14);
   });
 });

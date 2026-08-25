@@ -182,3 +182,61 @@ export function turnDeltas(turns, delta) {
     return { number: turn.number, deltaS: end - start };
   });
 }
+
+// How far back from a turn to look for the braking point. Beyond this the
+// brake application belongs to something else — the previous corner's
+// entry, or a lift that never became a braking event for this turn.
+const BRAKING_LOOKBACK_M = 500;
+
+/**
+ * The detail a turn is driven with: what gear it was taken in, and where
+ * the driver got on the brakes for it.
+ *
+ * `channels` are the decoded, unscaled arrays (gear as a gear number,
+ * brake as 0 or 1 — what this source publishes). Both figures come
+ * straight from published channels rather than being inferred: the gear
+ * is the gear at the apex, and the braking point is the last place the
+ * brake went from off to on before the turn began.
+ *
+ * A turn with no braking point in range returns null for it, which is a
+ * real answer: a fast corner is taken without braking at all.
+ */
+export function describeTurns(turns, channels, ds = 2) {
+  const { gear, brake } = channels;
+  const n = brake?.length ?? 0;
+  const lookback = Math.round(BRAKING_LOOKBACK_M / ds);
+
+  return turns.map((turn) => {
+    const apexDistanceM = turn.apexIndex * ds;
+    const gearAtApex = gear ? gear[turn.apexIndex] : null;
+
+    let brakingIndex = null;
+    if (n > 0 && brake) {
+      for (let back = 0; back < lookback; back += 1) {
+        const i = (turn.startIndex - back + n * 2) % n;
+        const previous = (i - 1 + n) % n;
+        if (brake[i] > 0 && brake[previous] === 0) {
+          brakingIndex = i;
+          break;
+        }
+      }
+    }
+
+    // Measured to where the turn begins, not to the apex. A long banked
+    // corner puts its apex hundreds of metres past its entry, and "braking
+    // point 456 m before" read as though the driver had stood on the brakes
+    // half a straight early.
+    const brakingDistanceM = brakingIndex == null
+      ? null
+      : ((turn.startIndex - brakingIndex + n) % n) * ds;
+
+    return {
+      ...turn,
+      apexDistanceM,
+      gearAtApex,
+      brakingIndex,
+      // Metres of track between the brake going on and the turn's start.
+      brakingDistanceM,
+    };
+  });
+}

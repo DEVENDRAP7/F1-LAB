@@ -46,8 +46,28 @@ export default function TrackMap({ outline, corners = [], lines = [], marker = n
         const [cx, cy] = project([corner.x, corner.y]);
         return (
           <g key={corner.number}>
-            <circle cx={cx} cy={cy} r={4} fill="var(--ink-1)" />
-            <text x={cx + 6} y={cy - 6} className="mono" fontSize={10} fill="var(--ink-1)">
+            {/* A filled disc with the number inside it, rather than a dot
+                with a label floating beside it: on a map this size the
+                floating label reads as belonging to whichever bit of
+                track it happens to sit nearest. */}
+            <circle
+              cx={cx}
+              cy={cy}
+              r={9}
+              fill="var(--bg-1)"
+              stroke="var(--accent-0)"
+              strokeWidth={1.5}
+            />
+            <text
+              x={cx}
+              y={cy}
+              className="mono"
+              fontSize={10}
+              fontWeight={600}
+              fill="var(--ink-0)"
+              textAnchor="middle"
+              dominantBaseline="central"
+            >
               {corner.number}
             </text>
           </g>

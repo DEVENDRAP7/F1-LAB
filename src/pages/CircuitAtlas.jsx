@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import TrackMap from '../components/TrackMap.jsx';
+import { loadManifest, loadRacingLine } from '../lib/racingLine.js';
+import { accelerationTrace } from '../lib/aero.js';
+import { describeTurns, detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 
 // M1 — Circuit Atlas. The outline is a real driven lap: the position
 // trace of the fastest race lap, in metres, thinned but not smoothed.
@@ -9,9 +12,19 @@ import TrackMap from '../components/TrackMap.jsx';
 // follows the racing line, which is where a car actually went, and the
 // page says so rather than letting a reader assume a survey.
 //
-// Corner numbering and DRS zones stay absent. The position source
-// publishes neither, and numbering corners from memory would be exactly
-// the kind of invented detail that looks finished.
+// Turns are DETECTED, not looked up. The position source publishes no
+// corner numbering and neither does anything else this project reads, so
+// what the page shows is where this lap carried lateral load — computed
+// from the same published line the outline is drawn from, in the browser,
+// so there is one implementation of the detection and no second artifact
+// to fall out of step with the first.
+//
+// They are numbered in the order the lap meets them, which is not the
+// circuit's official numbering and is labelled as such. DRS zones stay
+// absent: the feed carries a DRS channel, but turning its integer codes
+// into "the flap was open here" needs a mapping this project has no
+// verified source for, and guessing it is the same mistake as numbering
+// corners from memory.
 
 export default function CircuitAtlas() {
   const [state, setState] = useState({ status: 'loading', season: null });
@@ -59,6 +72,52 @@ export default function CircuitAtlas() {
       cancelled = true;
     };
   }, [selected]);
+
+  const [turns, setTurns] = useState({ status: 'idle', rows: [], code: null });
+
+  // The circuit file records the round it was traced from, so the lap
+  // behind the outline is fetchable — and the turns are then detected on
+  // the very lap the reader is looking at rather than on some other one.
+  useEffect(() => {
+    const doc = circuit.data;
+    if (circuit.status !== 'ready' || !doc?.round) {
+      setTurns({ status: 'idle', rows: [], code: null });
+      return undefined;
+    }
+    let cancelled = false;
+    setTurns({ status: 'loading', rows: [], code: null });
+
+    (async () => {
+      try {
+        const manifest = await loadManifest(doc.round, 'R');
+        const code = manifest.laps?.[0]?.code ?? Object.keys(manifest.drivers)[0];
+        const channels = await loadRacingLine(doc.round, 'R', code, manifest);
+        if (cancelled) return;
+        const scale = manifest.scale;
+        const trace = accelerationTrace({
+          x: Array.from(channels.x, (v) => v / scale.x),
+          y: Array.from(channels.y, (v) => v / scale.y),
+          speed: Array.from(channels.speed, (v) => v / scale.speed),
+        });
+        const detected = describeTurns(detectTurns(trace), channels);
+        setTurns({
+          status: detected.length > 0 ? 'ready' : 'empty',
+          rows: detected,
+          code,
+          points: Array.from(channels.x, (v, i) => [v / scale.x, channels.y[i] / scale.y]),
+          lapTimeS: manifest.laps?.find((l) => l.code === code)?.lapTimeS ?? null,
+        });
+      } catch {
+        // A circuit whose round has no exported line still has an
+        // outline; it simply has no turns to describe.
+        if (!cancelled) setTurns({ status: 'empty', rows: [], code: null });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [circuit]);
 
   const runRounds = useMemo(() => {
     if (!state.season) return [];
@@ -129,7 +188,18 @@ export default function CircuitAtlas() {
           </div>
 
           <div className="track-map-wrap">
-            <TrackMap outline={doc.outline} corners={doc.corners ?? []} />
+            <TrackMap
+              outline={doc.outline}
+              corners={
+                turns.status === 'ready' && turns.points
+                  ? turns.rows.map((turn) => ({
+                    number: turn.number,
+                    x: turns.points[turn.apexIndex][0],
+                    y: turns.points[turn.apexIndex][1],
+                  }))
+                  : []
+              }
+            />
           </div>
 
           <div className="figure-grid">
@@ -149,6 +219,68 @@ export default function CircuitAtlas() {
               </div>
             )}
           </div>
+
+          {turns.status === 'ready' && (
+            <>
+              <div className="panel-head">
+                <h3>Detected turns</h3>
+                <p className="panel-note">
+                  {turns.rows.length} stretches of {turns.code}'s fastest race lap
+                  {turns.lapTimeS ? ` (${turns.lapTimeS.toFixed(3)}s)` : ''} carrying at
+                  least <span className="mono">{TURN_DEFAULTS.gThreshold.toFixed(1)}g</span>{' '}
+                  of lateral load for at least{' '}
+                  <span className="mono">{TURN_DEFAULTS.minLengthM}m</span>. Gear and
+                  braking point come straight from the published channels; the apex is the
+                  strongest point of the turn, and its distance is measured along the lap
+                  from the start/finish line. A turn "begins" where that load threshold is
+                  crossed rather than at the geometric turn-in, so a braking point on a
+                  long banked corner reads further back than a driver would describe it. These are not the circuit's official corner
+                  numbers — nothing here publishes those — so they are numbered in the
+                  order this lap meets them.
+                </p>
+              </div>
+              <div className="table-scroll table-wide">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Turn</th>
+                      <th scope="col" className="tabular">Entry</th>
+                      <th scope="col" className="tabular">Minimum</th>
+                      <th scope="col" className="tabular">Gear at apex</th>
+                      <th scope="col" className="tabular">Braking point</th>
+                      <th scope="col" className="tabular">Apex at</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {turns.rows.map((turn) => (
+                      <tr key={turn.number}>
+                        <td className="mono">
+                          T{turn.number}{' '}
+                          <span className="legend-fullname">{turn.direction}</span>
+                        </td>
+                        <td className="tabular">{Math.round(turn.entrySpeedKph)} km/h</td>
+                        <td className="tabular">{Math.round(turn.minSpeedKph)} km/h</td>
+                        <td className="tabular">{turn.gearAtApex ?? '—'}</td>
+                        <td className="tabular">
+                          {turn.brakingDistanceM == null
+                            ? 'no braking'
+                            : `${turn.brakingDistanceM} m before`}
+                        </td>
+                        <td className="tabular">{turn.apexDistanceM} m</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {turns.status === 'empty' && (
+            <p className="panel-note">
+              No racing line has been exported for this round yet, so there is an outline
+              here but nothing to detect turns on.
+            </p>
+          )}
 
           {doc.limitations?.length > 0 && (
             <ul className="reason-list">

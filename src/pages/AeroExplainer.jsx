@@ -331,7 +331,7 @@ export default function AeroExplainer() {
                       those — so they are numbered in the order this lap meets them, and the
                       numbering does not carry across drivers.
                     </p>
-                    <div className="table-scroll table-compact">
+                    <div className="table-scroll table-wide">
                       <table>
                         <thead>
                           <tr>

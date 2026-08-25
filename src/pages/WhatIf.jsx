@@ -437,7 +437,7 @@ export default function WhatIf() {
               the difference you are trying to read is a row that decides the answer.
             </p>
           </div>
-          <div className="table-scroll table-compact">
+          <div className="table-scroll table-wide">
             <table>
               <thead>
                 <tr>
