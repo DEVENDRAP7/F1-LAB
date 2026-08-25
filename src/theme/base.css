@@ -1094,3 +1094,11 @@ tr.is-muted td {
   letter-spacing: 0.04em;
   font-weight: 700;
 }
+
+/* The g-g diagram is square by construction, so it is centred rather
+ * than left-aligned in a panel that is much wider than it is tall. */
+.gg-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 8px;
+}

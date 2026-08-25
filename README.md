@@ -104,6 +104,12 @@ substantive ones:
   exclusion counts are shown alongside the table. Windows where the field
   was slowed are flagged rather than deleted, since without a
   track-status channel a neutralised period can only be suspected.
+- **Curvature is fitted, not differentiated.** Position arrives at about
+  3.7 Hz, over 20 m between fixes at racing speed, so a curve is fitted to
+  a window of the path that always spans several real fixes. A 2 m finite
+  difference on the same laps read 18-24g lateral — it was measuring the
+  interpolation between fixes, not the corner. Headline g figures are
+  99th percentiles rather than maxima for the same reason.
 - **No track-status channel at all**, so safety-car and traffic laps are
   excluded from fits by an outlier rule rather than by flag.
 - **The Upcoming brief's priors are weak by construction.** They come
@@ -123,13 +129,14 @@ reproducing a real race's time within 1% using the actual strategy, and
 that test currently skips for want of fitted per-race parameters. It
 stays unpublished until it passes.
 
-Driver Error Review and the Aero Explainer are deliberate
-`NotImplementedError` stubs. Their input data now exists — OpenF1
-carries the telemetry and a race-control feed with real safety-car
-periods — so the blocker on both is implementation, not availability.
-The Aero module additionally needs `config/regulations_2026.json`
-verified against the published FIA technical regulations rather than
-filled in from memory.
+The **Aero Explainer** ships only its measurable half. Lateral and
+longitudinal acceleration are computed from the published racing line —
+curvature fitted to the position trace, times speed squared — so they are
+measurements of the lap. The regulation half is absent: it needs
+`config/regulations_2026.json` verified against the published FIA
+technical regulations, and there is no source for downforce in newtons or
+`C_dA` without mass, air density and frontal area, none of which any feed
+here publishes. The page names all of that rather than filling it in.
 
 The telemetry backfill is incremental: each refresh builds at most four
 rounds, newest first, and skips rounds already exported. Rounds 9, 10
