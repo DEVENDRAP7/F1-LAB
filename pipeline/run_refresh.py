@@ -234,9 +234,22 @@ HISTORY_SEASONS = 4
 # Racing Lines module overlays up to 4 at once; exporting a few more than
 # that gives the picker something to choose between without turning one
 # round into a multi-megabyte download.
-LINE_DRIVERS_PER_ROUND = 6
+LINE_DRIVERS_PER_ROUND = 4
 
 TELEMETRY_SCHEMA_VERSION = 1
+
+# How many rounds may have their telemetry built in a single refresh.
+#
+# OpenF1 is free and rate-limited, and a full-season backfill is ~150
+# windowed requests. Attempting all of it in one run means the run
+# spends most of its time asleep in backoff and may not finish at all,
+# which is the worst outcome: no round completes and the next run starts
+# from the same place.
+#
+# Bounded instead. Each run exports a few rounds, the schema check skips
+# rounds already done, so successive runs walk the backfill forward and
+# every run finishes having actually banked something.
+TELEMETRY_ROUNDS_PER_RUN = 4
 
 
 def _match_openf1_session(round_info: dict, sessions: list[dict]) -> dict | None:
@@ -262,7 +275,7 @@ def _match_openf1_session(round_info: dict, sessions: list[dict]) -> dict | None
     return None
 
 
-def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> None:
+def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool:
     """Track geometry and racing lines for one round, from real position data.
 
     This is the module that was empty for the whole project so far. It was
@@ -272,6 +285,11 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> None
 
     Degrades per round like every other step: a round whose telemetry is
     missing leaves the previous artifacts alone and says why.
+
+    Returns whether this call consumed a slot of the run's telemetry
+    budget — attempted work counts, a skip of an already-exported round
+    does not, so the budget paces new work rather than being spent
+    walking past rounds that are already done.
     """
     round_ = round_info["round"]
     circuit_key = round_info["circuitId"]
@@ -284,13 +302,13 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> None
             stored = 0
         if stored == TELEMETRY_SCHEMA_VERSION:
             print(f"[telemetry] round {round_}: already exported, skipping")
-            return
+            return False
 
     session = _match_openf1_session(round_info, sessions)
     if session is None:
         print(f"[telemetry] round {round_}: no OpenF1 race session matches "
               f"{round_info['date']}")
-        return
+        return False
 
     session_key = session["sessionKey"]
     try:
@@ -298,11 +316,11 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> None
         drivers = ingest_openf1.fetch_drivers(session_key)
     except Exception as exc:  # noqa: BLE001 - one round must not abort the refresh
         print(f"[telemetry] round {round_}: unavailable ({type(exc).__name__}: {exc})")
-        return
+        return True
 
     if not laps:
         print(f"[telemetry] round {round_}: OpenF1 has no laps for session {session_key}")
-        return
+        return True
 
     code_by_number = {d["driverNumber"]: (d.get("code") or str(d["driverNumber"]))
                       for d in drivers}
@@ -359,7 +377,7 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> None
 
     if not exported or best_line is None or scale is None:
         print(f"[telemetry] round {round_}: nothing publishable")
-        return
+        return True
 
     export.annotate_line_manifest(year, round_, "R", {
         "schemaVersion": TELEMETRY_SCHEMA_VERSION,
@@ -399,6 +417,7 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> None
 
     print(f"[telemetry] round {round_}: exported {len(exported)} racing line(s) "
           f"and a measured outline for {circuit_key}")
+    return True
 
 
 def refresh_upcoming(year: int, calendar: list[dict]) -> None:
@@ -466,10 +485,15 @@ def main() -> int:
         print(f"OpenF1 unavailable, skipping telemetry this run ({exc})")
         openf1_sessions = []
 
-    for round_info in rounds_due(season_config["calendar"]):
+    telemetry_budget = TELEMETRY_ROUNDS_PER_RUN
+    # Newest first: the most recent race is the one a reader is most
+    # likely to want, so a partial backfill should be useful rather than
+    # merely early.
+    for round_info in reversed(rounds_due(season_config["calendar"])):
         refresh_race_laps(args.year, round_info)
-        if openf1_sessions:
-            refresh_telemetry(args.year, round_info, openf1_sessions)
+        if openf1_sessions and telemetry_budget > 0:
+            if refresh_telemetry(args.year, round_info, openf1_sessions):
+                telemetry_budget -= 1
 
     refresh_standings(args.year, season_config["calendar"])
     refresh_upcoming(args.year, season_config["calendar"])
