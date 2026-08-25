@@ -276,6 +276,67 @@ def _match_openf1_session(round_info: dict, sessions: list[dict]) -> dict | None
     return None
 
 
+ERROR_REVIEW_SCHEMA_VERSION = 1
+
+
+def refresh_error_review(year: int, round_info: dict, sessions: list[dict]) -> None:
+    """Driver Error Review for one round.
+
+    Deliberately separate from refresh_telemetry rather than riding along
+    inside it. The first version did ride along, which meant a round that
+    already had racing lines returned at the skip check before the review
+    was ever written — so precisely the rounds furthest along were the
+    ones guaranteed to have no review.
+
+    It is also much cheaper than the line export (three requests, no
+    per-driver position fetches), so it is not paced by the telemetry
+    budget and can cover rounds the line backfill has not reached.
+    """
+    round_ = round_info["round"]
+    out_path = PUBLIC_DATA / str(year) / str(round_) / "R" / "errors.json"
+    if out_path.exists():
+        try:
+            stored = json.loads(out_path.read_text()).get("schemaVersion", 0)
+        except (json.JSONDecodeError, OSError):
+            stored = 0
+        if stored == ERROR_REVIEW_SCHEMA_VERSION:
+            return
+
+    session = _match_openf1_session(round_info, sessions)
+    if session is None:
+        return
+    session_key = session["sessionKey"]
+
+    try:
+        laps = ingest_openf1.fetch_laps(session_key)
+        if not laps:
+            print(f"[errors] round {round_}: no laps published")
+            return
+        drivers = ingest_openf1.fetch_drivers(session_key)
+        race_control = ingest_openf1.fetch_race_control(session_key)
+    except Exception as exc:  # noqa: BLE001 - additive, never fatal
+        print(f"[errors] round {round_}: unavailable ({type(exc).__name__}: {exc})")
+        return
+
+    code_by_number = {d["driverNumber"]: (d.get("code") or str(d["driverNumber"]))
+                      for d in drivers}
+    review = derive_errors.build_error_review(laps, race_control, code_by_number)
+    review.update({
+        "schemaVersion": ERROR_REVIEW_SCHEMA_VERSION,
+        "year": year,
+        "round": round_,
+        "raceName": round_info["raceName"],
+        "generated_at": ingest._now_iso(),
+        "source": f"OpenF1 session {session_key}: race control messages + lap times",
+    })
+    export.export_error_review(year, round_, review)
+
+    recorded = sum(len(d["recorded"]) for d in review["drivers"].values())
+    flagged = sum(len(d["flagged"]) for d in review["drivers"].values())
+    print(f"[errors] round {round_}: {recorded} recorded event(s), {flagged} flagged lap(s), "
+          f"{len(review['neutralisedLaps'])} neutralised lap(s)")
+
+
 def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool:
     """Track geometry and racing lines for one round, from real position data.
 
@@ -326,26 +387,6 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
     code_by_number = {d["driverNumber"]: (d.get("code") or str(d["driverNumber"]))
                       for d in drivers}
 
-    # The error review rides along here because this is where the
-    # session's laps and driver list are already in hand; fetching them
-    # again for a second pass would double the requests for nothing.
-    try:
-        race_control = ingest_openf1.fetch_race_control(session_key)
-        review = derive_errors.build_error_review(laps, race_control, code_by_number)
-        review.update({
-            "year": year,
-            "round": round_,
-            "raceName": round_info["raceName"],
-            "generated_at": ingest._now_iso(),
-            "source": f"OpenF1 session {session_key}: race control messages + lap times",
-        })
-        export.export_error_review(year, round_, review)
-        recorded = sum(len(d["recorded"]) for d in review["drivers"].values())
-        flagged = sum(len(d["flagged"]) for d in review["drivers"].values())
-        print(f"[errors] round {round_}: {recorded} recorded event(s), "
-              f"{flagged} flagged lap(s), {len(review['neutralisedLaps'])} neutralised lap(s)")
-    except Exception as exc:  # noqa: BLE001 - the review is additive
-        print(f"[errors] round {round_}: unavailable ({type(exc).__name__}: {exc})")
     fastest = ingest_openf1.pick_fastest_laps(laps)
     ranked = sorted(fastest.items(), key=lambda kv: kv[1]["lapDurationS"])
     selected = ranked[:LINE_DRIVERS_PER_ROUND]
@@ -513,6 +554,8 @@ def main() -> int:
     # merely early.
     for round_info in reversed(rounds_due(season_config["calendar"])):
         refresh_race_laps(args.year, round_info)
+        if openf1_sessions:
+            refresh_error_review(args.year, round_info, openf1_sessions)
         if openf1_sessions and telemetry_budget > 0:
             if refresh_telemetry(args.year, round_info, openf1_sessions):
                 telemetry_budget -= 1
