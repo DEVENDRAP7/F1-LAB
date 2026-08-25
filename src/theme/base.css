@@ -787,3 +787,42 @@ tr.is-muted td {
 .track-map-wrap .track-map {
   max-width: 560px;
 }
+
+/* ---------- error review ---------- */
+
+/* Severity is ordinal, so the ramp is one hue darkening rather than a
+   traffic light: red/amber/green would read as blame, and the whole
+   point of this page is that a flag is an observation, not a verdict. */
+.tag-major,
+.tag-moderate,
+.tag-minor {
+  border-radius: 3px;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.4rem;
+}
+
+.tag-major {
+  background: var(--stint-1);
+  color: #fff;
+}
+
+.tag-moderate {
+  background: var(--stint-3);
+  color: #000;
+}
+
+.tag-minor {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+}
+
+.field {
+  align-items: center;
+  color: var(--ink-1);
+  display: inline-flex;
+  font-size: 0.85rem;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}

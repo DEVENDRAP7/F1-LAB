@@ -1,0 +1,227 @@
+"""Driver Error Review — a flagged timeline, not an accusation.
+
+Two kinds of entry, and the difference between them is the point.
+
+RECORDED events come from race control: published messages, attributed
+to a driver by OpenF1's own `driver_number` field. A deleted lap time, an
+investigation, a penalty. These are facts about what officials said, and
+they are reported verbatim rather than paraphrased, because paraphrasing
+an official message is editorialising it.
+
+FLAGGED laps are this pipeline's own observation: a lap materially slower
+than the same driver's own green-flag norm in the same race. That is a
+deviation, not a mistake — a driver can lose four seconds to a car ahead,
+a wet patch, or an instruction from the pit wall, and nothing about the
+lap time distinguishes those from a lock-up. So the language stays
+descriptive throughout ("flagged", "estimated", "slower than this
+driver's own median"), and the UI is expected to keep it that way.
+
+What is deliberately NOT here: lock-ups, mid-corner corrections, poor
+exits and the other telemetry-derived flags the spec sketches. Detecting
+those honestly needs per-lap car telemetry for every driver across every
+lap, which is two orders of magnitude more fetching than this pipeline
+does, and at the ~3.7 Hz this source publishes the detections would be
+weak enough to be misleading. An absent flag type is a gap; a
+badly-detected one is a false accusation about a named person.
+"""
+from __future__ import annotations
+
+import datetime
+
+# A lap this much slower than the driver's own green-flag median is
+# flagged. Chosen well above ordinary lap-to-lap scatter (which runs a
+# few tenths) so the flag means "something happened", not "this lap was
+# a bit untidy".
+SLOW_LAP_THRESHOLD_S = 2.0
+
+# Severity bands, in seconds lost against that same personal median.
+SEVERITY_BANDS = ((10.0, "major"), (4.0, "moderate"), (SLOW_LAP_THRESHOLD_S, "minor"))
+
+# Race-control categories that describe something that happened to or
+# because of a specific car, as opposed to session bookkeeping.
+INCIDENT_CATEGORIES = {"Flag", "Other", "CarEvent", "Drs"}
+
+# Messages in these categories mark the field being neutralised, which is
+# what lets a slow lap be attributed to the race rather than the driver.
+NEUTRALISING_CATEGORIES = {"SafetyCar"}
+
+
+def _parse(raw: str | None) -> datetime.datetime | None:
+    if not raw:
+        return None
+    try:
+        return datetime.datetime.fromisoformat(raw)
+    except (ValueError, TypeError):
+        return None
+
+
+def neutralised_laps(race_control: list[dict]) -> set[int]:
+    """Laps run under a safety car or a red flag, from the real feed.
+
+    Every neutralised lap this project excluded before today was
+    *guessed* at, by an outlier rule over field median pace, because no
+    track-status channel was reachable. This reads it off the published
+    messages instead, so a slow lap under a safety car is excluded
+    because it was under a safety car — not because it looked slow.
+    """
+    laps: set[int] = set()
+    active = False
+    for row in sorted(race_control, key=lambda r: r.get("date") or ""):
+        category = row.get("category")
+        message = (row.get("message") or "").upper()
+        lap = row.get("lapNumber")
+
+        if category in NEUTRALISING_CATEGORIES or "SAFETY CAR" in message:
+            # "IN THIS LAP" / "SAFETY CAR IN THIS LAP" ends the period;
+            # anything else deploying it starts one.
+            if "IN THIS LAP" in message or "ENDING" in message:
+                active = False
+            else:
+                active = True
+        if row.get("flag") == "RED":
+            active = True
+        if row.get("flag") == "GREEN":
+            active = False
+
+        if active and lap:
+            laps.add(int(lap))
+    return laps
+
+
+def attributed_incidents(race_control: list[dict],
+                         code_by_number: dict[int, str]) -> list[dict]:
+    """Race-control messages that name a specific car.
+
+    Attribution comes from OpenF1's own `driver_number` field, never from
+    reading the message text. Parsing prose for a car number would mean
+    guessing a format, and a mis-parse here does not produce a missing
+    row — it produces an incident filed against the wrong driver, which
+    is the single worst output this module could have.
+    """
+    incidents = []
+    for row in race_control:
+        number = row.get("driverNumber")
+        if not number:
+            continue
+        if row.get("category") not in INCIDENT_CATEGORIES:
+            continue
+        message = (row.get("message") or "").strip()
+        if not message:
+            continue
+        incidents.append({
+            "kind": "recorded",
+            "driverCode": code_by_number.get(int(number), str(number)),
+            "driverNumber": int(number),
+            "lap": row.get("lapNumber"),
+            "category": row.get("category"),
+            "flag": row.get("flag"),
+            # Verbatim. Rewording an official message editorialises it.
+            "message": message,
+            "date": row.get("date"),
+        })
+    incidents.sort(key=lambda i: (i["driverCode"], i.get("lap") or 0))
+    return incidents
+
+
+def _median(values: list[float]) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    if len(ordered) % 2:
+        return float(ordered[mid])
+    return (ordered[mid - 1] + ordered[mid]) / 2.0
+
+
+def _severity(loss: float) -> str:
+    for threshold, label in SEVERITY_BANDS:
+        if loss >= threshold:
+            return label
+    return "minor"
+
+
+def flag_slow_laps(laps: list[dict], code_by_number: dict[int, str],
+                   neutralised: set[int] | None = None) -> list[dict]:
+    """Laps well off a driver's own green-flag pace, with the loss stated.
+
+    The comparison is always against the same driver in the same race, so
+    a slow car is not flagged for being slow — only for being slower than
+    itself. Out-laps and in-laps are excluded because a pit stop is a
+    known reason for a slow lap and flagging it would say nothing.
+    """
+    neutralised = neutralised or set()
+    by_driver: dict[int, list[dict]] = {}
+    for lap in laps:
+        if lap.get("lapDurationS") and not lap.get("isPitOutLap"):
+            by_driver.setdefault(lap["driverNumber"], []).append(lap)
+
+    flagged = []
+    for number, driver_laps in by_driver.items():
+        green = [l for l in driver_laps if int(l.get("lapNumber") or 0) not in neutralised]
+        # A baseline needs enough green laps to be a norm rather than an
+        # accident of which laps happened to be clean.
+        if len(green) < 5:
+            continue
+        baseline = _median([float(l["lapDurationS"]) for l in green])
+        if baseline is None:
+            continue
+
+        for lap in green:
+            loss = float(lap["lapDurationS"]) - baseline
+            if loss < SLOW_LAP_THRESHOLD_S:
+                continue
+            flagged.append({
+                "kind": "flagged",
+                "driverCode": code_by_number.get(number, str(number)),
+                "driverNumber": number,
+                "lap": int(lap["lapNumber"]),
+                "lapTimeS": round(float(lap["lapDurationS"]), 3),
+                "baselineS": round(baseline, 3),
+                "estimatedLossS": round(loss, 3),
+                "severity": _severity(loss),
+                "basis": (
+                    "slower than this driver's own median green-flag lap in this race; "
+                    "the cause is not identified and may be traffic, conditions or a "
+                    "team instruction rather than a driver error"
+                ),
+            })
+
+    flagged.sort(key=lambda f: (f["driverCode"], f["lap"]))
+    return flagged
+
+
+def build_error_review(laps: list[dict], race_control: list[dict],
+                       code_by_number: dict[int, str]) -> dict:
+    """The per-round payload: recorded events, flagged laps, and limits."""
+    neutralised = neutralised_laps(race_control)
+    incidents = attributed_incidents(race_control, code_by_number)
+    flagged = flag_slow_laps(laps, code_by_number, neutralised)
+
+    by_driver: dict[str, dict] = {}
+    for entry in incidents + flagged:
+        code = entry["driverCode"]
+        bucket = by_driver.setdefault(code, {"recorded": [], "flagged": []})
+        bucket["recorded" if entry["kind"] == "recorded" else "flagged"].append(entry)
+
+    return {
+        "drivers": by_driver,
+        "neutralisedLaps": sorted(neutralised),
+        "thresholds": {
+            "slowLapS": SLOW_LAP_THRESHOLD_S,
+            "severityBands": [{"atLeastS": t, "label": l} for t, l in SEVERITY_BANDS],
+        },
+        "limitations": [
+            "Recorded events are race-control messages, reported verbatim and attributed "
+            "by the published car number rather than by reading the message text.",
+            "A flagged lap is a deviation from this driver's own green-flag median in "
+            "this race, not a diagnosed mistake: traffic, conditions and pit-wall "
+            "instructions produce the same signature as an error.",
+            "Laps run under a safety car or red flag are excluded using the published "
+            "track-status messages, so they are excluded because they were neutralised "
+            "rather than because they looked slow.",
+            "No lock-up, off-track or mid-corner-correction detection. Those need per-lap "
+            "telemetry for every driver, which this pipeline does not fetch, and at the "
+            "sampling rate available the detections would be too weak to attach to a "
+            "named driver.",
+        ],
+    }

@@ -108,6 +108,17 @@ def annotate_line_manifest(year: int, round_: int, session_name: str, extra: dic
     return path
 
 
+def export_error_review(year: int, round_: int, payload: dict) -> Path:
+    """Per-round Driver Error Review, under the round's R session dir so
+    the frontend loads it only for the round being read."""
+    out_dir = PUBLIC_DATA / str(year) / str(round_) / "R"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "errors.json"
+    path.write_text(json.dumps(payload, indent=2))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_race_laps(year: int, round_: int, payload: dict) -> Path:
     """Lap times, stints and degradation fits for one race, under the
     round's R session directory so the frontend lazy-loads it per round."""

@@ -23,6 +23,7 @@ import ingest
 import ingest_openf1
 import derive
 import derive_telemetry
+import derive_errors
 import export
 from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
 
@@ -324,6 +325,27 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
 
     code_by_number = {d["driverNumber"]: (d.get("code") or str(d["driverNumber"]))
                       for d in drivers}
+
+    # The error review rides along here because this is where the
+    # session's laps and driver list are already in hand; fetching them
+    # again for a second pass would double the requests for nothing.
+    try:
+        race_control = ingest_openf1.fetch_race_control(session_key)
+        review = derive_errors.build_error_review(laps, race_control, code_by_number)
+        review.update({
+            "year": year,
+            "round": round_,
+            "raceName": round_info["raceName"],
+            "generated_at": ingest._now_iso(),
+            "source": f"OpenF1 session {session_key}: race control messages + lap times",
+        })
+        export.export_error_review(year, round_, review)
+        recorded = sum(len(d["recorded"]) for d in review["drivers"].values())
+        flagged = sum(len(d["flagged"]) for d in review["drivers"].values())
+        print(f"[errors] round {round_}: {recorded} recorded event(s), "
+              f"{flagged} flagged lap(s), {len(review['neutralisedLaps'])} neutralised lap(s)")
+    except Exception as exc:  # noqa: BLE001 - the review is additive
+        print(f"[errors] round {round_}: unavailable ({type(exc).__name__}: {exc})")
     fastest = ingest_openf1.pick_fastest_laps(laps)
     ranked = sorted(fastest.items(), key=lambda kv: kv[1]["lapDurationS"])
     selected = ranked[:LINE_DRIVERS_PER_ROUND]
