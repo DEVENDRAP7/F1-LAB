@@ -216,3 +216,22 @@ def test_blue_flag_is_marked_informational():
     by_lap = {i["lap"]: i for i in incidents}
     assert by_lap[9]["nature"] == "informational"
     assert by_lap[30]["nature"] == "noted"
+
+
+def test_in_laps_are_excluded_via_the_following_out_lap():
+    """The source flags out-laps but publishes nothing for in-laps, and an
+    in-lap carries ~20s of pit entry. Left in, every pit stop showed as a
+    'major' flag against the driver who made it."""
+    laps = [lap(n, 16, 80.0) for n in range(2, 12)]
+    laps.append(lap(12, 16, 100.0))            # in-lap
+    laps.append(lap(13, 16, 95.0, pit_out=True))  # out-lap, flagged by source
+    flagged = flag_slow_laps(laps, CODES)
+    assert not any(f["lap"] == 12 for f in flagged)
+    assert not any(f["lap"] == 13 for f in flagged)
+
+
+def test_a_slow_lap_that_is_not_a_pit_lap_still_flags():
+    """Excluding pit laps must not silence genuine deviations."""
+    laps = [lap(n, 16, 80.0) for n in range(2, 12)]
+    laps.append(lap(12, 16, 95.0))
+    assert any(f["lap"] == 12 for f in flag_slow_laps(laps, CODES))

@@ -197,16 +197,30 @@ def flag_slow_laps(laps: list[dict], code_by_number: dict[int, str],
 
     The comparison is always against the same driver in the same race, so
     a slow car is not flagged for being slow — only for being slower than
-    itself. Out-laps and in-laps are excluded because a pit stop is a
+    itself. Out-laps and in-laps are both excluded because a pit stop is a
     known reason for a slow lap and flagging it would say nothing.
     """
     neutralised = neutralised or set()
+
+    # The source flags out-laps but publishes nothing for in-laps, and an
+    # in-lap carries the whole pit entry — around twenty seconds. Left in,
+    # every pit stop in the race appeared as a "major" flag against the
+    # driver who made it. It is derivable rather than guessable: the lap
+    # immediately before an out-lap is the lap they came in on.
+    out_laps: dict[int, set[int]] = {}
+    for lap in laps:
+        if lap.get("isPitOutLap") and lap.get("lapNumber"):
+            out_laps.setdefault(lap["driverNumber"], set()).add(int(lap["lapNumber"]))
+
     by_driver: dict[int, list[dict]] = {}
     for lap in laps:
         if not lap.get("lapDurationS") or lap.get("isPitOutLap"):
             continue
-        if int(lap.get("lapNumber") or 0) < FIRST_RACING_LAP:
+        number = int(lap.get("lapNumber") or 0)
+        if number < FIRST_RACING_LAP:
             continue  # standing start, see FIRST_RACING_LAP
+        if number + 1 in out_laps.get(lap["driverNumber"], ()):
+            continue  # in-lap: the pit entry is in this lap time
         by_driver.setdefault(lap["driverNumber"], []).append(lap)
 
     flagged = []
@@ -272,6 +286,9 @@ def build_error_review(laps: list[dict], race_control: list[dict],
             "Lap 1 is never flagged. It starts from a standstill, so it is slower than a "
             "flying lap for every driver, and flagging it would mark a normal race start "
             "as an event for the whole field.",
+            "Pit in-laps and out-laps are excluded. The source flags out-laps; an in-lap "
+            "is identified as the lap before one, since it carries the pit entry and would "
+            "otherwise show every stop in the race as a flag against the driver.",
             "A flagged lap is a deviation from this driver's own green-flag median in "
             "this race, not a diagnosed mistake: traffic, conditions and pit-wall "
             "instructions produce the same signature as an error.",
