@@ -45,9 +45,12 @@ spec) before contributing.
   built so the two can never be read as the same thing.
 - **Aero Explainer** — lateral and longitudinal acceleration for a
   driver's fastest lap, computed from the published racing line: a g-g
-  diagram and the lateral g the car sustained at each speed. No
-  downforce figure, because that needs constants no source here
-  publishes.
+  diagram, the lateral g the car sustained at each speed, the driven lap
+  coloured by the load it was carrying, and each detected turn with its
+  entry speed, minimum speed and sustained load. Turns are numbered in
+  the order this lap meets them, which is not the circuit's official
+  corner numbering — no source here publishes that. No downforce figure
+  either, because that needs constants none of them publish.
 - **What-If Engine** — replay a race with a different strategy, on
   parameters fitted to that race and only for drivers whose real race
   the model reproduces within 1%. It estimates a race time and says
