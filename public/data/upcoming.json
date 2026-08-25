@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-08-25T03:00:08Z",
+  "next": {
+    "round": 13,
+    "raceName": "Italian Grand Prix",
+    "circuitName": "Autodromo Nazionale di Monza",
+    "circuitId": "monza",
+    "date": "2026-09-06",
+    "sprint": false
+  },
+  "historyYearsRequested": [
+    2025,
+    2024,
+    2023,
+    2022
+  ],
+  "history": {
+    "editions": 4,
+    "years": [
+      2025,
+      2024,
+      2023,
+      2022
+    ],
+    "perEdition": [
+      {
+        "year": 2025,
+        "starters": 19,
+        "classified": 18,
+        "winnerGrid": 1,
+        "medianStops": 1.0
+      },
+      {
+        "year": 2024,
+        "starters": 20,
+        "classified": 19,
+        "winnerGrid": 4,
+        "medianStops": 2.0
+      },
+      {
+        "year": 2023,
+        "starters": 19,
+        "classified": 18,
+        "winnerGrid": 2,
+        "medianStops": 1.0
+      },
+      {
+        "year": 2022,
+        "starters": 20,
+        "classified": 16,
+        "winnerGrid": 7,
+        "medianStops": 1.5
+      }
+    ],
+    "finishRate": {
+      "classified": 71,
+      "starters": 78,
+      "share": 0.9102564102564102
+    },
+    "positionChange": {
+      "medianPlaces": 2.0,
+      "n": 71,
+      "note": "Absolute difference between grid slot and finishing position, classified finishers only. Pit-lane starts (grid 0) are excluded."
+    },
+    "winnerGrid": {
+      "median": 3.0,
+      "best": 1,
+      "worst": 7,
+      "n": 4
+    },
+    "stops": {
+      "medianPerDriver": 1.0,
+      "n": 75,
+      "editionsWithData": 4
+    },
+    "unavailable": {
+      "safetyCar": "No safety-car or track-status channel is published by this source, so neutralisation frequency cannot be counted.",
+      "tyreCompounds": "This source publishes no compound per stint, so no compound-level prior can be computed."
+    }
+  }
+}
