@@ -237,6 +237,53 @@ def _probe_openf1_channel(endpoint: str, params: str) -> None:
         print(f"           flags: {flags}")
 
 
+def probe_openf1_window(year: int) -> None:
+    """Prove the lap window is actually being applied.
+
+    Worth its own probe because the failure is silent and expensive: an
+    unrecognised range filter is ignored rather than rejected, so the
+    request answers 200 with an entire race and only the row count gives
+    it away. Two 30-minute pipeline runs were spent before that was
+    spotted, so it is now a one-minute check instead.
+    """
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent))
+    import ingest_openf1
+
+    print(f"\n=== OpenF1 lap-window check ({year}) ===")
+    sessions = ingest_openf1.fetch_race_sessions(year)
+    if not sessions:
+        print("  no race sessions run yet")
+        return
+    session = sessions[-1]
+    key = session["sessionKey"]
+    print(f"  session {key} {session['countryName']} {session['dateStart']}")
+
+    laps = ingest_openf1.fetch_laps(key)
+    fastest = ingest_openf1.pick_fastest_laps(laps)
+    if not fastest:
+        print("  no timed laps")
+        return
+    number, lap = min(fastest.items(), key=lambda kv: kv[1]["lapDurationS"])
+    print(f"  driver {number} lap {lap['lapNumber']} = {lap['lapDurationS']}s")
+
+    rows = ingest_openf1.fetch_lap_location(key, number, lap)
+    if not rows:
+        print("  location: no rows")
+        return
+    first = datetime.datetime.fromisoformat(rows[0]["date"])
+    last = datetime.datetime.fromisoformat(rows[-1]["date"])
+    span = (last - first).total_seconds()
+    print(f"  location rows={len(rows)} span={span:.1f}s "
+          f"(lap is {lap['lapDurationS']}s)")
+    verdict = "WINDOW APPLIED" if span < lap["lapDurationS"] * 2 else "FILTER IGNORED"
+    print(f"  verdict: {verdict}")
+
+    car = ingest_openf1.fetch_lap_car_data(key, number, lap)
+    print(f"  car_data rows={len(car)}")
+
+
 def probe_circuit_history(circuit_id: str, years: list[int]) -> None:
     """Report what past editions of one circuit are actually queryable.
 
@@ -318,6 +365,11 @@ def main() -> int:
         action="store_true",
         help="probe OpenF1 for the telemetry channels live timing refuses",
     )
+    parser.add_argument(
+        "--openf1-window",
+        action="store_true",
+        help="check that OpenF1's lap-window range filter is actually applied",
+    )
     args = parser.parse_args()
 
     if args.circuit:
@@ -326,6 +378,10 @@ def main() -> int:
 
     if args.openf1:
         probe_openf1(args.year)
+        return 0
+
+    if args.openf1_window:
+        probe_openf1_window(args.year)
         return 0
 
     probe_http(args.year, args.round)

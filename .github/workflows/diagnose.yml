@@ -27,6 +27,11 @@ on:
         type: boolean
         required: false
         default: false
+      openf1_window:
+        description: check that OpenF1's lap-window filter is actually applied
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -52,4 +57,5 @@ jobs:
             --round "${{ inputs.round }}" \
             --session "${{ inputs.session }}" \
             --circuit "${{ inputs.circuit }}" \
-            ${{ inputs.openf1 && '--openf1' || '' }}
+            ${{ inputs.openf1 && '--openf1' || '' }} \
+            ${{ inputs.openf1_window && '--openf1-window' || '' }}

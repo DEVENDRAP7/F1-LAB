@@ -43,3 +43,21 @@ def test_params_encoding_would_have_broken_it():
     ).prepare()
     assert "date%3E=" in prepared.url
     assert "date>" not in prepared.url
+
+
+def test_prepared_request_override_keeps_the_operator_literal():
+    """The second half of the bug: building the query string by hand is
+    not enough, because PreparedRequest runs the URL through requote_uri
+    and re-encodes '>' anyway. Assigning .url after prepare() is the only
+    point past that, and this pins it — a 30-minute pipeline run was lost
+    to the difference."""
+    literal = ("https://api.openf1.org/v1/location"
+               "?session_key=1&driver_number=4&date>2026-08-23T13:00:00")
+
+    naive = requests.Request("GET", literal).prepare()
+    assert "date>" not in naive.url          # requote_uri got it
+    assert "date%3E" in naive.url
+
+    overridden = requests.Request("GET", "https://api.openf1.org/v1/location").prepare()
+    overridden.url = literal
+    assert "date>" in overridden.url         # survives

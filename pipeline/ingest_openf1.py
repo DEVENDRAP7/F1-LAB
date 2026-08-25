@@ -77,6 +77,31 @@ def _range_filter(field: str, op: str, value: str) -> str:
     return f"{field}{op}{stamp}"
 
 
+_SESSION = requests.Session()
+
+
+def _send(url: str, params: dict | None, literal_url: str | None):
+    """Send a request, keeping comparison operators literal.
+
+    requests percent-encodes '>' to '%3E' in BOTH paths into it: through
+    `params`, and through a URL string, because PreparedRequest runs the
+    URL through requote_uri. OpenF1 then does not recognise the filter,
+    ignores it, and answers 200 with the whole session.
+
+    That second encoding is the reason this function exists. The first
+    attempt at a fix built the query string by hand and passed it as the
+    url — which requests promptly re-encoded, so the filter was still
+    ignored and a second 30-minute run produced nothing. Assigning
+    `.url` after prepare() is the point at which requote_uri has already
+    run, so the operator survives.
+    """
+    if literal_url is None:
+        return _SESSION.get(url, params=params, timeout=TIMEOUT_S)
+    prepared = requests.Request("GET", url).prepare()
+    prepared.url = literal_url
+    return _SESSION.send(prepared, timeout=TIMEOUT_S)
+
+
 def _get(path: str, params: dict, raw_filters: list[str] | None = None) -> list[dict]:
     """One OpenF1 GET, retrying through rate limiting.
 
@@ -87,14 +112,15 @@ def _get(path: str, params: dict, raw_filters: list[str] | None = None) -> list[
     the caller decides whether emptiness is a problem.
     """
     url = f"{OPENF1_BASE}/{path}"
+    literal_url = None
     if raw_filters:
         encoded = urlencode(params)
-        url = f"{url}?{encoded}&{'&'.join(raw_filters)}" if encoded else \
-              f"{url}?{'&'.join(raw_filters)}"
+        literal_url = f"{url}?{encoded}&{'&'.join(raw_filters)}" if encoded else \
+                      f"{url}?{'&'.join(raw_filters)}"
         params = None
 
     for attempt in range(MAX_RETRIES):
-        resp = requests.get(url, params=params, timeout=TIMEOUT_S)
+        resp = _send(url, params, literal_url)
         if resp.status_code == 429:
             retry_after = resp.headers.get("Retry-After")
             try:
