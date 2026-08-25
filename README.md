@@ -31,8 +31,13 @@ spec) before contributing.
   sample it came from. It is a record, not a forecast, and the page
   leads with that — 2026 is a regulation reset, so the cars behind those
   numbers are not the cars about to race.
-- **Circuit Atlas** — the verified calendar. No track geometry; see
-  "Where the data stops" below.
+- **Circuit Atlas** — the verified calendar, plus track outlines traced
+  from real position telemetry. Each outline is one measured lap's
+  driven path, so it follows the racing line rather than the centre
+  line, and it says so. No corner numbering: the source publishes none.
+- **Racing Lines** — per-driver fastest race laps decoded from Int16
+  position binaries, with linked speed and throttle traces on a shared
+  distance axis. The position unit is measured per round, not assumed.
 
 ## Where the data comes from
 
@@ -119,10 +124,16 @@ that test currently skips for want of fitted per-race parameters. It
 stays unpublished until it passes.
 
 Driver Error Review and the Aero Explainer are deliberate
-`NotImplementedError` stubs — both need the telemetry that is blocked,
-and the Aero module additionally needs
-`config/regulations_2026.json` verified against the published FIA
-technical regulations rather than filled in from memory.
+`NotImplementedError` stubs. Their input data now exists — OpenF1
+carries the telemetry and a race-control feed with real safety-car
+periods — so the blocker on both is implementation, not availability.
+The Aero module additionally needs `config/regulations_2026.json`
+verified against the published FIA technical regulations rather than
+filled in from memory.
+
+The telemetry backfill is incremental: each refresh builds at most four
+rounds, newest first, and skips rounds already exported. Rounds 9, 10
+and 12 have lines and outlines; the rest fill in over successive runs.
 
 ## Running locally
 

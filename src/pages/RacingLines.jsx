@@ -46,6 +46,37 @@ export default function RacingLines() {
     };
   }, []);
 
+  // Open on the newest round that actually has lines exported. The
+  // backfill runs a few rounds at a time, so the most recent race is not
+  // necessarily the most recent one with position data, and defaulting to
+  // a round with nothing in it would show an empty state on a page that
+  // does have data.
+  useEffect(() => {
+    if (season.status !== 'ready' || round) return undefined;
+    let cancelled = false;
+    const today = new Date().toISOString().slice(0, 10);
+    const candidates = season.data.calendar
+      .filter((r) => r.date <= today)
+      .map((r) => r.round)
+      .reverse();
+
+    (async () => {
+      for (const candidate of candidates) {
+        try {
+          await loadManifest(candidate, 'R');
+          if (!cancelled) setRound(String(candidate));
+          return;
+        } catch {
+          // No lines for this round yet; try the one before it.
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [season, round]);
+
   useEffect(() => {
     if (!round) return;
     let cancelled = false;
@@ -54,7 +85,13 @@ export default function RacingLines() {
     setLines({});
     loadManifest(round, session)
       .then((data) => {
-        if (!cancelled) setManifest({ status: 'ready', data, error: null });
+        if (cancelled) return;
+        setManifest({ status: 'ready', data, error: null });
+        // Open with one line drawn rather than an empty map: the page is
+        // about comparing lines, and a blank canvas on load reads as
+        // "no data" on a page that has it.
+        const first = Object.keys(data.drivers ?? {})[0];
+        if (first) setSelected([first]);
       })
       .catch((error) => {
         if (!cancelled) setManifest({ status: 'empty', data: null, error });
@@ -162,28 +199,26 @@ export default function RacingLines() {
       </div>
 
       <section className="panel panel-limitations">
-        <h2>Why this page has no data</h2>
+        <h2>What these lines are</h2>
         <p className="panel-note">
-          Racing lines need per-sample car position, which only the Formula 1 live-timing
-          service publishes. That host answers <span className="mono">403</span> to every
-          request from a datacenter IP — its own root and a prior season included — so the
-          build runner cannot reach it, and the community mirror FastF1 falls back to does
-          not carry this season. This was measured, not assumed:{' '}
-          <span className="mono">pipeline/diagnose_sources.py</span> re-runs the probe on
-          demand.
+          Each line is one driver's fastest non-out lap of the race, decoded from the
+          position trace OpenF1 publishes at roughly 3.7 Hz and resampled onto a fixed
+          distance grid. It is a lap somebody drove, not an average and not an ideal line,
+          so two drivers' lines differ because they took different paths.
         </p>
         <p className="panel-note">
-          Everything else on this site comes from a source that does answer, which is why
-          standings and race strategy have real data and this page does not. Nothing here
-          is estimated to fill the gap. Ingesting from a residential IP or a self-hosted
-          runner would unblock it.
+          Distances are in metres, converted using a scale measured per round rather than
+          assumed — the position feed does not document its unit, so the pipeline recovers
+          it by integrating published speed over the lap. Corner numbering is absent
+          because this source publishes none, and numbering corners from memory would be
+          invented detail.
         </p>
       </section>
 
       {!round && (
         <EmptyState
-          title="Pick a round and session"
-          reason="Only laps the pipeline has exported are explorable — per driver, the fastest lap of each session plus any incident-flagged lap. The driver list below shows exactly what's available."
+          title="Looking for a round with exported lines…"
+          reason="The telemetry backfill runs a few rounds per refresh, so not every round has position data yet. Pick one above, or wait for the next refresh."
         />
       )}
 
