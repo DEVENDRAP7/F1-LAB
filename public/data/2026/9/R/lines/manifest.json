@@ -29,7 +29,7 @@
       "pointCount": 2996
     }
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "source": "OpenF1 session 11326 (United Kingdom)",
   "positionUnitsPerMetre": {
     "value": 10.015831031080383,
@@ -66,5 +66,12 @@
     "Each line is one driver's fastest non-out lap of the race, not an average or an ideal line.",
     "Position samples arrive at roughly 3.7 Hz and are resampled onto a fixed distance grid, so the line is interpolated between samples.",
     "Corner numbering is not published by this source, so the map carries the driven path and no official corner labels."
-  ]
+  ],
+  "elevation": {
+    "usable": true,
+    "rangeM": 11.28,
+    "minM": 195.89,
+    "maxM": 207.17,
+    "source": "OpenF1 position z, on the same measured unit as x and y; relative to the feed's own datum, not to sea level"
+  }
 }
