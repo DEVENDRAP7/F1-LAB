@@ -24,6 +24,7 @@ import ingest_openf1
 import derive
 import derive_telemetry
 import derive_errors
+import derive_compounds
 import export
 from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
 
@@ -34,7 +35,7 @@ from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
 # silently never reached rounds that had already been exported (a fix to
 # the fit-reliability rule left 97 stale fits labelled "reliable" on
 # disk, because their rounds were simply skipped).
-LAPS_SCHEMA_VERSION = 3
+LAPS_SCHEMA_VERSION = 4
 
 
 def load_points_system() -> dict:
@@ -64,7 +65,8 @@ def rounds_due(calendar: list[dict]) -> list[dict]:
 # refresh_telemetry alongside the outline.
 
 
-def refresh_race_laps(year: int, round_info: dict) -> None:
+def refresh_race_laps(year: int, round_info: dict,
+                      openf1_sessions: list[dict] | None = None) -> None:
     """Lap times, pit-stop-derived stints and per-stint degradation fits
     for one completed race, all from Jolpica-F1.
 
@@ -97,6 +99,37 @@ def refresh_race_laps(year: int, round_info: dict) -> None:
 
     total_laps = max(lap["lap"] for lap in laps)
     stints = derive.build_stints(laps, pitstops, total_laps)
+
+    # Real tyre compounds, where they can be matched confidently. Every
+    # stint this project published before now carried compound: None,
+    # because the Jolpica feed has none and shading a bar by a guessed
+    # compound would be invented state. OpenF1 publishes it, so the
+    # colour can finally mean what a reader assumes it means — and a
+    # stint that cannot be matched keeps the blank rather than taking a
+    # plausible-looking guess.
+    compound_report = {"identified": 0, "stints": len(stints), "share": 0.0}
+    if openf1_sessions is not None:
+        session = _match_openf1_session(round_info, openf1_sessions)
+        if session is not None:
+            try:
+                of1_stints = ingest_openf1.fetch_stints(session["sessionKey"])
+                of1_drivers = ingest_openf1.fetch_drivers(session["sessionKey"])
+                code_by_number = {d["driverNumber"]: d.get("code") for d in of1_drivers}
+                entry_codes = {
+                    e["driverId"]: e.get("code")
+                    for e in json.loads(
+                        (CONFIG_DIR / f"season_{year}.json").read_text()
+                    )["entryList"]
+                }
+                by_code = derive_compounds.index_openf1_stints(of1_stints, code_by_number)
+                compound_report = derive_compounds.attach_compounds(
+                    stints, by_code, lambda did: entry_codes.get(did)
+                )
+                print(f"[laps] round {round_}: compounds identified for "
+                      f"{compound_report['identified']}/{compound_report['stints']} stints")
+            except Exception as exc:  # noqa: BLE001 - compounds are additive
+                print(f"[laps] round {round_}: compound join skipped "
+                      f"({type(exc).__name__}: {exc})")
     undercuts = derive.build_undercut_ledger(laps, pitstops)
 
     deg_fits = []
@@ -119,10 +152,16 @@ def refresh_race_laps(year: int, round_info: dict) -> None:
         "pitstops": pitstops,
         "undercuts": undercuts,
         "degradation": deg_fits,
+        "compounds": compound_report,
         "generated_at": ingest._now_iso(),
         "source": f"Jolpica-F1 {year} round {round_} laps + pitstops",
         "limitations": [
-            "No tyre compound: Jolpica-F1 publishes none, so stints are structural only.",
+            ("Tyre compounds come from the OpenF1 stint feed, matched to these "
+             "pit-stop-derived stints by driver code and lap overlap. A stint that "
+             "could not be matched confidently is left uncoloured rather than guessed."
+             if compound_report["identified"]
+             else "No tyre compound could be matched for this race, so stints are "
+                  "structural only and are shaded by stint order."),
             "Degradation slopes are not fuel-corrected; within one stint fuel burn and "
             "tyre degradation are not separately identifiable from lap times.",
             "No track-status channel, so safety-car and traffic laps are excluded by an "
@@ -553,7 +592,7 @@ def main() -> int:
     # likely to want, so a partial backfill should be useful rather than
     # merely early.
     for round_info in reversed(rounds_due(season_config["calendar"])):
-        refresh_race_laps(args.year, round_info)
+        refresh_race_laps(args.year, round_info, openf1_sessions)
         if openf1_sessions:
             refresh_error_review(args.year, round_info, openf1_sessions)
         if openf1_sessions and telemetry_budget > 0:

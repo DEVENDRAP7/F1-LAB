@@ -4,14 +4,18 @@ import { useState } from 'react';
 // distance. The x-axis is lap number, so bar length *is* stint length —
 // nothing is stacked proportionally or normalised.
 //
-// Deliberately NOT coloured by compound. Jolpica-F1 publishes no tyre
-// compound, so a per-stint hue here would be decoration masquerading as
-// data, and docs/SPEC.md reserves the compound bands for real compound
-// information only. Stints are instead shaded by their ordinal position
-// in the driver's race (a sequential ramp, light to dark, one hue),
-// which is a fact the data does support, and the boundary between them
-// is carried by a 2px surface gap plus the pit-lap marker rather than
-// by colour alone.
+// Coloured by REAL tyre compound where one is known — the OpenF1 stint
+// feed publishes it, and the pipeline attaches it only when a stint
+// matches by driver code and lap overlap. Those are the sport's own
+// bands, so the colour means exactly what a reader already assumes.
+//
+// Where no compound could be matched the bar falls back to the
+// sequential stint-ordinal ramp it always used, and the legend says so.
+// That distinction is the whole point: this project shipped the ordinal
+// ramp for months precisely because inventing a compound would have been
+// decoration masquerading as data. Colour is never the only channel —
+// the compound name is written into the bar and the boundary is carried
+// by a 2px surface gap and the pit-lap marker.
 
 const ROW_HEIGHT = 26;
 const ROW_GAP = 4;
@@ -30,16 +34,45 @@ const STINT_STEPS = ['var(--stint-1)', 'var(--stint-2)', 'var(--stint-3)', 'var(
 // other.
 const STINT_LABEL_INK = ['#ffffff', '#ffffff', '#000000', '#000000'];
 
+// The sport's compound bands. Hard is a light neutral rather than pure
+// white so it still reads as a band on a light surface; intermediate and
+// wet are included even though a dry race never shows them, because a
+// wet race must not fall back to the ordinal ramp for want of a colour.
+const COMPOUND_FILL = {
+  SOFT: 'var(--compound-soft)',
+  MEDIUM: 'var(--compound-medium)',
+  HARD: 'var(--compound-hard)',
+  INTERMEDIATE: 'var(--compound-inter)',
+  WET: 'var(--compound-wet)',
+};
+
+// Ink chosen per band against that band, so the label clears 4.5:1 on
+// every one rather than being legible on some and grey mush on others.
+const COMPOUND_INK = {
+  SOFT: '#ffffff',
+  MEDIUM: '#141414',
+  HARD: '#141414',
+  INTERMEDIATE: '#0d0d0d',
+  WET: '#ffffff',
+};
+
+export function compoundOf(stint) {
+  const c = (stint?.compound || '').toUpperCase();
+  return c in COMPOUND_FILL ? c : null;
+}
+
 function stepIndex(stintNumber) {
   return Math.min(stintNumber - 1, STINT_STEPS.length - 1);
 }
 
-function stintFill(stintNumber) {
-  return STINT_STEPS[stepIndex(stintNumber)];
+function stintFill(stint) {
+  const compound = compoundOf(stint);
+  return compound ? COMPOUND_FILL[compound] : STINT_STEPS[stepIndex(stint.stint)];
 }
 
-function stintLabelInk(stintNumber) {
-  return STINT_LABEL_INK[stepIndex(stintNumber)];
+function stintLabelInk(stint) {
+  const compound = compoundOf(stint);
+  return compound ? COMPOUND_INK[compound] : STINT_LABEL_INK[stepIndex(stint.stint)];
 }
 
 export default function StintChart({ stints, totalLaps, driverOrder, onHoverStint, codeFor }) {
@@ -92,7 +125,7 @@ export default function StintChart({ stints, totalLaps, driverOrder, onHoverStin
                       style={{
                         left: `${left}%`,
                         width: `calc(${width}% - ${SEGMENT_GAP_PX}px)`,
-                        background: stintFill(s.stint),
+                        background: stintFill(s),
                       }}
                       onMouseEnter={() => {
                         setHovered(s);
@@ -106,14 +139,16 @@ export default function StintChart({ stints, totalLaps, driverOrder, onHoverStin
                       onFocus={() => setHovered(s)}
                       onBlur={() => setHovered(null)}
                       role="img"
-                      aria-label={`${driverId} stint ${s.stint}, laps ${s.startLap} to ${s.endLap}, ${s.laps} laps`}
+                      aria-label={`${driverId} stint ${s.stint}, ${compoundOf(s) ? `${compoundOf(s).toLowerCase()} tyre, ` : ''}laps ${s.startLap} to ${s.endLap}, ${s.laps} laps`}
                     >
                       {width > 8 && (
                         <span
                           className="stint-seg-label mono"
-                          style={{ color: stintLabelInk(s.stint) }}
+                          style={{ color: stintLabelInk(s) }}
                         >
-                          {s.laps}
+                          {compoundOf(s) && width > 14
+                            ? `${compoundOf(s).charAt(0)} ${s.laps}`
+                            : s.laps}
                         </span>
                       )}
                     </div>

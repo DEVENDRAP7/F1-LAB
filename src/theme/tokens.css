@@ -50,9 +50,17 @@
   --sector-yellow: #e8c547;
   --sector-purple: #b558f6;
 
-  --compound-soft: #d1373b;
-  --compound-medium: #e8c547;
-  --compound-hard: #e8eaee;
+  /* The sport's own compound bands. Used ONLY where a real compound was
+   * matched from the stint feed — never to decorate a stint whose
+   * compound is unknown.
+   *
+   * Hard is a light neutral rather than the pure white the sport uses on
+   * screen: on this dark surface white is right, but the same token has
+   * to stay visible as a bar on the light surface too, so it is stepped
+   * per mode and every bar carries a hairline outline. */
+  --compound-soft: #e2373d;
+  --compound-medium: #f0c033;
+  --compound-hard: #dfe4ec;
   --compound-inter: #2fae4e;
   --compound-wet: #2b7fd6;
 
@@ -97,8 +105,20 @@
   --stint-3: #5f93bd;
   --stint-4: #77aeda;
 
-  --font-display: 'Titillium Web', 'Barlow Condensed', 'Arial Narrow', sans-serif;
-  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+  /* No webfont is loaded, so every name here is a fallback that has to
+   * stand on its own. The previous stack listed 'Titillium Web' and
+   * 'Barlow Condensed' — neither of which ships anywhere — and then
+   * 'Arial Narrow', which does. So the entire site rendered in a
+   * CONDENSED face by accident, which is why the type looked squeezed
+   * in from the sides with no air in it.
+   *
+   * A condensed font must never sit in a fallback chain unless condensed
+   * is the intent. This is the normal-width system stack; it needs no
+   * network request and matches the host OS. */
+  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Sans', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'IBM Plex Mono',
+    'Cascadia Mono', Menlo, Consolas, monospace;
 
   --radius: 4px;
 }
@@ -130,6 +150,15 @@
     --pos-2: #6b7689;
     --pos-3: #a6642c;
 
+    /* Hard steps down to a mid grey here: #dfe4ec on white is a bar you
+       cannot see. Soft and medium darken just enough to hold their
+       label. */
+    --compound-soft: #cf2f35;
+    --compound-medium: #cf9d13;
+    --compound-hard: #9aa4b5;
+    --compound-inter: #1f8f3d;
+    --compound-wet: #1f6cb8;
+
     /* Light mode is stepped from the same hue rather than flipped: the
      * ramp still runs light -> dark with stint ordinal, but it must
      * darken (not brighten) to stay legible on a white surface. */
@@ -149,6 +178,13 @@ body {
   background: var(--bg-0);
   color: var(--ink-0);
   font-family: var(--font-display);
+  /* Breathing room: the old stack had none of this, so lines sat on top
+     of each other as well as being narrow. */
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: 0.005em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 .mono,

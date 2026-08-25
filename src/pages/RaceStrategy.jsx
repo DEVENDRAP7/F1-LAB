@@ -8,6 +8,14 @@ import UndercutLedger from '../components/UndercutLedger.jsx';
 import { formatLapTime } from '../lib/formatTime.js';
 import { driverCode, driverIndex, driverName } from '../lib/driverNames.js';
 
+const COMPOUND_TOKEN = {
+  SOFT: 'soft',
+  MEDIUM: 'medium',
+  HARD: 'hard',
+  INTERMEDIATE: 'inter',
+  WET: 'wet',
+};
+
 // M4 — Tyre Strategy Board, on the data that actually exists.
 //
 // Every number here is measured: lap times and pit stops come from
@@ -88,6 +96,17 @@ export default function RaceStrategy() {
     }));
   }, [data, selected]);
 
+  // Only the compounds this race actually ran get a legend entry: a
+  // fixed five-band key would advertise wets at a dry race.
+  const compoundsShown = useMemo(() => {
+    if (!data) return [];
+    const order = ['SOFT', 'MEDIUM', 'HARD', 'INTERMEDIATE', 'WET'];
+    const present = new Set(
+      data.stints.map((s) => (s.compound || '').toUpperCase()).filter(Boolean),
+    );
+    return order.filter((c) => present.has(c));
+  }, [data]);
+
   const degradationRows = useMemo(() => {
     if (!data) return [];
     const wanted = selected.length > 0 ? new Set(selected) : null;
@@ -160,9 +179,10 @@ export default function RaceStrategy() {
             <div className="panel-head">
               <h2>Stints</h2>
               <p className="panel-note">
-                Boundaries are inferred from pit-stop laps. Shading runs light to dark with
-                stint order — <strong>not</strong> by compound, which this source does not
-                publish.
+                Boundaries are inferred from pit-stop laps. Bars are coloured by the tyre
+                compound the OpenF1 stint feed publishes, matched to these stints by driver
+                code and lap overlap. A stint that could not be matched confidently keeps
+                the stint-order shading rather than being given a guessed compound.
               </p>
             </div>
             <StintChart
@@ -171,19 +191,45 @@ export default function RaceStrategy() {
               totalLaps={data.totalLaps}
               driverOrder={driverOrder}
             />
-            <div className="stint-legend">
-              <span className="legend-title">stint</span>
-              {[1, 2, 3, 4].map((n) => (
-                <span key={n} className="legend-item">
-                  <span
-                    className="legend-swatch"
-                    style={{ background: `var(--stint-${n})` }}
-                    aria-hidden="true"
-                  />
-                  <span className="mono">{n === 4 ? '4+' : n}</span>
-                </span>
-              ))}
-            </div>
+            {compoundsShown.length > 0 ? (
+              <div className="stint-legend">
+                <span className="legend-title">tyre</span>
+                {compoundsShown.map((c) => (
+                  <span key={c} className="legend-item">
+                    <span
+                      className="legend-swatch"
+                      style={{ background: `var(--compound-${COMPOUND_TOKEN[c]})` }}
+                      aria-hidden="true"
+                    />
+                    <span className="mono">{c.toLowerCase()}</span>
+                  </span>
+                ))}
+                {data.compounds?.identified < data.compounds?.stints && (
+                  <span className="legend-item">
+                    <span
+                      className="legend-swatch"
+                      style={{ background: 'var(--stint-2)' }}
+                      aria-hidden="true"
+                    />
+                    <span className="mono">unmatched</span>
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="stint-legend">
+                <span className="legend-title">stint</span>
+                {[1, 2, 3, 4].map((n) => (
+                  <span key={n} className="legend-item">
+                    <span
+                      className="legend-swatch"
+                      style={{ background: `var(--stint-${n})` }}
+                      aria-hidden="true"
+                    />
+                    <span className="mono">{n === 4 ? '4+' : n}</span>
+                  </span>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="panel">
