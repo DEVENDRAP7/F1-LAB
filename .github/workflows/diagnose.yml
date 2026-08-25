@@ -22,6 +22,11 @@ on:
         description: circuitId to probe past editions of instead of the live-timing probe
         required: false
         default: ''
+      openf1:
+        description: probe OpenF1 for telemetry channels instead of the live-timing probe
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -46,4 +51,5 @@ jobs:
             --year "${{ inputs.year }}" \
             --round "${{ inputs.round }}" \
             --session "${{ inputs.session }}" \
-            --circuit "${{ inputs.circuit }}"
+            --circuit "${{ inputs.circuit }}" \
+            ${{ inputs.openf1 && '--openf1' || '' }}
