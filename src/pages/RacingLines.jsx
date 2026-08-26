@@ -335,10 +335,12 @@ export default function RacingLines() {
       <section className="panel panel-limitations">
         <h2>What these lines are</h2>
         <p className="panel-note">
-          Each line is one driver's fastest non-out lap of the race, decoded from the
-          position trace OpenF1 publishes at roughly 3.7 Hz and resampled onto a fixed
-          distance grid. It is a lap somebody drove, not an average and not an ideal line,
-          so two drivers' lines differ because they took different paths.
+          Each line is one driver's fastest non-out lap of{' '}
+          {manifest.data?.sessionLabel ?? 'the session'}, decoded from the position trace
+          OpenF1 publishes at roughly 3.7 Hz and resampled onto a fixed distance grid. It is
+          a lap somebody drove, not an average and not an ideal line, so two drivers' lines
+          differ because they took different paths. A qualifying lap is the faster one — low
+          fuel, fresh tyres — and a race lap is the one that had to last.
         </p>
         <p className="panel-note">
           Distances are in metres, converted using a scale measured per round rather than

@@ -44,10 +44,11 @@ spec) before contributing.
   which no source here publishes. Elevation is drawn where the feed's own
   z channel is really elevation — Spa measures 102 m of climb, and a
   circuit whose z does not vary gets the reason instead of a flat line.
-- **Racing Lines** — per-driver fastest race laps decoded from Int16
-  position binaries, with linked speed and throttle traces on a shared
-  distance axis, and a turn-by-turn table of where the delta was made.
-  The position unit is measured per round, not assumed.
+- **Racing Lines** — per-driver fastest laps from qualifying or the race,
+  decoded from Int16 position binaries, with linked speed and throttle
+  traces on a shared distance axis, the line colourable by any published
+  channel, and a turn-by-turn table of where the delta was made. The
+  position unit is measured per round, not assumed.
 - **Driver Error Review** — race-control messages quoted verbatim and
   attributed by the published car number, kept strictly separate from
   this project's own observation that a lap ran slower than the same
@@ -159,6 +160,13 @@ substantive ones:
   exclusion counts are shown alongside the table. Windows where the field
   was slowed are flagged rather than deleted, since without a
   track-status channel a neutralised period can only be suspected.
+- **Qualifying is preferred where it exists.** The atlas draws one
+  outline per circuit and a qualifying lap is the better one to draw it
+  from — low fuel, fresh tyres, closest to the limit of the track — so a
+  qualifying trace replaces a race one and a race trace never overwrites
+  a qualifying one. It also fills a real gap: the Hungaroring had no
+  outline at all, because its race position feed is unusable, and now has
+  one from qualifying.
 - **Two of the twelve races have no racing line, and say why.** The
   position feed returns nothing at all for Monaco — zero location rows
   for every driver's fastest lap, while car data for the same window
