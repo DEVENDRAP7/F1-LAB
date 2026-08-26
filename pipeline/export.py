@@ -97,6 +97,16 @@ def export_racing_line(year: int, round_: int, session_name: str, driver_code: s
     return bin_path
 
 
+def export_qualifying(year: int, payload: dict) -> Path:
+    """The season's qualifying results and the team-mate head-to-head."""
+    out_dir = PUBLIC_DATA / str(year)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "qualifying.json"
+    path.write_text(json.dumps(payload, separators=(",", ":")))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_telemetry_index(year: int, index: dict) -> Path:
     """One listing of which sessions have racing lines, and which do not.
 

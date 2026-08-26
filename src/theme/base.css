@@ -1271,3 +1271,73 @@ tr.is-muted td {
 tbody tr.is-on {
   background: var(--accent-glow);
 }
+
+/* ---------- qualifying head-to-head ---------- */
+
+.h2h-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+
+.h2h-team {
+  color: var(--ink-1);
+  font-size: 0.82rem;
+  margin: 0 0 0.3rem;
+}
+
+.h2h-bar-row {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.h2h-name {
+  color: var(--ink-0);
+  font-size: 0.85rem;
+  min-width: 2.6rem;
+}
+
+.h2h-count {
+  color: var(--ink-1);
+  font-size: 0.85rem;
+  min-width: 1.4rem;
+  text-align: center;
+}
+
+/* The bar repeats what the two counts either side of it already say, so
+   colour is never carrying the result on its own. */
+.h2h-bar {
+  background: var(--bg-2);
+  border-radius: 4px;
+  display: flex;
+  flex: 1;
+  height: 12px;
+  overflow: hidden;
+}
+
+.h2h-fill {
+  display: block;
+  height: 100%;
+}
+
+/* A 2px surface gap between the two fills, so a 12-0 does not read as a
+   single bar of one colour with no boundary in it. */
+.h2h-fill + .h2h-fill {
+  border-left: 2px solid var(--bg-1);
+}
+
+.h2h-note {
+  color: var(--ink-2);
+  font-size: 0.76rem;
+  margin: 0.35rem 0 0;
+}
+
+@media (max-width: 640px) {
+  .h2h-name {
+    min-width: 2.2rem;
+  }
+}

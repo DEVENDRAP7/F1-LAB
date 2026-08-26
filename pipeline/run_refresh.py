@@ -25,6 +25,7 @@ import derive
 import derive_telemetry
 import derive_errors
 import derive_compounds
+import derive_qualifying
 import export
 from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
 
@@ -827,6 +828,54 @@ def refresh_upcoming(year: int, calendar: list[dict]) -> None:
           f"from {history['editions']} past edition(s)")
 
 
+QUALIFYING_SCHEMA_VERSION = 1
+
+
+def refresh_qualifying(year: int, calendar: list[dict]) -> None:
+    """Qualifying results for every round run, and the team-mate record.
+
+    Fetched whole each time rather than incrementally: it is one small
+    request per round against a table that can be amended after the fact
+    — a penalty applied on Sunday morning changes a Saturday grid — and
+    an incremental cache would keep the version everyone has already
+    stopped quoting.
+    """
+    today = datetime.date.today().isoformat()
+    rounds = []
+    for round_info in calendar:
+        if round_info["date"] > today:
+            continue
+        try:
+            results = ingest.fetch_qualifying(year, round_info["round"])
+        except Exception as exc:  # noqa: BLE001 - one round must not abort the rest
+            print(f"[qualifying] round {round_info['round']}: unavailable "
+                  f"({type(exc).__name__}: {exc})")
+            continue
+        if not results:
+            continue
+        rounds.append({
+            "round": round_info["round"],
+            "raceName": round_info["raceName"],
+            "results": results,
+        })
+
+    if not rounds:
+        print("[qualifying] no results published yet")
+        return
+
+    head_to_head = derive_qualifying.build_head_to_head(rounds)
+    export.export_qualifying(year, {
+        "schemaVersion": QUALIFYING_SCHEMA_VERSION,
+        "year": year,
+        "generated_at": ingest._now_iso(),
+        "source": f"Jolpica-F1 {year} qualifying results",
+        "rounds": rounds,
+        **head_to_head,
+    })
+    print(f"[qualifying] {len(rounds)} round(s), "
+          f"{len(head_to_head['teams'])} team-mate pairing(s)")
+
+
 def refresh_telemetry_index(year: int) -> None:
     """List what the telemetry backfill has actually produced.
 
@@ -919,6 +968,7 @@ def main() -> int:
             if refresh_telemetry(args.year, round_info, openf1_sessions):
                 telemetry_budget -= 1
 
+    refresh_qualifying(args.year, season_config["calendar"])
     refresh_telemetry_index(args.year)
     refresh_standings(args.year, season_config["calendar"])
     refresh_upcoming(args.year, season_config["calendar"])

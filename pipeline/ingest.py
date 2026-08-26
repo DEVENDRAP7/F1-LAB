@@ -276,6 +276,41 @@ def fetch_pitstops(year: int, round_: int) -> list[dict]:
     ]
 
 
+def fetch_qualifying(year: int, round_: int) -> list[dict]:
+    """One round's qualifying result: position, and the Q1/Q2/Q3 times.
+
+    Each row carries its constructor, so team-mate pairings come from the
+    weekend itself rather than from a stored roster. A mid-season driver
+    change then pairs the drivers who actually shared a car that weekend,
+    which a season-long roster would get wrong for both of them.
+
+    A session a driver did not set a time in is absent from the payload
+    and stays absent here: knocked out in Q1 and no lap in Q2 are the
+    same shape in a table of numbers and are not the same fact.
+    """
+
+    def extract(mrdata):
+        races = mrdata["RaceTable"]["Races"]
+        return races[0].get("QualifyingResults", []) if races else []
+
+    rows = []
+    for result in _jolpica_paged(f"{year}/{round_}/qualifying", extract):
+        driver = result.get("Driver", {})
+        constructor = result.get("Constructor", {})
+        rows.append({
+            "driverId": driver.get("driverId"),
+            "code": driver.get("code"),
+            "constructorId": constructor.get("constructorId"),
+            "constructorName": constructor.get("name"),
+            "position": int(result["position"]),
+            "q1S": _lap_time_to_seconds(result.get("Q1", "")),
+            "q2S": _lap_time_to_seconds(result.get("Q2", "")),
+            "q3S": _lap_time_to_seconds(result.get("Q3", "")),
+        })
+    rows.sort(key=lambda r: r["position"])
+    return rows
+
+
 def fetch_circuit_history(circuit_id: str, years: list[int]) -> list[dict]:
     """Past editions of one circuit, for the Upcoming Race Brief's priors.
 
