@@ -5,6 +5,7 @@ import { loadManifest, loadRacingLine } from '../lib/racingLine.js';
 import { loadTelemetryIndex, newestRoundWithLines } from '../lib/telemetryIndex.js';
 import { accelerationTrace } from '../lib/aero.js';
 import { drivingStyle, STYLE_METRICS } from '../lib/style.js';
+import { sessionCost } from '../lib/sessionCost.js';
 import { seriesColor } from '../theme/palette.js';
 import { formatLapTime } from '../lib/formatTime.js';
 
@@ -24,6 +25,8 @@ export default function DrivingStyle() {
   const [session, setSession] = useState('Q');
   const [manifest, setManifest] = useState({ status: 'loading', data: null });
   const [lines, setLines] = useState({});
+  // The other session for the same round, loaded only to compare against.
+  const [other, setOther] = useState({ manifest: null, lines: {} });
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +94,59 @@ export default function DrivingStyle() {
       cancelled = true;
     };
   }, [round, session]);
+
+  // The same driver's other lap of the weekend. A qualifying lap and a
+  // race lap of the same circuit are the two ends of the strategy
+  // question, and both are already published — they were just never put
+  // beside each other.
+  useEffect(() => {
+    if (!round) return undefined;
+    let cancelled = false;
+    const counterpart = session === 'Q' ? 'R' : 'Q';
+    setOther({ manifest: null, lines: {} });
+
+    (async () => {
+      try {
+        const found = await loadManifest(round, counterpart);
+        if (cancelled || found.unavailable) return;
+        const codes = Object.keys(found.drivers ?? {});
+        const decoded = await Promise.all(
+          codes.map((code) =>
+            loadRacingLine(round, counterpart, code, found).then((ch) => [code, ch])),
+        );
+        if (!cancelled) {
+          setOther({ manifest: found, lines: Object.fromEntries(decoded) });
+        }
+      } catch {
+        // The counterpart session has no lines; the panel simply does not
+        // appear, which the page says.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [round, session]);
+
+  const costs = useMemo(() => {
+    if (manifest.status !== 'ready' || !other.manifest) return [];
+    const qualifyingIsHere = session === 'Q';
+    return Object.keys(lines)
+      .filter((code) => code in other.lines)
+      .map((code) => {
+        const here = {
+          speedRaw: lines[code].speed,
+          lapTimeS: manifest.data.laps?.find((l) => l.code === code)?.lapTimeS ?? null,
+        };
+        const there = {
+          speedRaw: other.lines[code].speed,
+          lapTimeS: other.manifest.laps?.find((l) => l.code === code)?.lapTimeS ?? null,
+        };
+        const [q, r] = qualifyingIsHere ? [here, there] : [there, here];
+        return { code, cost: sessionCost(q, r, 2) };
+      })
+      .filter((entry) => entry.cost);
+  }, [manifest, lines, other, session]);
 
   const styles = useMemo(() => {
     if (manifest.status !== 'ready') return [];
@@ -239,6 +295,79 @@ export default function DrivingStyle() {
               </section>
             );
           })}
+
+          {costs.length > 0 && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>What the race costs a lap</h2>
+                <p className="panel-note">
+                  The same driver, the same circuit, both sessions: a qualifying lap
+                  against their fastest lap of the race, and where on the circuit the
+                  difference was paid. The cost is the official gap between the two laps.
+                  The sector split cannot be — no source publishes one — so it is
+                  integrated from the speed channels, which recovers most of that gap but
+                  not all of it: the "recovered" column is how much, and the sector
+                  figures should be read as where the cost fell rather than as a second
+                  measurement of how large it was.
+                </p>
+              </div>
+              <div className="table-scroll table-wide">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Driver</th>
+                      <th scope="col" className="tabular">Qualifying</th>
+                      <th scope="col" className="tabular">Race</th>
+                      <th scope="col" className="tabular">Cost</th>
+                      <th scope="col" className="tabular">Top speed</th>
+                      <th scope="col" className="tabular">Worst twelfth</th>
+                      <th scope="col" className="tabular">Recovered</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {costs.map(({ code, cost }) => (
+                      <tr key={code}>
+                        <td className="mono">{code}</td>
+                        <td className="tabular">
+                          {cost.officialQualifyingS
+                            ? formatLapTime(cost.officialQualifyingS)
+                            : formatLapTime(cost.integratedQualifyingS)}
+                        </td>
+                        <td className="tabular">
+                          {cost.officialRaceS
+                            ? formatLapTime(cost.officialRaceS)
+                            : formatLapTime(cost.integratedRaceS)}
+                        </td>
+                        <td className="tabular loss-cell">
+                          +{(cost.officialCostS ?? cost.integratedCostS).toFixed(3)}s
+                        </td>
+                        <td className="tabular">
+                          {cost.topSpeedCostKph >= 0 ? '+' : ''}
+                          {Math.round(cost.topSpeedCostKph)} km/h
+                        </td>
+                        <td className="tabular">
+                          {cost.worstSector
+                            ? `#${cost.worstSector.sector} · +${cost.worstSector.costS.toFixed(2)}s`
+                            : '—'}
+                        </td>
+                        <td className="tabular">
+                          {cost.officialCostS
+                            ? `${((cost.integratedCostS / cost.officialCostS) * 100).toFixed(0)}%`
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="panel-note">
+                This is not a fuel-and-tyre figure. The gap contains fuel load, tyre age
+                and compound, engine mode, traffic, and a circuit that rubbered in across
+                the weekend — nothing here separates them. It is the measured cost of the
+                same driver doing the same lap under race conditions.
+              </p>
+            </section>
+          )}
 
           <section className="panel panel-limitations">
             <div className="panel-head">

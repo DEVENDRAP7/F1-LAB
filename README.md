@@ -70,7 +70,9 @@ load time rather than written into the copy.
   past each apex the throttle comes back; the speed carried through the
   slowest point of each turn; gear changes. There is no "better" column,
   because carrying more speed into a corner is not superior to braking
-  later and turning tighter.
+  later and turning tighter. It also compares the same driver's
+  qualifying lap against their fastest race lap, and says which twelfth
+  of the circuit the difference was paid in.
 - **Aero Explainer** — lateral and longitudinal acceleration for a
   driver's fastest lap, computed from the published racing line: a g-g
   diagram, the lateral g the car sustained at each speed, the driven lap
