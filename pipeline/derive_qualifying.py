@@ -61,14 +61,20 @@ def build_head_to_head(rounds: list[dict]) -> dict:
 
     `rounds` is [{"round": n, "raceName": str, "results": [...]}].
     """
-    records: dict[str, dict] = {}
+    records: dict[tuple, dict] = {}
 
     for entry in rounds:
         for a, b in _pairs(entry.get("results") or []):
-            key = a["constructorId"]
+            # Keyed by the two drivers who actually shared the car, not by
+            # the team. Two of this season's teams swapped a driver
+            # mid-year, and keying by constructor threw both of them away
+            # for having "three drivers" — when what they really have is
+            # two pairings, each with its own sample.
+            pair = tuple(sorted((a["driverId"], b["driverId"])))
+            key = (a["constructorId"], pair)
             record = records.setdefault(key, {
-                "constructorId": key,
-                "constructorName": a.get("constructorName") or key,
+                "constructorId": a["constructorId"],
+                "constructorName": a.get("constructorName") or a["constructorId"],
                 "drivers": {},
                 "rounds": [],
             })
@@ -107,10 +113,6 @@ def build_head_to_head(rounds: list[dict]) -> dict:
     out = []
     for record in records.values():
         drivers = list(record["drivers"].values())
-        if len(drivers) != 2:
-            # A team whose line-up changed mid-season has more than two
-            # drivers in the record, and no two-way head-to-head to state.
-            continue
         gaps = [r["gapS"] for r in record["rounds"] if r["gapS"] is not None]
         median_gap = None
         if gaps:
@@ -128,7 +130,9 @@ def build_head_to_head(rounds: list[dict]) -> dict:
             "medianGapS": median_gap,
         })
 
-    out.sort(key=lambda r: r["constructorName"])
+    # Team, then the longer partnership first: a full-season pairing
+    # above the handful of rounds a stand-in shared with them.
+    out.sort(key=lambda r: (r["constructorName"], -r["rounds_compared"]))
     return {
         "teams": out,
         "limitations": [
@@ -141,8 +145,12 @@ def build_head_to_head(rounds: list[dict]) -> dict:
             "Where the two were knocked out in different segments the weekend still "
             "counts as a beat on position, because that is what happened, but it "
             "contributes no gap.",
-            "A team that fielded more than two drivers in a weekend is skipped: "
-            "there is no unambiguous pairing, and pairing by the order the feed "
-            "returned would invent one.",
+            "A team that fielded more than two drivers in a single weekend is "
+            "skipped for that weekend: there is no unambiguous pairing, and pairing "
+            "by the order the feed returned would invent one.",
+            "A team that changed a driver mid-season appears as two pairings rather "
+            "than one record, each with the rounds those two actually shared a car "
+            "for. Merging them would compare drivers who never drove the same car in "
+            "the same weekend.",
         ],
     }

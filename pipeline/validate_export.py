@@ -224,6 +224,62 @@ def check_whatif() -> list[str]:
     return errors
 
 
+# The two sources agree to the millisecond on every qualifying lap this
+# project has published — 24 driver-laps across 12 rounds, exactly. So a
+# disagreement is not a rounding difference: it means the wrong OpenF1
+# session was matched to a round, or the wrong lap was picked out of it,
+# or the lap-time channel is not what it claims to be. A hundredth of
+# tolerance leaves room for a future feed to round differently without
+# leaving room for any of those.
+QUALIFYING_CROSS_SOURCE_TOLERANCE_S = 0.01
+
+
+def check_qualifying_cross_source() -> list[str]:
+    """Check the telemetry lap times against the official results.
+
+    This is the only place in the project where two independent sources
+    describe the same event: OpenF1 publishes the lap a racing line was
+    traced from, and Jolpica publishes what that driver's qualifying
+    times officially were. Everything else here is internally consistent
+    by construction; this can actually be wrong.
+    """
+    errors = []
+    for qualifying_path in sorted(PUBLIC_DATA.glob("*/qualifying.json")):
+        year = qualifying_path.parent.name
+        try:
+            document = json.loads(qualifying_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            errors.append(f"{qualifying_path}: unreadable")
+            continue
+
+        by_round = {str(entry["round"]): entry for entry in document.get("rounds", [])}
+        for manifest_path in sorted(PUBLIC_DATA.glob(f"{year}/*/Q/lines/manifest.json")):
+            round_ = manifest_path.parent.parent.parent.name
+            manifest = json.loads(manifest_path.read_text())
+            official = by_round.get(round_)
+            if not official or not manifest.get("laps"):
+                continue
+
+            results = {row.get("code"): row for row in official["results"]}
+            for lap in manifest["laps"]:
+                row = results.get(lap.get("code"))
+                if not row:
+                    continue
+                times = [row[key] for key in ("q1S", "q2S", "q3S") if row.get(key)]
+                if not times:
+                    continue
+                drift = abs(float(lap["lapTimeS"]) - min(times))
+                if drift > QUALIFYING_CROSS_SOURCE_TOLERANCE_S:
+                    errors.append(
+                        f"{manifest_path}: {lap['code']} traced a "
+                        f"{lap['lapTimeS']:.3f}s lap but the official result's best "
+                        f"qualifying time is {min(times):.3f}s ({drift:.3f}s apart) — "
+                        "the session or the lap does not match"
+                    )
+
+    return errors
+
+
 def main() -> int:
     errors = (
         check_budgets()
@@ -231,6 +287,7 @@ def main() -> int:
         + check_upcoming_brief()
         + check_whatif()
         + check_line_manifests()
+        + check_qualifying_cross_source()
     )
 
     if errors:

@@ -95,12 +95,26 @@ def test_a_third_driver_in_one_weekend_leaves_the_team_unpaired():
     assert build_head_to_head(rounds)["teams"] == []
 
 
-def test_a_line_up_change_across_the_season_states_no_two_way_record():
+def test_a_mid_season_change_becomes_two_pairings_with_their_own_samples():
+    """Keying by constructor threw away both Red Bull teams on real data —
+    a driver moved between them, so each looked like a team with three
+    drivers. What they actually have is two pairings."""
     rounds = [
         round_(1, [row("a", "team", 1, q3=79.0), row("b", "team", 2, q3=79.2)]),
-        round_(2, [row("a", "team", 1, q3=79.0), row("c", "team", 2, q3=79.3)]),
+        round_(2, [row("a", "team", 1, q3=79.0), row("b", "team", 3, q3=79.4)]),
+        round_(3, [row("a", "team", 1, q3=79.0), row("c", "team", 2, q3=79.3)]),
     ]
-    assert build_head_to_head(rounds)["teams"] == []
+    teams = build_head_to_head(rounds)["teams"]
+    assert len(teams) == 2
+
+    # The longer partnership comes first.
+    assert teams[0]["rounds_compared"] == 2
+    assert {d["driverId"] for d in teams[0]["drivers"]} == {"a", "b"}
+    assert teams[1]["rounds_compared"] == 1
+    assert {d["driverId"] for d in teams[1]["drivers"]} == {"a", "c"}
+
+    # Every pairing is still two drivers, never three merged together.
+    assert all(len(t["drivers"]) == 2 for t in teams)
 
 
 def test_it_names_what_a_head_to_head_cannot_say():

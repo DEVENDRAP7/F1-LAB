@@ -291,3 +291,56 @@ class TestSessionMatching:
             {"date": "2026-08-23"}, self.SESSIONS[:1],
             slack_days=run_refresh.QUALIFYING_MATCH_SLACK_DAYS)
         assert found["sessionKey"] == 1
+
+
+class TestQualifyingCrossSource:
+    """The only check in this project where two independent sources
+    describe the same event.
+
+    OpenF1 publishes the lap a racing line was traced from; Jolpica
+    publishes what that driver's qualifying times officially were. On
+    real data they agree to the millisecond across every published lap,
+    so a disagreement means the wrong session was matched to a round or
+    the wrong lap was picked out of it.
+    """
+
+    def _round(self, tmp_path, monkeypatch, traced_s, official="1:11.163"):
+        import validate_export
+
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        (tmp_path / "2026").mkdir(parents=True)
+        (tmp_path / "2026" / "qualifying.json").write_text(json.dumps({
+            "rounds": [{
+                "round": 12,
+                "results": [{"driverId": "norris", "code": "NOR",
+                             "q1S": 72.695, "q2S": 71.628, "q3S": 71.163}],
+            }],
+        }))
+        lines = tmp_path / "2026" / "12" / "Q" / "lines"
+        lines.mkdir(parents=True)
+        (lines / "manifest.json").write_text(json.dumps({
+            "channels": ["x", "y", "speed"],
+            "drivers": {},
+            "laps": [{"code": "NOR", "lapTimeS": traced_s}],
+        }))
+        return validate_export
+
+    def test_matching_times_pass(self, tmp_path, monkeypatch):
+        validate_export = self._round(tmp_path, monkeypatch, 71.163)
+        assert validate_export.check_qualifying_cross_source() == []
+
+    def test_a_lap_from_the_wrong_session_fails(self, tmp_path, monkeypatch):
+        validate_export = self._round(tmp_path, monkeypatch, 71.563)
+        errors = validate_export.check_qualifying_cross_source()
+        assert len(errors) == 1
+        assert "does not match" in errors[0]
+
+    def test_a_driver_with_no_official_row_is_not_invented(self, tmp_path, monkeypatch):
+        """A line for someone the results do not carry is a gap, not a
+        mismatch: there is nothing to compare it against."""
+        validate_export = self._round(tmp_path, monkeypatch, 71.163)
+        lines = tmp_path / "2026" / "12" / "Q" / "lines" / "manifest.json"
+        manifest = json.loads(lines.read_text())
+        manifest["laps"] = [{"code": "XXX", "lapTimeS": 60.0}]
+        lines.write_text(json.dumps(manifest))
+        assert validate_export.check_qualifying_cross_source() == []
