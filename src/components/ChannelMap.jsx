@@ -90,6 +90,10 @@ export default function ChannelMap({
   label,
   unit = '',
   bandLabels = null,
+  // Explicit colours, for a map whose bands are identities rather than
+  // magnitudes: who was fastest through a piece of track is categorical,
+  // and a sequential ramp would imply an order that does not exist.
+  bandColors = null,
   formatValue = (v) => v.toFixed(1),
   smooth = true,
   turns = [],
@@ -159,7 +163,7 @@ export default function ChannelMap({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
 
-    const colors = rampFor(bands);
+    const colors = bandColors ?? rampFor(bands);
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -212,7 +216,7 @@ export default function ChannelMap({
       ctx.arc(hx, hy, 6, 0, Math.PI * 2);
       ctx.stroke();
     }
-  }, [points, shaded, bandEdges, bands, project, size, hover, turns, highlight]);
+  }, [points, shaded, bandEdges, bands, bandColors, project, size, hover, turns, highlight]);
 
   if (!bounds || !points || points.length < 2) return null;
 
@@ -252,7 +256,7 @@ export default function ChannelMap({
             <li key={i}>
               <span
                 className="grip-swatch"
-                style={{ background: rampToken(i, bands) }}
+                style={{ background: bandColors ? bandColors[i] : rampToken(i, bands) }}
                 aria-hidden="true"
               />
               <span className="mono">{bandLabel(i, bandEdges, unit, bandLabels)}</span>

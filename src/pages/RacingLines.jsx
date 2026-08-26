@@ -3,6 +3,12 @@ import { dataPath } from '../lib/dataPath.js';
 import { deltaTrace } from '../lib/delta.js';
 import { accelerationTrace } from '../lib/aero.js';
 import { detectTurns, turnDeltas } from '../lib/corners.js';
+import {
+  DEFAULT_SECTORS,
+  miniSectors,
+  sectorTally,
+  winnerBySample,
+} from '../lib/miniSectors.js';
 import ChannelMap from '../components/ChannelMap.jsx';
 import { lineToMapPoints, loadManifest, loadRacingLine } from '../lib/racingLine.js';
 import {
@@ -98,6 +104,7 @@ export default function RacingLines() {
   const [lines, setLines] = useState({});
   const [crosshair, setCrosshair] = useState(0);
   const [colourBy, setColourBy] = useState('driver');
+  const [showSectors, setShowSectors] = useState(false);
   const [index, setIndex] = useState(null);
 
   useEffect(() => {
@@ -243,6 +250,26 @@ export default function RacingLines() {
       values: deltaTrace(ref, lines[code].speed, SPACING_M),
     }));
   }, [active, lines]);
+
+  // Who was fastest where. Capped at three drivers, and the cap is a
+  // colour constraint rather than a layout one: on a map any two pieces
+  // of track can end up side by side, so the palette has to hold up
+  // across every pair at once, and only its first three slots do.
+  const sectorDrivers = active.slice(0, 3);
+  const sectors = useMemo(() => {
+    if (!showSectors || sectorDrivers.length < 2 || !manifest.data) return null;
+    const scale = manifest.data.scale.speed ?? 10;
+    const rows = miniSectors(
+      sectorDrivers.map((code) => ({ code, speedRaw: lines[code].speed })),
+      SPACING_M,
+    );
+    return {
+      rows,
+      tally: sectorTally(rows, sectorDrivers),
+      bySample: winnerBySample(rows, lines[sectorDrivers[0]].speed.length),
+      scale,
+    };
+  }, [showSectors, sectorDrivers, lines, manifest.data]);
 
   // Where the delta was made. Turns are detected on the reference lap —
   // the one everything else is measured against — and each comparison
@@ -464,6 +491,97 @@ export default function RacingLines() {
                 )}
               </div>
             </div>
+          )}
+
+          {active.length >= 2 && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>Who was fastest where</h2>
+                <p className="panel-note">
+                  The lap cut into {DEFAULT_SECTORS} equal fractions of itself, with each
+                  piece taken by whoever crossed it quickest. Times come off the same
+                  cumulative-time curve as the delta trace above, so the two cannot
+                  disagree about who gained where. These are not the sport's timing-loop
+                  mini-sectors — nothing here publishes where those loops are — and the
+                  split is by fraction of each driver's own lap rather than by fixed
+                  distance, because two measured racing lines are not the same length.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => setShowSectors((on) => !on)}
+              >
+                {showSectors ? 'Hide the sector split' : 'Show the sector split'}
+              </button>
+
+              {showSectors && sectors && (
+                <>
+                  <ChannelMap
+                    points={mapLines[0].points}
+                    values={sectors.bySample}
+                    bandEdges={sectorDrivers.slice(1).map((_, i) => i + 0.5)}
+                    bandLabels={sectorDrivers.map(
+                      (code) => `${code} · ${sectors.tally[code]} of ${DEFAULT_SECTORS}`,
+                    )}
+                    bandColors={sectorDrivers.map((_, i) => seriesColor(i))}
+                    label="Fastest through"
+                    smooth={false}
+                    formatValue={(v) => sectorDrivers[Math.round(v)] ?? '—'}
+                    height={460}
+                  />
+                  {active.length > sectorDrivers.length && (
+                    <p className="panel-note">
+                      Showing the first {sectorDrivers.length} of your {active.length}{' '}
+                      selections. On a map any two pieces of track can end up touching, so
+                      the colours have to stay apart across every pair at once — and only
+                      three of them do.
+                    </p>
+                  )}
+                  <div className="table-scroll table-wide">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Sector</th>
+                          <th scope="col">Fastest</th>
+                          <th scope="col" className="tabular">Margin</th>
+                          {sectorDrivers.map((code) => (
+                            <th key={code} scope="col" className="tabular">{code}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sectors.rows.map((row) => (
+                          <tr key={row.sector}>
+                            <td className="mono">{row.sector}</td>
+                            <td>
+                              <span
+                                className="legend-swatch"
+                                style={{ background: seriesColor(row.fastestIndex) }}
+                                aria-hidden="true"
+                              />{' '}
+                              <span className="mono">{row.fastest}</span>
+                            </td>
+                            <td className="tabular">
+                              {row.marginS == null ? '—' : `${row.marginS.toFixed(3)}s`}
+                            </td>
+                            {sectorDrivers.map((code) => {
+                              const entry = row.times.find((t) => t.code === code);
+                              return (
+                                <td key={code} className="tabular">
+                                  {entry ? entry.timeS.toFixed(3) : '—'}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </section>
           )}
 
           {turnTable && (
