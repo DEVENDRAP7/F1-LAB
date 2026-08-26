@@ -1,8 +1,18 @@
 {
   "year": 2026,
-  "generated_at": "2026-08-26T05:59:25Z",
+  "generated_at": "2026-08-26T06:01:16Z",
   "rounds": {
     "1": {
+      "Q": {
+        "drivers": [
+          "ANT",
+          "HAD",
+          "LEC",
+          "RUS"
+        ],
+        "sessionLabel": "qualifying",
+        "unavailable": false
+      },
       "R": {
         "drivers": [
           "ANT",
@@ -76,6 +86,16 @@
       }
     },
     "2": {
+      "Q": {
+        "drivers": [
+          "ANT",
+          "HAM",
+          "LEC",
+          "RUS"
+        ],
+        "sessionLabel": "qualifying",
+        "unavailable": false
+      },
       "R": {
         "drivers": [
           "ANT",
