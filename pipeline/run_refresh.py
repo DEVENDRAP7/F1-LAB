@@ -479,7 +479,13 @@ def refresh_error_review(year: int, round_info: dict, sessions: list[dict]) -> N
         if stored == ERROR_REVIEW_SCHEMA_VERSION:
             return
 
-    session = _match_openf1_session(round_info, sessions, slack_days)
+    # The race's own session, so the default day of slack is right here:
+    # this walked in when refresh_telemetry gained a slack argument and a
+    # global replace carried the call signature into a function that has
+    # no such parameter. It sat unnoticed because every round returned at
+    # the schema check above before ever reaching this line — and blew up
+    # the first refresh after that version was bumped.
+    session = _match_openf1_session(round_info, sessions)
     if session is None:
         return
     session_key = session["sessionKey"]

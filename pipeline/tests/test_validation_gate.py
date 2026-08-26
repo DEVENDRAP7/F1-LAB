@@ -344,3 +344,59 @@ class TestQualifyingCrossSource:
         manifest["laps"] = [{"code": "XXX", "lapTimeS": 60.0}]
         lines.write_text(json.dumps(manifest))
         assert validate_export.check_qualifying_cross_source() == []
+
+
+class TestErrorReviewReachesItsFetch:
+    """A NameError sat in refresh_error_review for a day.
+
+    Parameterising refresh_telemetry by session added a slack argument,
+    and a global replace carried the new call signature into
+    refresh_error_review, which has no such parameter. Every round
+    returned at the schema check above that line, so nothing ever reached
+    it — until the review's schema version was bumped, and the next
+    refresh died on the first round it tried.
+
+    This drives the function past that check with the network stubbed, so
+    the path is executed rather than assumed.
+    """
+
+    def _run(self, tmp_path, monkeypatch, stored_version):
+        import export
+        import ingest_openf1
+        import run_refresh
+
+        monkeypatch.setattr(run_refresh, "PUBLIC_DATA", tmp_path)
+        monkeypatch.setattr(export, "PUBLIC_DATA", tmp_path)
+
+        out = tmp_path / "2026" / "12" / "R"
+        out.mkdir(parents=True)
+        (out / "errors.json").write_text(json.dumps({"schemaVersion": stored_version}))
+
+        calls = []
+
+        def no_network(*args, **kwargs):
+            calls.append(args)
+            raise RuntimeError("network is not used by this test")
+
+        monkeypatch.setattr(ingest_openf1, "fetch_laps", no_network)
+        monkeypatch.setattr(ingest_openf1, "fetch_drivers", no_network)
+        monkeypatch.setattr(ingest_openf1, "fetch_race_control", no_network)
+
+        sessions = [{"sessionKey": 1, "dateStart": "2026-08-23T13:00:00+00:00",
+                     "countryName": "Netherlands"}]
+        run_refresh.refresh_error_review(
+            2026, {"round": 12, "raceName": "Dutch Grand Prix", "date": "2026-08-23"},
+            sessions)
+        return calls
+
+    def test_a_stale_review_reaches_the_fetch(self, tmp_path, monkeypatch):
+        calls = self._run(tmp_path, monkeypatch, stored_version=1)
+        assert calls, "the session matched but the fetch was never attempted"
+
+    def test_a_current_review_returns_before_it(self, tmp_path, monkeypatch):
+        import run_refresh
+
+        calls = self._run(
+            tmp_path, monkeypatch,
+            stored_version=run_refresh.ERROR_REVIEW_SCHEMA_VERSION)
+        assert calls == []
