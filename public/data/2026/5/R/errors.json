@@ -57,6 +57,7 @@
           "baselineS": 80.418,
           "estimatedLossS": 3.29,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -173,6 +174,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 6.4,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -184,6 +186,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 4.291,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -195,6 +198,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 4.124,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -206,6 +210,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 2.606,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -217,6 +222,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 2.173,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -228,6 +234,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 2.295,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -239,6 +246,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 2.846,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -250,6 +258,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 2.072,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -261,6 +270,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 14.517,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -272,6 +282,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 15.019,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -283,6 +294,7 @@
           "baselineS": 77.457,
           "estimatedLossS": 20.73,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -322,6 +334,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 3.519,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -333,6 +346,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 2.141,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -344,6 +358,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 2.281,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -355,6 +370,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 12.624,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -366,6 +382,18 @@
           "baselineS": 77.7,
           "estimatedLossS": 27.105,
           "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 9",
+              "sector": 9
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -377,6 +405,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 8.055,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -388,6 +417,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 6.558,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -399,6 +429,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 19.272,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -410,6 +441,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 18.6,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -421,6 +453,7 @@
           "baselineS": 77.7,
           "estimatedLossS": 2.799,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -790,6 +823,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 8.119,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -801,6 +835,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 2.68,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -812,6 +847,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 2.68,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -823,6 +859,28 @@
           "baselineS": 79.558,
           "estimatedLossS": 3.185,
           "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 12",
+              "sector": 12
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -834,6 +892,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 2.285,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -845,6 +904,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 2.995,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -856,6 +916,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 2.289,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -867,6 +928,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 10.87,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -878,6 +940,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 19.984,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -889,6 +952,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 2.557,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -900,6 +964,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 2.028,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -911,6 +976,7 @@
           "baselineS": 79.558,
           "estimatedLossS": 3.143,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -961,6 +1027,7 @@
           "baselineS": 77.068,
           "estimatedLossS": 5.157,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -972,6 +1039,7 @@
           "baselineS": 77.068,
           "estimatedLossS": 3.926,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -983,6 +1051,7 @@
           "baselineS": 77.068,
           "estimatedLossS": 2.975,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -994,6 +1063,7 @@
           "baselineS": 77.068,
           "estimatedLossS": 13.255,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1005,6 +1075,7 @@
           "baselineS": 77.068,
           "estimatedLossS": 25.876,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -1077,6 +1148,7 @@
           "baselineS": 77.444,
           "estimatedLossS": 8.778,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1088,6 +1160,7 @@
           "baselineS": 77.444,
           "estimatedLossS": 3.117,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1099,6 +1172,7 @@
           "baselineS": 77.444,
           "estimatedLossS": 3.493,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1110,6 +1184,7 @@
           "baselineS": 77.444,
           "estimatedLossS": 3.502,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1121,6 +1196,7 @@
           "baselineS": 77.444,
           "estimatedLossS": 2.335,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1132,6 +1208,7 @@
           "baselineS": 77.444,
           "estimatedLossS": 16.036,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1143,6 +1220,7 @@
           "baselineS": 77.444,
           "estimatedLossS": 4.101,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1154,6 +1232,7 @@
           "baselineS": 77.444,
           "estimatedLossS": 26.366,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -1182,6 +1261,7 @@
           "baselineS": 76.32,
           "estimatedLossS": 4.356,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1193,6 +1273,7 @@
           "baselineS": 76.32,
           "estimatedLossS": 2.961,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1204,6 +1285,7 @@
           "baselineS": 76.32,
           "estimatedLossS": 2.64,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1215,6 +1297,18 @@
           "baselineS": 76.32,
           "estimatedLossS": 5.998,
           "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 9",
+              "sector": 9
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1226,6 +1320,7 @@
           "baselineS": 76.32,
           "estimatedLossS": 2.374,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -1298,6 +1393,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 3.509,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1309,6 +1405,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 2.383,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1320,6 +1417,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 4.334,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1331,6 +1429,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 12.154,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1342,6 +1441,18 @@
           "baselineS": 77.542,
           "estimatedLossS": 26.54,
           "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 9",
+              "sector": 9
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1353,6 +1464,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 4.483,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1364,6 +1476,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 9.707,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1375,6 +1488,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 16.698,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1386,6 +1500,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 18.294,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1397,6 +1512,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 8.164,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1408,6 +1524,7 @@
           "baselineS": 77.542,
           "estimatedLossS": 2.044,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -1502,6 +1619,7 @@
           "baselineS": 77.541,
           "estimatedLossS": 5.141,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1513,6 +1631,7 @@
           "baselineS": 77.541,
           "estimatedLossS": 3.779,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1524,6 +1643,7 @@
           "baselineS": 77.541,
           "estimatedLossS": 2.584,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1535,6 +1655,7 @@
           "baselineS": 77.541,
           "estimatedLossS": 16.019,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1546,6 +1667,7 @@
           "baselineS": 77.541,
           "estimatedLossS": 4.285,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1557,6 +1679,7 @@
           "baselineS": 77.541,
           "estimatedLossS": 25.108,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -1585,6 +1708,7 @@
           "baselineS": 76.974,
           "estimatedLossS": 4.196,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1596,6 +1720,7 @@
           "baselineS": 76.974,
           "estimatedLossS": 2.369,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1607,6 +1732,7 @@
           "baselineS": 76.974,
           "estimatedLossS": 2.077,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1618,6 +1744,18 @@
           "baselineS": 76.974,
           "estimatedLossS": 25.984,
           "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 9",
+              "sector": 9
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -1778,6 +1916,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 7.09,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1789,6 +1928,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 3.079,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1800,6 +1940,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 3.019,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1811,6 +1952,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 2.102,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1822,6 +1964,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 2.019,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1833,6 +1976,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 4.92,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1844,6 +1988,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 15.534,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1855,6 +2000,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 14.597,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1866,6 +2012,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 13.926,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1877,6 +2024,7 @@
           "baselineS": 78.606,
           "estimatedLossS": 19.974,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -1982,6 +2130,7 @@
           "baselineS": 78.579,
           "estimatedLossS": 3.029,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -1993,6 +2142,7 @@
           "baselineS": 78.579,
           "estimatedLossS": 2.674,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2004,6 +2154,7 @@
           "baselineS": 78.579,
           "estimatedLossS": 2.285,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -2175,6 +2326,7 @@
           "baselineS": 76.941,
           "estimatedLossS": 4.878,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2186,6 +2338,7 @@
           "baselineS": 76.941,
           "estimatedLossS": 3.833,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2197,6 +2350,7 @@
           "baselineS": 76.941,
           "estimatedLossS": 2.325,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2208,6 +2362,7 @@
           "baselineS": 76.941,
           "estimatedLossS": 2.258,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2219,6 +2374,7 @@
           "baselineS": 76.941,
           "estimatedLossS": 3.306,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2230,6 +2386,7 @@
           "baselineS": 76.941,
           "estimatedLossS": 9.735,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2241,6 +2398,18 @@
           "baselineS": 76.941,
           "estimatedLossS": 26.109,
           "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 9",
+              "sector": 9
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2252,6 +2421,7 @@
           "baselineS": 76.941,
           "estimatedLossS": 3.653,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2263,6 +2433,7 @@
           "baselineS": 76.941,
           "estimatedLossS": 14.386,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -2368,6 +2539,7 @@
           "baselineS": 77.154,
           "estimatedLossS": 2.667,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2379,6 +2551,7 @@
           "baselineS": 77.154,
           "estimatedLossS": 17.747,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2390,6 +2563,7 @@
           "baselineS": 77.154,
           "estimatedLossS": 15.503,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2401,6 +2575,7 @@
           "baselineS": 77.154,
           "estimatedLossS": 20.822,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2412,6 +2587,7 @@
           "baselineS": 77.154,
           "estimatedLossS": 2.256,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -2770,6 +2946,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 4.506,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2781,6 +2958,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 3.941,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2792,6 +2970,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 3.021,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2803,6 +2982,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 2.47,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2814,6 +2994,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 2.287,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2825,6 +3006,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 22.321,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2836,6 +3018,18 @@
           "baselineS": 80.572,
           "estimatedLossS": 24.195,
           "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 9",
+              "sector": 9
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2847,6 +3041,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 3.384,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2858,6 +3053,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 10.399,
           "severity": "major",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2869,6 +3065,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 2.273,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2880,6 +3077,7 @@
           "baselineS": 80.572,
           "estimatedLossS": 6.06,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -2896,6 +3094,7 @@
           "baselineS": 79.138,
           "estimatedLossS": 6.376,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2907,6 +3106,7 @@
           "baselineS": 79.138,
           "estimatedLossS": 3.666,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -2923,6 +3123,7 @@
           "baselineS": 75.608,
           "estimatedLossS": 5.839,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2934,6 +3135,7 @@
           "baselineS": 75.608,
           "estimatedLossS": 3.366,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2945,6 +3147,7 @@
           "baselineS": 75.608,
           "estimatedLossS": 2.366,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2956,6 +3159,7 @@
           "baselineS": 75.608,
           "estimatedLossS": 2.102,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2967,6 +3171,28 @@
           "baselineS": 75.608,
           "estimatedLossS": 2.225,
           "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 12",
+              "sector": 12
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2978,6 +3204,7 @@
           "baselineS": 75.608,
           "estimatedLossS": 2.935,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -2989,6 +3216,7 @@
           "baselineS": 75.608,
           "estimatedLossS": 3.657,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3000,6 +3228,7 @@
           "baselineS": 75.608,
           "estimatedLossS": 2.297,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -3016,6 +3245,7 @@
           "baselineS": 75.995,
           "estimatedLossS": 4.675,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3027,6 +3257,7 @@
           "baselineS": 75.995,
           "estimatedLossS": 3.713,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3038,6 +3269,7 @@
           "baselineS": 75.995,
           "estimatedLossS": 4.204,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3049,6 +3281,18 @@
           "baselineS": 75.995,
           "estimatedLossS": 2.978,
           "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 9",
+              "sector": 9
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3060,6 +3304,7 @@
           "baselineS": 75.995,
           "estimatedLossS": 3.574,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -3076,6 +3321,7 @@
           "baselineS": 76.279,
           "estimatedLossS": 4.072,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3087,6 +3333,7 @@
           "baselineS": 76.279,
           "estimatedLossS": 3.245,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3098,6 +3345,7 @@
           "baselineS": 76.279,
           "estimatedLossS": 2.357,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3109,6 +3357,7 @@
           "baselineS": 76.279,
           "estimatedLossS": 3.923,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3120,6 +3369,18 @@
           "baselineS": 76.279,
           "estimatedLossS": 3.809,
           "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 9",
+              "sector": 9
+            }
+          ],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3131,6 +3392,7 @@
           "baselineS": 76.279,
           "estimatedLossS": 6.958,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -3147,6 +3409,7 @@
           "baselineS": 76.273,
           "estimatedLossS": 4.652,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3158,6 +3421,7 @@
           "baselineS": 76.273,
           "estimatedLossS": 3.147,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -3174,6 +3438,7 @@
           "baselineS": 76.049,
           "estimatedLossS": 4.227,
           "severity": "moderate",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3185,6 +3450,7 @@
           "baselineS": 76.049,
           "estimatedLossS": 3.568,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3196,6 +3462,7 @@
           "baselineS": 76.049,
           "estimatedLossS": 2.271,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         },
         {
@@ -3207,6 +3474,7 @@
           "baselineS": 76.049,
           "estimatedLossS": 2.557,
           "severity": "minor",
+          "trackFlags": [],
           "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
         }
       ]
@@ -3219,6 +3487,82 @@
     53,
     54
   ],
+  "trackFlagLaps": {
+    "1": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 15",
+        "sector": 15
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 15",
+        "sector": 15
+      }
+    ],
+    "13": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      }
+    ],
+    "19": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      }
+    ],
+    "30": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 10",
+        "sector": 10
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 9",
+        "sector": 9
+      }
+    ],
+    "40": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      }
+    ],
+    "53": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      }
+    ],
+    "61": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 1",
+        "sector": 1
+      }
+    ]
+  },
   "thresholds": {
     "slowLapS": 2.0,
     "severityBands": [
@@ -3242,13 +3586,14 @@
     "Lap 1 is never flagged. It starts from a standstill, so it is slower than a flying lap for every driver, and flagging it would mark a normal race start as an event for the whole field.",
     "Pit in-laps and out-laps are excluded. The source flags out-laps; an in-lap is identified as the lap before one, since it carries the pit entry and would otherwise show every stop in the race as a flag against the driver.",
     "A flagged lap is a deviation from this driver's own green-flag median in this race, not a diagnosed mistake: traffic, conditions and pit-wall instructions produce the same signature as an error.",
+    "A flagged lap shows any flag race control published about the track on that lap. A yellow is a published reason for a slow lap that has nothing to do with the driver, and it was in the same feed all along \u2014 it simply carries no car number, so it never reached the attributed list.",
     "Laps run under a safety car or red flag are excluded using the published track-status messages, so they are excluded because they were neutralised rather than because they looked slow.",
     "No lock-up, off-track or mid-corner-correction detection. Those need per-lap telemetry for every driver, which this pipeline does not fetch, and at the sampling rate available the detections would be too weak to attach to a named driver."
   ],
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "year": 2026,
   "round": 5,
   "raceName": "Canadian Grand Prix",
-  "generated_at": "2026-08-25T04:24:27Z",
+  "generated_at": "2026-08-26T14:41:21Z",
   "source": "OpenF1 session 11291: race control messages + lap times"
 }
