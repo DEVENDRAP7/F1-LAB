@@ -4520,9 +4520,15 @@
       -210.5
     ]
   ],
-  "corners": [],
+  "elevation": {
+    "usable": true,
+    "rangeM": 63.34,
+    "minM": 720.76,
+    "maxM": 784.1,
+    "source": "OpenF1 position z, on the same measured unit as x and y; relative to the feed's own datum, not to sea level"
+  },
   "drsZones": [],
-  "generated_at": "2026-08-25T04:00:53Z",
+  "generated_at": "2026-08-26T01:55:17Z",
   "source": "OpenF1 position trace, session 11315, fastest race lap (ANT, lap 59)",
   "positionUnitsPerMetre": {
     "value": 10.008900772013453,
@@ -4531,6 +4537,7 @@
   },
   "limitations": [
     "The outline is one measured lap's driven path, so it follows the racing line rather than the centre line or the track edges.",
-    "No corner numbering or DRS zones: this source publishes neither, and numbering them from memory would be invented detail."
+    "No official corner numbering: this source publishes none. The atlas detects turns from the published line and numbers them in lap order, which is this lap's own sequence rather than the circuit's names.",
+    "No DRS zones: the feed carries a DRS channel, but turning its integer codes into 'the flap was open here' needs a mapping this project has no verified source for."
   ]
 }

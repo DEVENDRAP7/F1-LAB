@@ -2,6 +2,7 @@
   "channels": [
     "x",
     "y",
+    "z",
     "speed",
     "throttle",
     "brake",
@@ -10,6 +11,7 @@
   "scale": {
     "x": 10,
     "y": 10,
+    "z": 10,
     "speed": 10,
     "throttle": 1,
     "brake": 1,
@@ -29,7 +31,7 @@
       "pointCount": 2444
     }
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "source": "OpenF1 session 11307 (Spain)",
   "positionUnitsPerMetre": {
     "value": 9.910906801593649,
@@ -66,5 +68,12 @@
     "Each line is one driver's fastest non-out lap of the race, not an average or an ideal line.",
     "Position samples arrive at roughly 3.7 Hz and are resampled onto a fixed distance grid, so the line is interpolated between samples.",
     "Corner numbering is not published by this source, so the map carries the driven path and no official corner labels."
-  ]
+  ],
+  "elevation": {
+    "usable": true,
+    "rangeM": 30.17,
+    "minM": 163.76,
+    "maxM": 193.93,
+    "source": "OpenF1 position z, on the same measured unit as x and y; relative to the feed's own datum, not to sea level"
+  }
 }
