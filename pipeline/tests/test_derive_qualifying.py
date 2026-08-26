@@ -4,6 +4,7 @@ The tests that matter are about what the count is allowed to mean: a
 weekend counted, a gap measured against a comparable lap, and a pairing
 that is not guessed.
 """
+import json
 import sys
 from pathlib import Path
 
@@ -122,3 +123,55 @@ def test_it_names_what_a_head_to_head_cannot_say():
     joined = " ".join(doc["limitations"]).lower()
     assert "not speed" in joined
     assert "red flag" in joined
+
+
+class TestRefusalLedger:
+    """The ledger reports what the artifacts recorded, and nothing else."""
+
+    def _tree(self, tmp_path):
+        (tmp_path / "2026" / "6" / "R").mkdir(parents=True)
+        (tmp_path / "2026" / "6" / "R" / "whatif.json").write_text(json.dumps({
+            "round": 6, "raceName": "Monaco Grand Prix",
+            "skipped": "the race was suspended", "drivers": {},
+        }))
+        (tmp_path / "2026" / "7" / "R").mkdir(parents=True)
+        (tmp_path / "2026" / "7" / "R" / "whatif.json").write_text(json.dumps({
+            "round": 7, "raceName": "Barcelona", "drivers": {
+                "leclerc": {"validation": {"validated": True, "errorPct": 0.2}},
+                "ocon": {"validation": {"validated": False, "errorPct": 1.91,
+                                        "thresholdPct": 1.0}},
+            },
+        }))
+        return tmp_path
+
+    def test_it_counts_what_was_published_beside_what_was_refused(self, tmp_path):
+        import derive_refusals
+
+        ledger = derive_refusals.collect(self._tree(tmp_path), 2026)
+        whatif = next(g for g in ledger["groups"] if g["module"] == "What-If Engine")
+        assert whatif["published"] == 1
+        assert whatif["refused"] == 2
+        assert ledger["totalRefused"] == 2
+
+    def test_every_refusal_carries_the_number_it_was_made_on(self, tmp_path):
+        import derive_refusals
+
+        ledger = derive_refusals.collect(self._tree(tmp_path), 2026)
+        reasons = " ".join(
+            entry["reason"] for group in ledger["groups"] for entry in group["entries"]
+        )
+        assert "1.91%" in reasons
+        assert "suspended" in reasons
+
+    def test_a_module_that_refused_nothing_is_absent(self, tmp_path):
+        """The ledger is of refusals, not a roll-call of modules."""
+        import derive_refusals
+
+        (tmp_path / "2026" / "7" / "R").mkdir(parents=True)
+        (tmp_path / "2026" / "7" / "R" / "whatif.json").write_text(json.dumps({
+            "round": 7, "raceName": "Barcelona",
+            "drivers": {"leclerc": {"validation": {"validated": True}}},
+        }))
+        ledger = derive_refusals.collect(tmp_path, 2026)
+        assert ledger["groups"] == []
+        assert ledger["totalRefused"] == 0

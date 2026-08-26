@@ -1,0 +1,136 @@
+{
+  "year": 2026,
+  "groups": [
+    {
+      "module": "What-If Engine",
+      "rule": "A counterfactual is offered only where replaying the real strategy reproduces the real race time within 1%.",
+      "published": 81,
+      "refused": 11,
+      "entries": [
+        {
+          "scope": "Round 1 \u00b7 Australian Grand Prix",
+          "reason": "the race was suspended \u2014 a lap of 1168s was run with the cars stationary, and no term in this model describes a red flag"
+        },
+        {
+          "scope": "Round 12 \u00b7 Dutch Grand Prix",
+          "reason": "the race was suspended \u2014 a lap of 1771s was run with the cars stationary, and no term in this model describes a red flag"
+        },
+        {
+          "scope": "Round 6 \u00b7 Monaco Grand Prix",
+          "reason": "the race was suspended \u2014 a lap of 2265s was run with the cars stationary, and no term in this model describes a red flag"
+        },
+        {
+          "scope": "Round 7 \u00b7 Barcelona Grand Prix",
+          "reason": "the race was suspended \u2014 a lap of 862s was run with the cars stationary, and no term in this model describes a red flag"
+        },
+        {
+          "scope": "Round 2 \u00b7 hadjar",
+          "reason": "replaying their real strategy missed their real race time by 1.17%, over the 1% bar"
+        },
+        {
+          "scope": "Round 5 \u00b7 antonelli",
+          "reason": "replaying their real strategy missed their real race time by 1.21%, over the 1% bar"
+        },
+        {
+          "scope": "Round 5 \u00b7 hamilton",
+          "reason": "replaying their real strategy missed their real race time by 1.19%, over the 1% bar"
+        },
+        {
+          "scope": "Round 5 \u00b7 leclerc",
+          "reason": "replaying their real strategy missed their real race time by 1.09%, over the 1% bar"
+        },
+        {
+          "scope": "Round 5 \u00b7 max_verstappen",
+          "reason": "replaying their real strategy missed their real race time by 1.17%, over the 1% bar"
+        },
+        {
+          "scope": "Round 9 \u00b7 bearman",
+          "reason": "replaying their real strategy missed their real race time by 1.23%, over the 1% bar"
+        },
+        {
+          "scope": "Round 9 \u00b7 ocon",
+          "reason": "replaying their real strategy missed their real race time by 1.91%, over the 1% bar"
+        }
+      ]
+    },
+    {
+      "module": "Racing Lines",
+      "rule": "A line is published only where the position feed carries a lap that can be drawn. A session it does not gets a written refusal, not an empty page.",
+      "published": 88,
+      "refused": 2,
+      "entries": [
+        {
+          "scope": "Round 11 \u00b7 R",
+          "reason": "the position feed does not carry a usable lap for this session \u2014 322 position sample(s) but only 30 advanced along the track, fewer than the 120 needed \u2014 the feed repeated the same coordinates"
+        },
+        {
+          "scope": "Round 6 \u00b7 R",
+          "reason": "the position feed does not carry a usable lap for this session \u2014 no position samples: the feed returned 0 location row(s) and 285 car-data row(s) for this lap's window"
+        }
+      ]
+    },
+    {
+      "module": "Elevation",
+      "rule": "A z channel that varies by less than 3 m over a whole lap is a constant with noise on it, not a profile.",
+      "published": null,
+      "refused": 2,
+      "entries": [
+        {
+          "scope": "Round 1 \u00b7 qualifying",
+          "reason": "the elevation channel varies by only 2.5m over the lap, below the 3m floor this project treats as a real profile"
+        },
+        {
+          "scope": "Round 1 \u00b7 the race",
+          "reason": "the elevation channel varies by only 2.5m over the lap, below the 3m floor this project treats as a real profile"
+        }
+      ]
+    },
+    {
+      "module": "Tyre compounds",
+      "rule": "A stint takes a compound only where the stint feed matches it by driver and lap overlap. A wrong compound colour is worse than none.",
+      "published": 723,
+      "refused": 30,
+      "entries": [
+        {
+          "scope": "Round 1 \u00b7 Australian Grand Prix",
+          "reason": "7 stint(s) kept no compound: no confident match in the stint feed"
+        },
+        {
+          "scope": "Round 11 \u00b7 Hungarian Grand Prix",
+          "reason": "1 stint(s) kept no compound: no confident match in the stint feed"
+        },
+        {
+          "scope": "Round 5 \u00b7 Canadian Grand Prix",
+          "reason": "5 stint(s) kept no compound: no confident match in the stint feed"
+        },
+        {
+          "scope": "Round 6 \u00b7 Monaco Grand Prix",
+          "reason": "16 stint(s) kept no compound: no confident match in the stint feed"
+        },
+        {
+          "scope": "Round 7 \u00b7 Barcelona Grand Prix",
+          "reason": "1 stint(s) kept no compound: no confident match in the stint feed"
+        }
+      ]
+    },
+    {
+      "module": "Degradation fits",
+      "rule": "A fit is published as a trend only with enough laps behind it and enough explanatory power. Below that it ships with the reason it failed rather than as a confident slope.",
+      "published": 367,
+      "refused": 282,
+      "entries": [
+        {
+          "scope": "225 fit(s)",
+          "reason": "lap-to-lap scatter dominates the trend"
+        },
+        {
+          "scope": "57 fit(s)",
+          "reason": "too few usable laps"
+        }
+      ]
+    }
+  ],
+  "totalRefused": 327,
+  "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion.",
+  "generated_at": "2026-08-26T11:06:27Z"
+}

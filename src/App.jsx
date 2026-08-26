@@ -9,6 +9,7 @@ import AeroExplainer from './pages/AeroExplainer.jsx';
 import WhatIf from './pages/WhatIf.jsx';
 import Qualifying from './pages/Qualifying.jsx';
 import DrivingStyle from './pages/DrivingStyle.jsx';
+import Refusals from './pages/Refusals.jsx';
 
 // HashRouter, not BrowserRouter: GitHub Pages has no server-side rewrite,
 // so deep links must live entirely in the URL fragment.
@@ -27,6 +28,7 @@ export default function App() {
           <NavLink to="/aero">Aero</NavLink>
           <NavLink to="/whatif">What-If</NavLink>
           <NavLink to="/upcoming">Upcoming</NavLink>
+          <NavLink to="/refusals">Refusals</NavLink>
         </nav>
         <main>
           <Routes>
@@ -40,6 +42,7 @@ export default function App() {
             <Route path="/aero" element={<AeroExplainer />} />
             <Route path="/whatif" element={<WhatIf />} />
             <Route path="/upcoming" element={<UpcomingBrief />} />
+            <Route path="/refusals" element={<Refusals />} />
           </Routes>
         </main>
       </div>

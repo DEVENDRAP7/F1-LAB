@@ -55,6 +55,10 @@ spec) before contributing.
   this project's own observation that a lap ran slower than the same
   driver's green-flag median. A flag is not a verdict, and the page is
   built so the two can never be read as the same thing.
+- **Refusals** — the ledger of everything computed and then withheld:
+  327 figures this season, each with the number that made the decision.
+  A dashboard that cannot say no fills every gap with something
+  plausible, and a reader has no way to tell which numbers those are.
 - **Driving Style** — how a lap was driven rather than how quick it was:
   share of the lap at full throttle, on the brakes, and coasting; how far
   past each apex the throttle comes back; the speed carried through the

@@ -26,6 +26,7 @@ import derive_telemetry
 import derive_errors
 import derive_compounds
 import derive_qualifying
+import derive_refusals
 import export
 from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
 
@@ -918,6 +919,19 @@ def refresh_telemetry_index(year: int) -> None:
     print(f"[telemetry] index: {len(rounds)} round(s), {with_lines} session(s) with lines")
 
 
+def refresh_refusals(year: int) -> None:
+    """Gather every recorded refusal into one ledger.
+
+    Runs last, over the tree the rest of this refresh just wrote, so it
+    reports what was actually published rather than what was intended.
+    """
+    ledger = derive_refusals.collect(PUBLIC_DATA, year)
+    ledger["generated_at"] = ingest._now_iso()
+    export.export_refusals(year, ledger)
+    print(f"[refusals] {ledger['totalRefused']} refusal(s) across "
+          f"{len(ledger['groups'])} module(s)")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--year", type=int, default=SEASON_YEAR)
@@ -972,6 +986,8 @@ def main() -> int:
     refresh_telemetry_index(args.year)
     refresh_standings(args.year, season_config["calendar"])
     refresh_upcoming(args.year, season_config["calendar"])
+    # Last: the ledger reports the tree this run just finished writing.
+    refresh_refusals(args.year)
 
     return 0
 
