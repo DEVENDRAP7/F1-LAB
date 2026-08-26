@@ -86,7 +86,8 @@ const check = (count) => async (page) => {
   await page.waitForTimeout(700);
 };
 
-await shoot('ledger', '/', null);
+await shoot('home', '/', null);
+await shoot('ledger', '/ledger', null);
 await shoot('strategy', '/strategy', async (page) => {
   await page.selectOption('select', '12');
   await page.waitForTimeout(900);

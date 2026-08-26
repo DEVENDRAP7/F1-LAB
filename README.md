@@ -13,6 +13,12 @@ spec) before contributing.
 
 ## What is live
 
+The site opens on a front page that states the rules it is built under
+and counts what it has — rounds ingested, sessions with racing lines,
+counterfactuals published, figures withheld — read from the artifacts at
+load time rather than written into the copy.
+
+
 ![The Season Ledger: the 2026 championship, accumulated independently and cross-checked](docs/screenshots/ledger.png)
 
 

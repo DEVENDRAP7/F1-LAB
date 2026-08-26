@@ -1,4 +1,5 @@
 import { HashRouter, Routes, Route, NavLink } from 'react-router-dom';
+import Home from './pages/Home.jsx';
 import SeasonLedger from './pages/SeasonLedger.jsx';
 import CircuitAtlas from './pages/CircuitAtlas.jsx';
 import RacingLines from './pages/RacingLines.jsx';
@@ -18,7 +19,8 @@ export default function App() {
     <HashRouter>
       <div className="app-shell">
         <nav className="app-nav">
-          <NavLink to="/">Season Ledger</NavLink>
+          <NavLink to="/">Home</NavLink>
+          <NavLink to="/ledger">Season Ledger</NavLink>
           <NavLink to="/circuits">Circuit Atlas</NavLink>
           <NavLink to="/strategy">Race Strategy</NavLink>
           <NavLink to="/lines">Racing Lines</NavLink>
@@ -32,7 +34,8 @@ export default function App() {
         </nav>
         <main>
           <Routes>
-            <Route path="/" element={<SeasonLedger />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/ledger" element={<SeasonLedger />} />
             <Route path="/circuits" element={<CircuitAtlas />} />
             <Route path="/strategy" element={<RaceStrategy />} />
             <Route path="/lines" element={<RacingLines />} />
