@@ -237,7 +237,9 @@ export default function ErrorReview() {
                   <h2>Flagged laps</h2>
                   <p className="panel-note">
                     Laps at least {doc.thresholds.slowLapS}s slower than this driver's own
-                    median green-flag lap. Laps run under a safety car or red flag are
+                    median green-flag lap, with anything race control published about the
+                    track on that lap beside it — a yellow is a reason for a slow lap that
+                    has nothing to do with the driver. Laps run under a safety car or red flag are
                     excluded using the published track-status messages —{' '}
                     <span className="mono">{doc.neutralisedLaps.length}</span> lap
                     {doc.neutralisedLaps.length === 1 ? '' : 's'} in this race.
@@ -258,6 +260,7 @@ export default function ErrorReview() {
                           <th scope="col" className="tabular">Their median</th>
                           <th scope="col" className="tabular">Estimated loss</th>
                           <th scope="col">Severity</th>
+                          <th scope="col">Published on this lap</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -269,6 +272,18 @@ export default function ErrorReview() {
                             <td className="tabular loss-cell">{formatDelta(f.estimatedLossS)}</td>
                             <td>
                               <span className={`tag tag-${f.severity}`}>{f.severity}</span>
+                            </td>
+                            <td>
+                              {(f.trackFlags ?? []).length === 0 ? (
+                                <span className="legend-fullname">nothing</span>
+                              ) : (
+                                f.trackFlags.map((entry, i) => (
+                                  <span key={`${entry.flag}-${i}`} className="track-flag">
+                                    <span className="mono">{entry.flag}</span>
+                                    {entry.sector ? ` · sector ${entry.sector}` : ''}
+                                  </span>
+                                ))
+                              )}
                             </td>
                           </tr>
                         ))}

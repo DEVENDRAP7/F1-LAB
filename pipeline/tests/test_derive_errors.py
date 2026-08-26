@@ -235,3 +235,59 @@ def test_a_slow_lap_that_is_not_a_pit_lap_still_flags():
     laps = [lap(n, 16, 80.0) for n in range(2, 12)]
     laps.append(lap(12, 16, 95.0))
     assert any(f["lap"] == 12 for f in flag_slow_laps(laps, CODES))
+
+
+def test_a_yellow_on_the_lap_is_carried_onto_the_flag():
+    """A flagged lap says only that a driver was slower than their own
+    median. A yellow flag on that lap is a published reason for it that
+    has nothing to do with the driver — and it sat unused in the same
+    feed, because it carries no car number and so never reached the
+    attributed list."""
+    laps = [lap(n, 16, 80.0) for n in range(2, 12)]
+    laps.append(lap(12, 16, 86.0))
+    rows = [rc("2026-08-23T13:30:00", "Flag", "YELLOW IN TRACK SECTOR 4",
+               lap_number=12, flag="YELLOW")]
+
+    review = build_error_review(laps, rows, CODES)
+    entry = review["drivers"]["LEC"]["flagged"][0]
+
+    assert entry["lap"] == 12
+    assert entry["trackFlags"][0]["flag"] == "YELLOW"
+    assert "SECTOR 4" in entry["trackFlags"][0]["message"]
+
+
+def test_a_lap_with_nothing_published_carries_an_empty_list():
+    """Empty means nothing was published, not that the lap was clean."""
+    laps = [lap(n, 16, 80.0) for n in range(2, 12)]
+    laps.append(lap(12, 16, 86.0))
+    review = build_error_review(laps, [], CODES)
+    assert review["drivers"]["LEC"]["flagged"][0]["trackFlags"] == []
+
+
+def test_a_flag_waved_at_one_car_is_not_track_context():
+    """A blue flag is directed at a driver and is already handled as an
+    attributed message; repeating it as track context would imply the
+    track was compromised when it was not."""
+    from derive_errors import track_flags_by_lap
+
+    rows = [
+        rc("2026-08-23T13:30:00", "Flag", "WAVED BLUE FLAG FOR CAR 16 (LEC)",
+           driver=16, lap_number=9, flag="BLUE"),
+        rc("2026-08-23T13:31:00", "Flag", "GREEN LIGHT - PIT EXIT OPEN",
+           lap_number=9, flag="GREEN"),
+        rc("2026-08-23T13:32:00", "Flag", "DOUBLE YELLOW IN TRACK SECTOR 2",
+           lap_number=9, flag="DOUBLE YELLOW"),
+    ]
+    by_lap = track_flags_by_lap(rows)
+    assert [f["flag"] for f in by_lap[9]] == ["DOUBLE YELLOW"]
+
+
+def test_an_unfamiliar_flag_is_kept_as_published():
+    """The vocabulary is the feed's, not a list this project wrote: an
+    unexpected value should appear on the page as itself rather than be
+    dropped for not being recognised."""
+    from derive_errors import track_flags_by_lap
+
+    rows = [rc("2026-08-23T13:30:00", "Flag", "SOMETHING NEW", lap_number=5,
+               flag="AMBER")]
+    assert track_flags_by_lap(rows)[5][0]["flag"] == "AMBER"

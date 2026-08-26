@@ -137,6 +137,47 @@ def neutralised_laps(race_control: list[dict]) -> set[int]:
     return laps
 
 
+# A flag that describes the track rather than a driver. Kept as whatever
+# the feed published rather than matched against a fixed vocabulary: an
+# unexpected value should show up on the page as itself, not be dropped
+# for not being on a list this project wrote.
+DRIVER_DIRECTED_FLAGS = {"BLUE", "BLACK AND WHITE", "BLACK", "BLACK AND ORANGE"}
+CLEAR_FLAGS = {"GREEN", "CLEAR", "CHEQUERED"}
+
+
+def track_flags_by_lap(race_control: list[dict]) -> dict[int, list[dict]]:
+    """Flags published about the track, indexed by the lap they fell on.
+
+    A flagged lap says only that a driver was slower than their own
+    median. If race control had a yellow out on that lap, that is a
+    published reason for it which has nothing to do with the driver — and
+    it was sitting in the same feed the whole time, unused, because it
+    carries no car number and so never reached the attributed list.
+
+    Safety-car and red-flag laps are already excluded from flagging
+    entirely; this is for the ones that stay, where a local yellow
+    explains a lap that a bare deviation would leave hanging.
+    """
+    by_lap: dict[int, list[dict]] = {}
+    for row in race_control:
+        lap = row.get("lapNumber")
+        flag = (row.get("flag") or "").upper()
+        if not lap or not flag:
+            continue
+        if row.get("driverNumber"):
+            continue  # directed at one car; attributed_incidents has it
+        if flag in DRIVER_DIRECTED_FLAGS or flag in CLEAR_FLAGS:
+            continue
+        entry = {
+            "flag": row.get("flag"),
+            "message": (row.get("message") or "").strip(),
+        }
+        if row.get("sector"):
+            entry["sector"] = row["sector"]
+        by_lap.setdefault(int(lap), []).append(entry)
+    return by_lap
+
+
 def attributed_incidents(race_control: list[dict],
                          code_by_number: dict[int, str]) -> list[dict]:
     """Race-control messages that name a specific car.
@@ -192,7 +233,8 @@ def _severity(loss: float) -> str:
 
 
 def flag_slow_laps(laps: list[dict], code_by_number: dict[int, str],
-                   neutralised: set[int] | None = None) -> list[dict]:
+                   neutralised: set[int] | None = None,
+                   track_flags: dict[int, list[dict]] | None = None) -> list[dict]:
     """Laps well off a driver's own green-flag pace, with the loss stated.
 
     The comparison is always against the same driver in the same race, so
@@ -201,6 +243,7 @@ def flag_slow_laps(laps: list[dict], code_by_number: dict[int, str],
     known reason for a slow lap and flagging it would say nothing.
     """
     neutralised = neutralised or set()
+    track_flags = track_flags or {}
 
     # The source flags out-laps but publishes nothing for in-laps, and an
     # in-lap carries the whole pit entry — around twenty seconds. Left in,
@@ -247,6 +290,10 @@ def flag_slow_laps(laps: list[dict], code_by_number: dict[int, str],
                 "baselineS": round(baseline, 3),
                 "estimatedLossS": round(loss, 3),
                 "severity": _severity(loss),
+                # What race control published about the track on this lap.
+                # Empty means nothing was published, not that the lap was
+                # clean — the feed only carries what officials said.
+                "trackFlags": track_flags.get(int(lap["lapNumber"]), []),
                 "basis": (
                     "slower than this driver's own median green-flag lap in this race; "
                     "the cause is not identified and may be traffic, conditions or a "
@@ -263,7 +310,8 @@ def build_error_review(laps: list[dict], race_control: list[dict],
     """The per-round payload: recorded events, flagged laps, and limits."""
     neutralised = neutralised_laps(race_control)
     incidents = attributed_incidents(race_control, code_by_number)
-    flagged = flag_slow_laps(laps, code_by_number, neutralised)
+    track_flags = track_flags_by_lap(race_control)
+    flagged = flag_slow_laps(laps, code_by_number, neutralised, track_flags)
 
     by_driver: dict[str, dict] = {}
     for entry in incidents + flagged:
@@ -274,6 +322,7 @@ def build_error_review(laps: list[dict], race_control: list[dict],
     return {
         "drivers": by_driver,
         "neutralisedLaps": sorted(neutralised),
+        "trackFlagLaps": {str(lap): flags for lap, flags in sorted(track_flags.items())},
         "thresholds": {
             "slowLapS": SLOW_LAP_THRESHOLD_S,
             "severityBands": [{"atLeastS": t, "label": l} for t, l in SEVERITY_BANDS],
@@ -292,6 +341,10 @@ def build_error_review(laps: list[dict], race_control: list[dict],
             "A flagged lap is a deviation from this driver's own green-flag median in "
             "this race, not a diagnosed mistake: traffic, conditions and pit-wall "
             "instructions produce the same signature as an error.",
+            "A flagged lap shows any flag race control published about the track on "
+            "that lap. A yellow is a published reason for a slow lap that has nothing "
+            "to do with the driver, and it was in the same feed all along — it simply "
+            "carries no car number, so it never reached the attributed list.",
             "Laps run under a safety car or red flag are excluded using the published "
             "track-status messages, so they are excluded because they were neutralised "
             "rather than because they looked slow.",

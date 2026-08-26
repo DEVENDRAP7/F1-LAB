@@ -453,7 +453,7 @@ def _match_openf1_session(round_info: dict, sessions: list[dict],
     return None
 
 
-ERROR_REVIEW_SCHEMA_VERSION = 5
+ERROR_REVIEW_SCHEMA_VERSION = 6
 
 
 def refresh_error_review(year: int, round_info: dict, sessions: list[dict]) -> None:

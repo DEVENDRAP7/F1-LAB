@@ -1399,3 +1399,14 @@ tbody tr.is-on {
     min-width: 4.2rem;
   }
 }
+
+/* A published track flag beside a flagged lap: the reason column, and
+   the whole point of the row being read carefully rather than quickly. */
+.track-flag {
+  background: var(--bg-3);
+  border-radius: 4px;
+  display: inline-block;
+  font-size: 0.74rem;
+  margin: 0 0.25rem 0.2rem 0;
+  padding: 0.1rem 0.4rem;
+}
