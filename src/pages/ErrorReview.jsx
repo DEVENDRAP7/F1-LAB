@@ -251,7 +251,7 @@ export default function ErrorReview() {
                     No lap ran far enough off this driver's own pace to flag.
                   </p>
                 ) : (
-                  <div className="table-scroll table-compact">
+                  <div className="table-scroll table-wide">
                     <table>
                       <thead>
                         <tr>
