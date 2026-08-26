@@ -335,6 +335,19 @@ export default function RacingLines() {
         />
       )}
 
+      {round && manifest.status === 'ready' && manifest.data.unavailable && (
+        <EmptyState
+          title="No line for this race"
+          reason={
+            `${manifest.data.unavailable.reason}. `
+            + (manifest.data.unavailable.perDriver ?? [])
+              .map((d) => `${d.code}: ${d.reason}`)
+              .join('; ')
+            + '. This is what the source has, not a step still to run.'
+          }
+        />
+      )}
+
       {round && manifest.status === 'loading' && (
         <EmptyState title="Loading session…" reason="Fetching the line manifest for this session." />
       )}
@@ -346,7 +359,7 @@ export default function RacingLines() {
         />
       )}
 
-      {manifest.status === 'ready' && (
+      {manifest.status === 'ready' && !manifest.data.unavailable && (
         <>
           <div className="driver-picker">
             {availableDrivers.map((code) => (

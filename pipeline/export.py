@@ -97,6 +97,25 @@ def export_racing_line(year: int, round_: int, session_name: str, driver_code: s
     return bin_path
 
 
+def export_lines_unavailable(year: int, round_: int, session_name: str,
+                             payload: dict) -> Path:
+    """Write a lines manifest that says there are no lines, and why.
+
+    Absence and refusal look identical to a frontend that only sees a 404,
+    and they are not the same thing: "the backfill has not reached this
+    round" and "the position feed has nothing usable for this race" are
+    different facts, and only one of them will change on its own.
+    """
+    out_dir = PUBLIC_DATA / str(year) / str(round_) / session_name / "lines"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "manifest.json"
+    manifest = {"channels": [], "scale": {}, "drivers": {}}
+    manifest.update(payload)
+    path.write_text(json.dumps(manifest, indent=2))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def annotate_line_manifest(year: int, round_: int, session_name: str, extra: dict) -> Path:
     """Merge session-level metadata into a lines manifest.
 

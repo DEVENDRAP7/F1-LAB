@@ -594,6 +594,7 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
     scale: SourcedValue | None = None
     exported = []
     built: list[tuple[str, dict]] = []
+    attempts: list[dict] = []
     best_line = None
 
     for driver_number, lap in selected:
@@ -608,9 +609,11 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
 
         aligned = derive_telemetry.align_to_location(location, car_data)
         if not aligned:
-            print(f"[telemetry] round {round_} {code}: no position samples "
-                  f"(the feed returned {len(location)} location row(s) and "
-                  f"{len(car_data)} car-data row(s) for this lap window)")
+            detail = (f"no position samples: the feed returned {len(location)} "
+                      f"location row(s) and {len(car_data)} car-data row(s) for "
+                      "this lap's window")
+            attempts.append({"code": code, "reason": detail})
+            print(f"[telemetry] round {round_} {code}: {detail}")
             continue
 
         # The unit is measured once per round, off the first lap that can
@@ -628,8 +631,9 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
 
         line = derive_telemetry.build_racing_line(aligned, scale.value)
         if line is None:
-            print(f"[telemetry] round {round_} {code}: no line — "
-                  f"{derive_telemetry.describe_line_capture(aligned, scale.value)}")
+            detail = derive_telemetry.describe_line_capture(aligned, scale.value)
+            attempts.append({"code": code, "reason": detail})
+            print(f"[telemetry] round {round_} {code}: no line — {detail}")
             continue
 
         built.append((code, line))
@@ -643,6 +647,25 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
             best_line = line
 
     if not exported or best_line is None or scale is None:
+        # Record the refusal where the frontend can read it. Two rounds
+        # have no lines for reasons that are not "the backfill has not got
+        # there yet" — Monaco's location endpoint returns nothing at all
+        # while car data for the same window returns 285 rows, and
+        # Hungary's repeats the same coordinates so hard that 326 samples
+        # contain about 30 distinct positions. A page that says "not
+        # processed yet" about either of those is telling the reader
+        # something false.
+        export.export_lines_unavailable(year, round_, "R", {
+            "schemaVersion": TELEMETRY_SCHEMA_VERSION,
+            "source": f"OpenF1 session {session_key} ({session.get('countryName')})",
+            "unavailable": {
+                "reason": (
+                    "the position feed does not carry a usable lap for this race"
+                ),
+                "perDriver": attempts,
+                "checkedAt": ingest._now_iso(),
+            },
+        })
         print(f"[telemetry] round {round_}: nothing publishable")
         return True
 

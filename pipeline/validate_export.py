@@ -157,6 +157,13 @@ def check_line_manifests() -> list[str]:
     errors = []
     for path in sorted(PUBLIC_DATA.glob("*/*/*/lines/manifest.json")):
         manifest = json.loads(path.read_text())
+        if manifest.get("unavailable"):
+            # A round the feed has nothing usable for says so on purpose,
+            # and carries no drivers to check.
+            if manifest.get("drivers"):
+                errors.append(f"{path}: marked unavailable but lists drivers")
+            continue
+
         channels = manifest.get("channels") or []
         if not channels:
             errors.append(f"{path}: declares no channels")
