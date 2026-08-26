@@ -159,6 +159,15 @@ substantive ones:
   exclusion counts are shown alongside the table. Windows where the field
   was slowed are flagged rather than deleted, since without a
   track-status channel a neutralised period can only be suspected.
+- **Two of the twelve races have no racing line, and say why.** The
+  position feed returns nothing at all for Monaco — zero location rows
+  for every driver's fastest lap, while car data for the same window
+  returns about 285 — and at the Hungaroring it repeats coordinates so
+  hard that 322 samples contain roughly 30 distinct positions, one per
+  150 m of a 4.4 km lap. Both rounds carry a manifest stating the
+  per-driver counts, because "the source has nothing usable" and "the
+  backfill has not run yet" are different facts and only one of them
+  will change on its own.
 - **Elevation is published only where it is real.** The position feed
   carries a z channel that is documented nowhere and flat at some
   circuits, so the pipeline judges it per round: under 3 m of variation
