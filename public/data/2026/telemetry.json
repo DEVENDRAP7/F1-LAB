@@ -1,6 +1,6 @@
 {
   "year": 2026,
-  "generated_at": "2026-08-26T05:45:10Z",
+  "generated_at": "2026-08-26T05:49:37Z",
   "rounds": {
     "1": {
       "R": {
@@ -15,6 +15,16 @@
       }
     },
     "10": {
+      "Q": {
+        "drivers": [
+          "ANT",
+          "NOR",
+          "RUS",
+          "VER"
+        ],
+        "sessionLabel": "qualifying",
+        "unavailable": false
+      },
       "R": {
         "drivers": [
           "ANT",
@@ -27,6 +37,16 @@
       }
     },
     "11": {
+      "Q": {
+        "drivers": [
+          "ANT",
+          "HAM",
+          "LEC",
+          "NOR"
+        ],
+        "sessionLabel": "qualifying",
+        "unavailable": false
+      },
       "R": {
         "drivers": [],
         "sessionLabel": "the race",
@@ -34,6 +54,16 @@
       }
     },
     "12": {
+      "Q": {
+        "drivers": [
+          "ANT",
+          "NOR",
+          "PIA",
+          "RUS"
+        ],
+        "sessionLabel": "qualifying",
+        "unavailable": false
+      },
       "R": {
         "drivers": [
           "HAM",
