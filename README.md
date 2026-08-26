@@ -89,6 +89,11 @@ parameters fitted to that race:
 
 ![What-If Engine](docs/screenshots/whatif.png)
 
+Qualifying — team-mate head to head, a count of weekends with its sample
+beside it:
+
+![Qualifying head to head](docs/screenshots/qualifying.png)
+
 The Circuit Atlas — an outline traced from a real lap, with detected
 turns:
 

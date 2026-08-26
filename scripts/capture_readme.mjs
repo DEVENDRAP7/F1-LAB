@@ -100,6 +100,7 @@ await shoot('lines', '/lines', async (page) => {
 await shoot('aero', '/aero', (page) => scrollToHeading(page, 'where the load is'));
 await shoot('whatif', '/whatif', (page) => scrollToHeading(page, 'change the strategy'));
 await shoot('circuits', '/circuits', (page) => scrollToHeading(page, 'circuit'));
+await shoot('qualifying', '/qualifying', (page) => scrollToHeading(page, 'head to head'));
 
 await browser.close();
 server.close();
