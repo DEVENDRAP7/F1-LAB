@@ -47,8 +47,9 @@ spec) before contributing.
 - **Racing Lines** — per-driver fastest laps from qualifying or the race,
   decoded from Int16 position binaries, with linked speed and throttle
   traces on a shared distance axis, the line colourable by any published
-  channel, and a turn-by-turn table of where the delta was made. The
-  position unit is measured per round, not assumed.
+  channel, a turn-by-turn table of where the delta was made, and a
+  mini-sector dominance map showing which pieces of the circuit each
+  driver owned. The position unit is measured per round, not assumed.
 - **Driver Error Review** — race-control messages quoted verbatim and
   attributed by the published car number, kept strictly separate from
   this project's own observation that a lap ran slower than the same
@@ -73,7 +74,8 @@ ledger and per-stint pace fits below:
 ![Race Strategy](docs/screenshots/strategy.png)
 
 Racing Lines — overlaid driven laps, colourable by any published channel,
-with a turn-by-turn account of where the delta was made:
+with a turn-by-turn account of where the delta was made and a mini-sector
+map of who owned which piece of circuit:
 
 ![Racing Lines](docs/screenshots/lines.png)
 
