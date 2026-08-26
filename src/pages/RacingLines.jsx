@@ -267,7 +267,7 @@ export default function RacingLines() {
     return (
       <EmptyState
         title="No session data published yet"
-        reason="Racing lines are decoded from Int16 .bin artifacts written per session. None exist yet — see the note below on why the telemetry source is currently unreachable."
+        reason="Racing lines are decoded from Int16 .bin artifacts written per session, and none exist yet. The telemetry backfill builds a few rounds per refresh, newest first."
       />
     );
   }

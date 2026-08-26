@@ -145,9 +145,12 @@ substantive ones:
   fits clear both; the rest are published with the reason they failed
   ("R² 0.06 below 0.3 — lap-to-lap scatter dominates any trend in this
   stint") rather than shown as a confident number.
-- **No tyre compounds.** Jolpica-F1 publishes none, so stints are
-  structural — when and how long — and are shaded by stint order, never
-  by a compound colour.
+- **Tyre compounds are matched, never assumed.** Jolpica-F1 publishes
+  none; OpenF1's stint feed does, and a stint takes a compound only when
+  it matches by driver code and lap overlap above a set share. Eleven of
+  the twelve races run so far are fully matched. A stint that cannot be
+  matched keeps the ordinal shading and says so, because a wrong compound
+  colour is worse than no compound colour.
 - **Undercuts measure what happened, not what would have happened.**
   Gaps come from elapsed race time (the running sum of lap times).
   Pairings are excluded when the window cannot be about the stop — the
