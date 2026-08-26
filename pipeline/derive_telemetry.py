@@ -165,6 +165,37 @@ def estimate_position_scale(aligned: dict) -> SourcedValue | None:
     )
 
 
+def describe_line_capture(aligned: dict, units_per_metre: float) -> str:
+    """Why a lap could not be turned into a line, in numbers.
+
+    "lap capture too partial to publish" was true and useless: it covers
+    a lap with no samples, a lap with a few, and a lap with plenty that
+    never moved. Two whole rounds sat unexplained behind that one string,
+    and this machine cannot fetch the data to look. So the refresh says
+    which of the three it was, and the next run answers the question.
+    """
+    if not aligned or "t" not in aligned:
+        return "no aligned samples at all"
+
+    total = int(aligned["t"].size)
+    if total < MIN_LINE_SAMPLES:
+        return f"{total} position sample(s), fewer than the {MIN_LINE_SAMPLES} needed"
+    if not units_per_metre:
+        return "no measured position unit for this round"
+
+    x = aligned["x"] / units_per_metre
+    y = aligned["y"] / units_per_metre
+    steps = np.hypot(np.diff(x), np.diff(y))
+    advancing = int(np.sum(steps > 0)) + 1
+    if advancing < MIN_LINE_SAMPLES:
+        return (
+            f"{total} position sample(s) but only {advancing} advanced along the "
+            f"track, fewer than the {MIN_LINE_SAMPLES} needed — the feed repeated "
+            "the same coordinates"
+        )
+    return f"{total} sample(s), {advancing} advancing"
+
+
 def build_racing_line(aligned: dict, units_per_metre: float) -> dict | None:
     """Resample one lap onto a fixed distance grid, in metres.
 

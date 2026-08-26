@@ -219,3 +219,35 @@ def test_align_drops_a_partial_elevation_channel_rather_than_guessing():
         {"date": "2026-08-23T13:00:00.500000+00:00", "x": 20, "y": 0, "z": 180},
     ]
     assert "z" not in align_to_location(location, [])
+
+
+class TestCaptureDiagnostics:
+    """Two rounds sat unexplained behind "lap capture too partial to
+    publish" — a message that covers a lap with no samples, a lap with a
+    few, and a lap with plenty that never moved."""
+
+    def _aligned(self, n, moving=True):
+        import numpy as np
+
+        return {
+            "t": np.arange(n, dtype=float),
+            "x": (np.arange(n, dtype=float) * 10 if moving else np.zeros(n)),
+            "y": np.zeros(n),
+        }
+
+    def test_it_names_a_lap_with_too_few_samples(self):
+        from derive_telemetry import describe_line_capture
+
+        assert "fewer than the" in describe_line_capture(self._aligned(20), 10.0)
+
+    def test_it_names_a_lap_whose_coordinates_never_moved(self):
+        from derive_telemetry import describe_line_capture
+
+        reason = describe_line_capture(self._aligned(400, moving=False), 10.0)
+        assert "advanced along the track" in reason
+        assert "repeated the same coordinates" in reason
+
+    def test_it_reports_a_healthy_capture_as_counts(self):
+        from derive_telemetry import describe_line_capture
+
+        assert describe_line_capture(self._aligned(400), 10.0).startswith("400 sample")

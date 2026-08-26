@@ -608,7 +608,9 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
 
         aligned = derive_telemetry.align_to_location(location, car_data)
         if not aligned:
-            print(f"[telemetry] round {round_} {code}: no position samples")
+            print(f"[telemetry] round {round_} {code}: no position samples "
+                  f"(the feed returned {len(location)} location row(s) and "
+                  f"{len(car_data)} car-data row(s) for this lap window)")
             continue
 
         # The unit is measured once per round, off the first lap that can
@@ -626,7 +628,8 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
 
         line = derive_telemetry.build_racing_line(aligned, scale.value)
         if line is None:
-            print(f"[telemetry] round {round_} {code}: lap capture too partial to publish")
+            print(f"[telemetry] round {round_} {code}: no line — "
+                  f"{derive_telemetry.describe_line_capture(aligned, scale.value)}")
             continue
 
         built.append((code, line))
