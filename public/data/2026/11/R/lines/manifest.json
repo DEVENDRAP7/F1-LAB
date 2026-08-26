@@ -1,0 +1,29 @@
+{
+  "channels": [],
+  "scale": {},
+  "drivers": {},
+  "schemaVersion": 2,
+  "source": "OpenF1 session 11342 (Hungary)",
+  "unavailable": {
+    "reason": "the position feed does not carry a usable lap for this race",
+    "perDriver": [
+      {
+        "code": "LEC",
+        "reason": "322 position sample(s) but only 30 advanced along the track, fewer than the 120 needed \u2014 the feed repeated the same coordinates"
+      },
+      {
+        "code": "HAM",
+        "reason": "322 position sample(s) but only 30 advanced along the track, fewer than the 120 needed \u2014 the feed repeated the same coordinates"
+      },
+      {
+        "code": "ANT",
+        "reason": "326 position sample(s) but only 29 advanced along the track, fewer than the 120 needed \u2014 the feed repeated the same coordinates"
+      },
+      {
+        "code": "NOR",
+        "reason": "315 position sample(s) but only 30 advanced along the track, fewer than the 120 needed \u2014 the feed repeated the same coordinates"
+      }
+    ],
+    "checkedAt": "2026-08-26T02:05:49Z"
+  }
+}

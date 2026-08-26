@@ -1,0 +1,29 @@
+{
+  "channels": [],
+  "scale": {},
+  "drivers": {},
+  "schemaVersion": 2,
+  "source": "OpenF1 session 11299 (Monaco)",
+  "unavailable": {
+    "reason": "the position feed does not carry a usable lap for this race",
+    "perDriver": [
+      {
+        "code": "ANT",
+        "reason": "no position samples: the feed returned 0 location row(s) and 285 car-data row(s) for this lap's window"
+      },
+      {
+        "code": "HAM",
+        "reason": "no position samples: the feed returned 0 location row(s) and 292 car-data row(s) for this lap's window"
+      },
+      {
+        "code": "GAS",
+        "reason": "no position samples: the feed returned 0 location row(s) and 288 car-data row(s) for this lap's window"
+      },
+      {
+        "code": "HAD",
+        "reason": "no position samples: the feed returned 0 location row(s) and 288 car-data row(s) for this lap's window"
+      }
+    ],
+    "checkedAt": "2026-08-26T02:05:54Z"
+  }
+}
