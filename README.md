@@ -164,9 +164,10 @@ substantive ones:
   outline per circuit and a qualifying lap is the better one to draw it
   from — low fuel, fresh tyres, closest to the limit of the track — so a
   qualifying trace replaces a race one and a race trace never overwrites
-  a qualifying one. It also fills a real gap: the Hungaroring had no
-  outline at all, because its race position feed is unusable, and now has
-  one from qualifying.
+  a qualifying one. It also filled the two real gaps: Monaco and the
+  Hungaroring had no outline at all, because their race position feeds
+  are unusable, and both now have one from qualifying. All twelve rounds
+  have qualifying lines; ten have race lines as well.
 - **Two of the twelve races have no racing line, and say why.** The
   position feed returns nothing at all for Monaco — zero location rows
   for every driver's fastest lap, while car data for the same window
