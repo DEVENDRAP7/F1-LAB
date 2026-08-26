@@ -1,0 +1,141 @@
+{
+  "year": 2026,
+  "generated_at": "2026-08-26T05:45:10Z",
+  "rounds": {
+    "1": {
+      "R": {
+        "drivers": [
+          "ANT",
+          "HAM",
+          "NOR",
+          "VER"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "10": {
+      "R": {
+        "drivers": [
+          "ANT",
+          "HAD",
+          "LEC",
+          "NOR"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "11": {
+      "R": {
+        "drivers": [],
+        "sessionLabel": "the race",
+        "unavailable": true
+      }
+    },
+    "12": {
+      "R": {
+        "drivers": [
+          "HAM",
+          "LEC",
+          "NOR",
+          "PIA"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "2": {
+      "R": {
+        "drivers": [
+          "ANT",
+          "LEC",
+          "OCO",
+          "RUS"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "3": {
+      "R": {
+        "drivers": [
+          "ANT",
+          "HAM",
+          "LEC",
+          "RUS"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "4": {
+      "R": {
+        "drivers": [
+          "ANT",
+          "NOR",
+          "PIA",
+          "RUS"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "5": {
+      "R": {
+        "drivers": [
+          "ANT",
+          "HAD",
+          "HAM",
+          "VER"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "6": {
+      "R": {
+        "drivers": [],
+        "sessionLabel": "the race",
+        "unavailable": true
+      }
+    },
+    "7": {
+      "R": {
+        "drivers": [
+          "HAD",
+          "HAM",
+          "NOR",
+          "VER"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "8": {
+      "R": {
+        "drivers": [
+          "ANT",
+          "LEC",
+          "PIA",
+          "VER"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    },
+    "9": {
+      "R": {
+        "drivers": [
+          "ANT",
+          "HAD",
+          "HAM",
+          "VER"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false
+      }
+    }
+  },
+  "note": "Which sessions have exported racing lines. A session marked unavailable was attempted and the position feed had nothing usable for it; a session absent here has not been attempted yet."
+}

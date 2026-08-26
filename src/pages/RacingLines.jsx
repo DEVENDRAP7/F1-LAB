@@ -5,6 +5,11 @@ import { accelerationTrace } from '../lib/aero.js';
 import { detectTurns, turnDeltas } from '../lib/corners.js';
 import ChannelMap from '../components/ChannelMap.jsx';
 import { lineToMapPoints, loadManifest, loadRacingLine } from '../lib/racingLine.js';
+import {
+  loadTelemetryIndex,
+  newestRoundWithLines,
+  sessionsWithLines,
+} from '../lib/telemetryIndex.js';
 import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
 import TelemetryTrace from '../components/TelemetryTrace.jsx';
@@ -17,7 +22,13 @@ import TrackMap from '../components/TrackMap.jsx';
 
 const SPACING_M = 2; // fixed resample spacing, pipeline/common.py
 const MAX_DRIVERS = 4;
-const SESSIONS = ['FP1', 'FP2', 'FP3', 'Q', 'S', 'R'];
+// Only the sessions the pipeline exports. Listing FP1 through the sprint
+// offered five choices that could never load anything, which reads as a
+// broken page rather than as a scope decision.
+const SESSIONS = [
+  { key: 'Q', label: 'Qualifying' },
+  { key: 'R', label: 'Race' },
+];
 
 // What the map can be coloured by, beyond one hue per driver.
 //
@@ -77,15 +88,17 @@ const COLOUR_CHANNELS = {
 export default function RacingLines() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
   const [round, setRound] = useState('');
-  // Defaults to the race: that is the session the pipeline exports
-  // position data for, so opening on any other one would show an empty
+  // Opens on qualifying: it is the faster lap of the weekend, so it is
+  // the one worth landing on. If no round has a qualifying line yet the
+  // finder below falls back to the race rather than showing an empty
   // state on a page that does have data.
-  const [session, setSession] = useState('R');
+  const [session, setSession] = useState('Q');
   const [manifest, setManifest] = useState({ status: 'idle', data: null, error: null });
   const [selected, setSelected] = useState([]);
   const [lines, setLines] = useState({});
   const [crosshair, setCrosshair] = useState(0);
   const [colourBy, setColourBy] = useState('driver');
+  const [index, setIndex] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,21 +133,25 @@ export default function RacingLines() {
       .reverse();
 
     (async () => {
-      for (const candidate of candidates) {
-        try {
-          await loadManifest(candidate, 'R');
-          if (!cancelled) setRound(String(candidate));
-          return;
-        } catch {
-          // No lines for this round yet; try the one before it.
+      // One listing rather than a probe per round per session: the
+      // pipeline publishes what it has, so the page opens on the newest
+      // round with a line without asking the network for a dozen files
+      // that were never written.
+      try {
+        const listing = await loadTelemetryIndex(season.data.year);
+        if (cancelled) return;
+        setIndex(listing);
+        const found = newestRoundWithLines(listing, candidates, [session, 'R']);
+        if (found) {
+          setSession(found.session);
+          setRound(found.round);
         }
+      } catch {
+        // No index published yet — the picker still works by hand.
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [season, round]);
+  }, [season, round, session]);
 
   useEffect(() => {
     if (!round) return;
@@ -292,11 +309,15 @@ export default function RacingLines() {
         <label>
           Session{' '}
           <select value={session} onChange={(e) => setSession(e.target.value)}>
-            {SESSIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
+            {SESSIONS.map((s) => {
+              const has = round ? sessionsWithLines(index, round, [s.key]).length > 0 : true;
+              return (
+                <option key={s.key} value={s.key}>
+                  {s.label}
+                  {index && round && !has ? ' — no lines' : ''}
+                </option>
+              );
+            })}
           </select>
         </label>
         <label>

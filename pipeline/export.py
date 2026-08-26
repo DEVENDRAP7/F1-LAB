@@ -97,6 +97,22 @@ def export_racing_line(year: int, round_: int, session_name: str, driver_code: s
     return bin_path
 
 
+def export_telemetry_index(year: int, index: dict) -> Path:
+    """One listing of which sessions have racing lines, and which do not.
+
+    Without it every page has to probe: request a manifest, catch the 404,
+    try the round before. That works, and it fills the console with
+    failures that look like bugs while quietly asking the network for
+    files nobody expects to exist. The site should know what it has.
+    """
+    out_dir = PUBLIC_DATA / str(year)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "telemetry.json"
+    path.write_text(json.dumps(index, indent=2))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_lines_unavailable(year: int, round_: int, session_name: str,
                              payload: dict) -> Path:
     """Write a lines manifest that says there are no lines, and why.

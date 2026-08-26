@@ -427,8 +427,9 @@ TELEMETRY_SCHEMA_VERSION = 2
 TELEMETRY_ROUNDS_PER_RUN = 4
 
 
-def _match_openf1_session(round_info: dict, sessions: list[dict]) -> dict | None:
-    """Pair a calendar round with its OpenF1 race session.
+def _match_openf1_session(round_info: dict, sessions: list[dict],
+                          slack_days: int = 1) -> dict | None:
+    """Pair a calendar round with its OpenF1 session of one kind.
 
     Matched on date rather than name: the two sources spell events
     differently ("Belgian Grand Prix" against a country of "Belgium"),
@@ -445,7 +446,7 @@ def _match_openf1_session(round_info: dict, sessions: list[dict]) -> dict | None
             session_date = datetime.datetime.fromisoformat(started).date()
         except ValueError:
             continue
-        if abs((session_date - target).days) <= 1:
+        if abs((session_date - target).days) <= slack_days:
             return session
     return None
 
@@ -476,7 +477,7 @@ def refresh_error_review(year: int, round_info: dict, sessions: list[dict]) -> N
         if stored == ERROR_REVIEW_SCHEMA_VERSION:
             return
 
-    session = _match_openf1_session(round_info, sessions)
+    session = _match_openf1_session(round_info, sessions, slack_days)
     if session is None:
         return
     session_key = session["sessionKey"]
@@ -533,8 +534,15 @@ def _lines_are_consistent(out_dir, manifest: dict) -> bool:
     return True
 
 
-def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool:
-    """Track geometry and racing lines for one round, from real position data.
+QUALIFYING_MATCH_SLACK_DAYS = 3
+
+# What a session directory means, in the words a page should use.
+SESSION_LABELS = {"R": "the race", "Q": "qualifying"}
+
+
+def refresh_telemetry(year: int, round_info: dict, sessions: list[dict],
+                      session_name: str = "R", slack_days: int = 1) -> bool:
+    """Track geometry and racing lines for one session, from real position data.
 
     This is the module that was empty for the whole project so far. It was
     empty because livetiming.formula1.com 403s this network, which was
@@ -551,7 +559,8 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
     """
     round_ = round_info["round"]
     circuit_key = round_info["circuitId"]
-    out_dir = PUBLIC_DATA / str(year) / str(round_) / "R" / "lines"
+    label = f"round {round_} {session_name}"
+    out_dir = PUBLIC_DATA / str(year) / str(round_) / session_name / "lines"
     manifest = out_dir / "manifest.json"
     if manifest.exists():
         try:
@@ -560,15 +569,15 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
             stored_doc = {}
         stored = stored_doc.get("schemaVersion", 0)
         if stored == TELEMETRY_SCHEMA_VERSION and _lines_are_consistent(out_dir, stored_doc):
-            print(f"[telemetry] round {round_}: already exported, skipping")
+            print(f"[telemetry] {label}: already exported, skipping")
             return False
         if stored == TELEMETRY_SCHEMA_VERSION:
-            print(f"[telemetry] round {round_}: re-exporting, the manifest and the "
+            print(f"[telemetry] {label}: re-exporting, the manifest and the "
                   "binaries beside it disagree about the channel count")
 
-    session = _match_openf1_session(round_info, sessions)
+    session = _match_openf1_session(round_info, sessions, slack_days)
     if session is None:
-        print(f"[telemetry] round {round_}: no OpenF1 race session matches "
+        print(f"[telemetry] {label}: no OpenF1 {session_name} session near "
               f"{round_info['date']}")
         return False
 
@@ -577,11 +586,11 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
         laps = ingest_openf1.fetch_laps(session_key)
         drivers = ingest_openf1.fetch_drivers(session_key)
     except Exception as exc:  # noqa: BLE001 - one round must not abort the refresh
-        print(f"[telemetry] round {round_}: unavailable ({type(exc).__name__}: {exc})")
+        print(f"[telemetry] {label}: unavailable ({type(exc).__name__}: {exc})")
         return True
 
     if not laps:
-        print(f"[telemetry] round {round_}: OpenF1 has no laps for session {session_key}")
+        print(f"[telemetry] {label}: OpenF1 has no laps for session {session_key}")
         return True
 
     code_by_number = {d["driverNumber"]: (d.get("code") or str(d["driverNumber"]))
@@ -603,7 +612,7 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
             location = ingest_openf1.fetch_lap_location(session_key, driver_number, lap)
             car_data = ingest_openf1.fetch_lap_car_data(session_key, driver_number, lap)
         except Exception as exc:  # noqa: BLE001 - degrade per driver, not per round
-            print(f"[telemetry] round {round_} {code}: fetch failed "
+            print(f"[telemetry] {label} {code}: fetch failed "
                   f"({type(exc).__name__}: {exc})")
             continue
 
@@ -613,7 +622,7 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
                       f"location row(s) and {len(car_data)} car-data row(s) for "
                       "this lap's window")
             attempts.append({"code": code, "reason": detail})
-            print(f"[telemetry] round {round_} {code}: {detail}")
+            print(f"[telemetry] {label} {code}: {detail}")
             continue
 
         # The unit is measured once per round, off the first lap that can
@@ -623,17 +632,17 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
         if scale is None:
             scale = derive_telemetry.estimate_position_scale(aligned)
             if scale is None:
-                print(f"[telemetry] round {round_} {code}: cannot measure the "
+                print(f"[telemetry] {label} {code}: cannot measure the "
                       "position unit without speed; skipping this driver")
                 continue
-            print(f"[telemetry] round {round_}: position unit measured at "
+            print(f"[telemetry] {label}: position unit measured at "
                   f"{scale.value:.3f} raw units/m over {scale.sample_size} samples")
 
         line = derive_telemetry.build_racing_line(aligned, scale.value)
         if line is None:
             detail = derive_telemetry.describe_line_capture(aligned, scale.value)
             attempts.append({"code": code, "reason": detail})
-            print(f"[telemetry] round {round_} {code}: no line — {detail}")
+            print(f"[telemetry] {label} {code}: no line — {detail}")
             continue
 
         built.append((code, line))
@@ -655,18 +664,18 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
         # contain about 30 distinct positions. A page that says "not
         # processed yet" about either of those is telling the reader
         # something false.
-        export.export_lines_unavailable(year, round_, "R", {
+        export.export_lines_unavailable(year, round_, session_name, {
             "schemaVersion": TELEMETRY_SCHEMA_VERSION,
             "source": f"OpenF1 session {session_key} ({session.get('countryName')})",
             "unavailable": {
                 "reason": (
-                    "the position feed does not carry a usable lap for this race"
+                    "the position feed does not carry a usable lap for this session"
                 ),
                 "perDriver": attempts,
                 "checkedAt": ingest._now_iso(),
             },
         })
-        print(f"[telemetry] round {round_}: nothing publishable")
+        print(f"[telemetry] {label}: nothing publishable")
         return True
 
     # Elevation is decided once for the round, not per driver: the
@@ -677,23 +686,26 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
     if not elevation["usable"]:
         for _, line in built:
             line.pop("z", None)
-        print(f"[telemetry] round {round_}: no elevation — {elevation['reason']}")
+        print(f"[telemetry] {label}: no elevation — {elevation['reason']}")
     else:
-        print(f"[telemetry] round {round_}: elevation over {elevation['rangeM']:.0f}m "
+        print(f"[telemetry] {label}: elevation over {elevation['rangeM']:.0f}m "
               "published")
 
     for code, line in built:
-        export.export_racing_line(year, round_, "R", code, line)
+        export.export_racing_line(year, round_, session_name, code, line)
 
-    export.annotate_line_manifest(year, round_, "R", {
+    export.annotate_line_manifest(year, round_, session_name, {
         "schemaVersion": TELEMETRY_SCHEMA_VERSION,
+        "sessionName": session_name,
+        "sessionLabel": SESSION_LABELS.get(session_name, session_name),
         "source": f"OpenF1 session {session_key} ({session.get('countryName')})",
         "positionUnitsPerMetre": scale.to_json(),
         "elevation": elevation,
         "laps": exported,
         "limitations": [
-            "Each line is one driver's fastest non-out lap of the race, not an "
-            "average or an ideal line.",
+            f"Each line is one driver's fastest non-out lap of "
+            f"{SESSION_LABELS.get(session_name, session_name)}, not an average and "
+            "not an ideal line.",
             "Position samples arrive at roughly 3.7 Hz and are resampled onto a "
             "fixed distance grid, so the line is interpolated between samples.",
             "Corner numbering is not published by this source, so the map carries "
@@ -701,10 +713,43 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
         ],
     })
 
+    # The atlas draws one outline per circuit, and qualifying is the
+    # better lap to draw it from: low fuel, fresh tyres, the closest thing
+    # the data has to the limit of the track. So a qualifying trace always
+    # replaces a race one, and a race trace never overwrites a qualifying
+    # one — it fills in where qualifying has nothing.
+    if _circuit_outline_should_be_written(circuit_key, session_name):
+        _export_circuit_outline(
+            circuit_key, round_info, round_, session_name, session_key,
+            best_line, elevation, scale, exported,
+        )
+        print(f"[telemetry] {label}: outline written for {circuit_key}")
+
+    print(f"[telemetry] {label}: exported {len(exported)} racing line(s)")
+    return True
+
+
+def _circuit_outline_should_be_written(circuit_key: str, session_name: str) -> bool:
+    if session_name == "Q":
+        return True
+    path = PUBLIC_DATA / "circuits" / f"{circuit_key}.json"
+    if not path.exists():
+        return True
+    try:
+        stored = json.loads(path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return True
+    return stored.get("sessionName") != "Q"
+
+
+def _export_circuit_outline(circuit_key, round_info, round_, session_name,
+                            session_key, best_line, elevation, scale, exported):
     export.export_circuit(circuit_key, {
         "circuitId": circuit_key,
         "circuitName": round_info["circuitName"],
         "round": round_,
+        "sessionName": session_name,
+        "sessionLabel": SESSION_LABELS.get(session_name, session_name),
         "outline": derive_telemetry.build_outline_from_line(best_line),
         "elevation": elevation,
         # Turns are detected in the browser from the published line rather
@@ -714,13 +759,18 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
         "drsZones": [],
         "generated_at": ingest._now_iso(),
         "source": (
-            f"OpenF1 position trace, session {session_key}, fastest race lap "
+            f"OpenF1 position trace, session {session_key}, fastest "
+            f"{SESSION_LABELS.get(session_name, session_name)} lap "
             f"({exported[0]['code']}, lap {exported[0]['lapNumber']})"
         ),
         "positionUnitsPerMetre": scale.to_json(),
         "limitations": [
             "The outline is one measured lap's driven path, so it follows the "
             "racing line rather than the centre line or the track edges.",
+            (f"Traced from {SESSION_LABELS.get(session_name, session_name)}. "
+             "Qualifying is preferred where it exists — low fuel and fresh tyres "
+             "put that lap closest to the limit of the circuit — and a race lap "
+             "fills in where it does not."),
             "No official corner numbering: this source publishes none. The atlas "
             "detects turns from the published line and numbers them in lap order, "
             "which is this lap's own sequence rather than the circuit's names.",
@@ -729,10 +779,6 @@ def refresh_telemetry(year: int, round_info: dict, sessions: list[dict]) -> bool
             "verified source for.",
         ],
     })
-
-    print(f"[telemetry] round {round_}: exported {len(exported)} racing line(s) "
-          f"and a measured outline for {circuit_key}")
-    return True
 
 
 def refresh_upcoming(year: int, calendar: list[dict]) -> None:
@@ -781,6 +827,48 @@ def refresh_upcoming(year: int, calendar: list[dict]) -> None:
           f"from {history['editions']} past edition(s)")
 
 
+def refresh_telemetry_index(year: int) -> None:
+    """List what the telemetry backfill has actually produced.
+
+    Built by reading the exported tree rather than by remembering what
+    this run did: a round exported three refreshes ago belongs in the
+    index just as much as one written a minute ago, and a listing that
+    only knows about the current run would drop most of the season.
+    """
+    rounds: dict[str, dict] = {}
+    year_dir = PUBLIC_DATA / str(year)
+    for manifest_path in sorted(year_dir.glob("*/*/lines/manifest.json")):
+        session_name = manifest_path.parent.parent.name
+        round_ = manifest_path.parent.parent.parent.name
+        try:
+            manifest = json.loads(manifest_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            continue
+        entry = rounds.setdefault(round_, {})
+        entry[session_name] = {
+            "drivers": sorted((manifest.get("drivers") or {}).keys()),
+            "sessionLabel": manifest.get("sessionLabel")
+            or SESSION_LABELS.get(session_name, session_name),
+            "unavailable": bool(manifest.get("unavailable")),
+        }
+
+    export.export_telemetry_index(year, {
+        "year": year,
+        "generated_at": ingest._now_iso(),
+        "rounds": rounds,
+        "note": (
+            "Which sessions have exported racing lines. A session marked "
+            "unavailable was attempted and the position feed had nothing usable "
+            "for it; a session absent here has not been attempted yet."
+        ),
+    })
+    with_lines = sum(
+        1 for sessions in rounds.values()
+        for entry in sessions.values() if entry["drivers"]
+    )
+    print(f"[telemetry] index: {len(rounds)} round(s), {with_lines} session(s) with lines")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--year", type=int, default=SEASON_YEAR)
@@ -800,6 +888,13 @@ def main() -> int:
         print(f"OpenF1 unavailable, skipping telemetry this run ({exc})")
         openf1_sessions = []
 
+    try:
+        qualifying_sessions = ingest_openf1.fetch_qualifying_sessions(args.year)
+        print(f"OpenF1: {len(qualifying_sessions)} qualifying session(s) run so far")
+    except Exception as exc:  # noqa: BLE001 - qualifying is additive on top of additive
+        print(f"OpenF1 qualifying listing unavailable this run ({exc})")
+        qualifying_sessions = []
+
     telemetry_budget = TELEMETRY_ROUNDS_PER_RUN
     # Newest first: the most recent race is the one a reader is most
     # likely to want, so a partial backfill should be useful rather than
@@ -809,10 +904,22 @@ def main() -> int:
         refresh_whatif(args.year, round_info)
         if openf1_sessions:
             refresh_error_review(args.year, round_info, openf1_sessions)
+        # Qualifying first: it is the faster lap of the weekend, so it is
+        # the one the atlas wants for its outline and the one a reader
+        # comparing driving styles is most likely to look at. Both
+        # sessions draw on the same budget — the limit is there to pace
+        # fetching, and a qualifying lap costs exactly what a race lap
+        # costs.
+        if qualifying_sessions and telemetry_budget > 0:
+            if refresh_telemetry(args.year, round_info, qualifying_sessions,
+                                 session_name="Q",
+                                 slack_days=QUALIFYING_MATCH_SLACK_DAYS):
+                telemetry_budget -= 1
         if openf1_sessions and telemetry_budget > 0:
             if refresh_telemetry(args.year, round_info, openf1_sessions):
                 telemetry_budget -= 1
 
+    refresh_telemetry_index(args.year)
     refresh_standings(args.year, season_config["calendar"])
     refresh_upcoming(args.year, season_config["calendar"])
 

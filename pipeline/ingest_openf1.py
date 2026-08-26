@@ -147,8 +147,8 @@ def _parse_iso(raw: str | None) -> datetime.datetime | None:
         return None
 
 
-def fetch_race_sessions(year: int) -> list[dict]:
-    """Race sessions for a season that have actually been run.
+def fetch_sessions(year: int, session_name: str) -> list[dict]:
+    """Sessions of one kind for a season that have actually been run.
 
     Future sessions are filtered out here rather than left to callers.
     They are listed months ahead and their entry list even answers 200,
@@ -157,7 +157,7 @@ def fetch_race_sessions(year: int) -> list[dict]:
     exact confusion cost a probe run and nearly a wrong conclusion about
     the whole source.)
     """
-    sessions = _get("sessions", {"year": year, "session_name": "Race"})
+    sessions = _get("sessions", {"year": year, "session_name": session_name})
     now = datetime.datetime.now(datetime.timezone.utc)
     run = []
     for session in sessions:
@@ -172,10 +172,29 @@ def fetch_race_sessions(year: int) -> list[dict]:
             "circuitKey": session.get("circuit_key"),
             "circuitShortName": session.get("circuit_short_name"),
             "dateStart": session.get("date_start"),
+            "sessionName": session.get("session_name"),
             "year": session.get("year"),
         })
     run.sort(key=lambda s: s["dateStart"])
     return run
+
+
+def fetch_race_sessions(year: int) -> list[dict]:
+    """The season's races. Kept as its own name because that is what most
+    of the pipeline asks for."""
+    return fetch_sessions(year, "Race")
+
+
+def fetch_qualifying_sessions(year: int) -> list[dict]:
+    """The season's qualifying hours.
+
+    Worth having as well as the race: the fastest lap of a weekend is set
+    here, on low fuel and fresh tyres, so a track outline and a racing
+    line traced from qualifying are the closest thing the data has to the
+    limit of the circuit — which is what docs/SPEC.md asks the atlas to
+    draw.
+    """
+    return fetch_sessions(year, "Qualifying")
 
 
 def fetch_drivers(session_key: int) -> list[dict]:

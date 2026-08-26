@@ -216,3 +216,78 @@ class TestLineManifestIntegrity:
             tmp_path, monkeypatch, ["x", "y", "speed"], 100, 100 * 3 * 2)
         (tmp_path / "2026" / "12" / "R" / "lines" / "LEC.bin").unlink()
         assert "is missing" in validate_export.check_line_manifests()[0]
+
+
+class TestCircuitOutlineSession:
+    """The atlas draws one outline per circuit, from the best lap available.
+
+    Qualifying is that lap: low fuel, fresh tyres, the closest the data
+    gets to the limit of the track, and what docs/SPEC.md asks for. So a
+    qualifying trace replaces a race one and a race trace never overwrites
+    a qualifying one — it fills in where qualifying has nothing.
+    """
+
+    def _circuits(self, tmp_path, monkeypatch, stored=None):
+        import run_refresh
+
+        monkeypatch.setattr(run_refresh, "PUBLIC_DATA", tmp_path)
+        if stored is not None:
+            out = tmp_path / "circuits"
+            out.mkdir(parents=True)
+            (out / "zandvoort.json").write_text(json.dumps(stored))
+        return run_refresh
+
+    def test_qualifying_always_writes(self, tmp_path, monkeypatch):
+        run_refresh = self._circuits(
+            tmp_path, monkeypatch, {"sessionName": "Q", "outline": [[0, 0]]})
+        assert run_refresh._circuit_outline_should_be_written("zandvoort", "Q") is True
+
+    def test_a_race_lap_fills_in_where_there_is_nothing(self, tmp_path, monkeypatch):
+        run_refresh = self._circuits(tmp_path, monkeypatch)
+        assert run_refresh._circuit_outline_should_be_written("zandvoort", "R") is True
+
+    def test_a_race_lap_does_not_overwrite_a_qualifying_outline(self, tmp_path, monkeypatch):
+        run_refresh = self._circuits(
+            tmp_path, monkeypatch, {"sessionName": "Q", "outline": [[0, 0]]})
+        assert run_refresh._circuit_outline_should_be_written("zandvoort", "R") is False
+
+    def test_a_race_lap_replaces_an_older_race_outline(self, tmp_path, monkeypatch):
+        run_refresh = self._circuits(
+            tmp_path, monkeypatch, {"sessionName": "R", "outline": [[0, 0]]})
+        assert run_refresh._circuit_outline_should_be_written("zandvoort", "R") is True
+
+    def test_an_outline_from_before_sessions_were_recorded_is_replaced(
+        self, tmp_path, monkeypatch
+    ):
+        """Files written before the atlas knew which session it drew carry
+        no sessionName, and should not be mistaken for qualifying."""
+        run_refresh = self._circuits(tmp_path, monkeypatch, {"outline": [[0, 0]]})
+        assert run_refresh._circuit_outline_should_be_written("zandvoort", "R") is True
+
+
+class TestSessionMatching:
+    """Qualifying runs the day before a normal weekend and two days before
+    a sprint one, so it needs more slack than a race does."""
+
+    SESSIONS = [
+        {"sessionKey": 1, "dateStart": "2026-08-21T13:00:00+00:00"},  # Friday
+        {"sessionKey": 2, "dateStart": "2026-08-22T13:00:00+00:00"},  # Saturday
+    ]
+
+    def test_a_race_matches_only_its_own_day(self):
+        import run_refresh
+
+        found = run_refresh._match_openf1_session(
+            {"date": "2026-08-23"}, self.SESSIONS[1:], slack_days=1)
+        assert found["sessionKey"] == 2
+
+        assert run_refresh._match_openf1_session(
+            {"date": "2026-08-23"}, self.SESSIONS[:1], slack_days=1) is None
+
+    def test_qualifying_reaches_back_far_enough_for_a_sprint_weekend(self):
+        import run_refresh
+
+        found = run_refresh._match_openf1_session(
+            {"date": "2026-08-23"}, self.SESSIONS[:1],
+            slack_days=run_refresh.QUALIFYING_MATCH_SLACK_DAYS)
+        assert found["sessionKey"] == 1

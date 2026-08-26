@@ -92,9 +92,13 @@ export default function CircuitAtlas() {
 
     (async () => {
       try {
-        const manifest = await loadManifest(doc.round, 'R');
+        // The session the outline was traced from, so the turns are
+        // detected on the very lap the map is drawing rather than on a
+        // different one from the same weekend.
+        const manifest = await loadManifest(doc.round, doc.sessionName ?? 'R');
         const code = manifest.laps?.[0]?.code ?? Object.keys(manifest.drivers)[0];
-        const channels = await loadRacingLine(doc.round, 'R', code, manifest);
+        const channels = await loadRacingLine(
+          doc.round, doc.sessionName ?? 'R', code, manifest);
         if (cancelled) return;
         const scale = manifest.scale;
         const trace = accelerationTrace({
@@ -268,7 +272,8 @@ export default function CircuitAtlas() {
               <div className="panel-head">
                 <h3>Detected turns</h3>
                 <p className="panel-note">
-                  {turns.rows.length} stretches of {turns.code}'s fastest race lap
+                  {turns.rows.length} stretches of {turns.code}'s fastest{' '}
+                  {doc.sessionLabel ?? 'race'} lap
                   {turns.lapTimeS ? ` (${turns.lapTimeS.toFixed(3)}s)` : ''} carrying at
                   least <span className="mono">{TURN_DEFAULTS.gThreshold.toFixed(1)}g</span>{' '}
                   of lateral load for at least{' '}

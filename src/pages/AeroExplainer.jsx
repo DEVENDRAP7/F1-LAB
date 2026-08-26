@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import { loadManifest, loadRacingLine } from '../lib/racingLine.js';
+import { loadTelemetryIndex, newestRoundWithLines } from '../lib/telemetryIndex.js';
 import {
   accelerationTrace,
   lateralEnvelope,
@@ -45,6 +46,11 @@ export default function AeroExplainer() {
   const [selected, setSelected] = useState([]);
   const [lines, setLines] = useState({});
   const [highlightTurn, setHighlightTurn] = useState(null);
+  // Which session the lap on screen came from. Qualifying is preferred:
+  // on low fuel and fresh tyres it is the highest-load lap of the
+  // weekend, which is the one an aero page is about. The race fills in
+  // where qualifying has nothing.
+  const [session, setSession] = useState('Q');
 
   useEffect(() => {
     let cancelled = false;
@@ -71,14 +77,19 @@ export default function AeroExplainer() {
       .reverse();
 
     (async () => {
-      for (const candidate of candidates) {
-        try {
-          await loadManifest(candidate, 'R');
-          if (!cancelled) setRound(String(candidate));
+      // The published listing rather than a probe per round: see
+      // lib/telemetryIndex.js.
+      try {
+        const listing = await loadTelemetryIndex(season.data.year);
+        if (cancelled) return;
+        const found = newestRoundWithLines(listing, candidates);
+        if (found) {
+          setSession(found.session);
+          setRound(found.round);
           return;
-        } catch {
-          // no lines for this round yet
         }
+      } catch {
+        // No index published yet; fall through to the empty state.
       }
       if (!cancelled) setManifest({ status: 'empty', data: null });
     })();
@@ -93,7 +104,7 @@ export default function AeroExplainer() {
     setManifest({ status: 'loading', data: null });
     setLines({});
     setSelected([]);
-    loadManifest(round, 'R')
+    loadManifest(round, session)
       .then((data) => {
         if (cancelled) return;
         setManifest({ status: 'ready', data });
@@ -103,7 +114,7 @@ export default function AeroExplainer() {
     return () => {
       cancelled = true;
     };
-  }, [round]);
+  }, [round, session]);
 
   useEffect(() => {
     if (manifest.status !== 'ready') return;
@@ -112,7 +123,7 @@ export default function AeroExplainer() {
     if (missing.length === 0) return;
     Promise.all(
       missing.map((code) =>
-        loadRacingLine(round, 'R', code, manifest.data).then((ch) => [code, ch]),
+        loadRacingLine(round, session, code, manifest.data).then((ch) => [code, ch]),
       ),
     )
       .then((entries) => {
@@ -122,7 +133,7 @@ export default function AeroExplainer() {
     return () => {
       cancelled = true;
     };
-  }, [manifest, selected, lines, round]);
+  }, [manifest, selected, lines, round, session]);
 
   const series = useMemo(() => {
     if (manifest.status !== 'ready') return [];
@@ -195,7 +206,7 @@ export default function AeroExplainer() {
         </label>
         {lap && (
           <span className="generated-at mono">
-            fastest laps · {manifest.data.source}
+            fastest {manifest.data.sessionLabel ?? 'race'} laps · {manifest.data.source}
           </span>
         )}
       </div>
