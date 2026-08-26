@@ -1341,3 +1341,61 @@ tbody tr.is-on {
     min-width: 2.2rem;
   }
 }
+
+/* ---------- driving style ---------- */
+
+.style-panel {
+  padding-bottom: 0.9rem;
+}
+
+.style-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.style-row {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.style-code {
+  color: var(--ink-0);
+  font-size: 0.85rem;
+  min-width: 2.6rem;
+}
+
+/* Bars are scaled within a metric, never across them: the point is
+   comparing drivers on one measure, not one measure against another. */
+.style-track {
+  background: var(--bg-2);
+  border-radius: 4px;
+  display: block;
+  flex: 1;
+  height: 14px;
+  overflow: hidden;
+}
+
+.style-fill {
+  border-radius: 4px 0 0 4px;
+  display: block;
+  height: 100%;
+  transition: width 160ms ease;
+}
+
+.style-value {
+  color: var(--ink-1);
+  font-size: 0.82rem;
+  min-width: 5rem;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .style-value {
+    min-width: 4.2rem;
+  }
+}

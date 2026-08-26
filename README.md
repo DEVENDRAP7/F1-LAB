@@ -55,6 +55,12 @@ spec) before contributing.
   this project's own observation that a lap ran slower than the same
   driver's green-flag median. A flag is not a verdict, and the page is
   built so the two can never be read as the same thing.
+- **Driving Style** — how a lap was driven rather than how quick it was:
+  share of the lap at full throttle, on the brakes, and coasting; how far
+  past each apex the throttle comes back; the speed carried through the
+  slowest point of each turn; gear changes. There is no "better" column,
+  because carrying more speed into a corner is not superior to braking
+  later and turning tighter.
 - **Aero Explainer** — lateral and longitudinal acceleration for a
   driver's fastest lap, computed from the published racing line: a g-g
   diagram, the lateral g the car sustained at each speed, the driven lap
