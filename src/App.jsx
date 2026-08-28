@@ -9,6 +9,7 @@ import ErrorReview from './pages/ErrorReview.jsx';
 import AeroExplainer from './pages/AeroExplainer.jsx';
 import WhatIf from './pages/WhatIf.jsx';
 import Qualifying from './pages/Qualifying.jsx';
+import Sprint from './pages/Sprint.jsx';
 import DrivingStyle from './pages/DrivingStyle.jsx';
 import Refusals from './pages/Refusals.jsx';
 
@@ -25,6 +26,7 @@ export default function App() {
           <NavLink to="/strategy">Race Strategy</NavLink>
           <NavLink to="/lines">Racing Lines</NavLink>
           <NavLink to="/qualifying">Qualifying</NavLink>
+          <NavLink to="/sprint">Sprint</NavLink>
           <NavLink to="/errors">Error Review</NavLink>
           <NavLink to="/style">Driving Style</NavLink>
           <NavLink to="/aero">Aero</NavLink>
@@ -40,6 +42,7 @@ export default function App() {
             <Route path="/strategy" element={<RaceStrategy />} />
             <Route path="/lines" element={<RacingLines />} />
             <Route path="/qualifying" element={<Qualifying />} />
+            <Route path="/sprint" element={<Sprint />} />
             <Route path="/errors" element={<ErrorReview />} />
             <Route path="/style" element={<DrivingStyle />} />
             <Route path="/aero" element={<AeroExplainer />} />

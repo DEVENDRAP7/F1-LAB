@@ -1463,9 +1463,10 @@ tbody tr.is-on {
 .related-links {
   display: grid;
   gap: 0.6rem;
-  /* 205px so the widest set here (five links, on Race Strategy) still lands on
-     one row at desktop width rather than orphaning the fifth. */
-  grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+  /* 175px so the widest set here — six, on a sprint round's Race Strategy —
+     still lands on one row at desktop width. auto-fit collapses the tracks a
+     shorter set does not use, so four links still stretch across. */
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
   list-style: none;
   margin: 0.7rem 0 0;
   padding: 0;
@@ -1499,4 +1500,86 @@ tbody tr.is-on {
   color: var(--ink-2);
   font-size: 0.85rem;
   line-height: 1.35;
+}
+
+/* ---------- sprint weekends ---------- */
+
+.sprint-summary-row {
+  align-items: baseline;
+  color: var(--ink-2);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  gap: 0.25rem 1.2rem;
+  margin: 0.5rem 0 0.9rem;
+}
+
+/* Points split between the two races of a weekend. The two numbers sit
+   beside the bar, so the colour is a reading aid and never the only
+   place the split appears. */
+.split-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+
+.split-row {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.split-name {
+  color: var(--ink-0);
+  font-size: 0.85rem;
+  min-width: 2.6rem;
+}
+
+.split-bar {
+  background: var(--bg-2);
+  border-radius: 2px;
+  display: flex;
+  flex: 1 1 auto;
+  height: 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.split-fill {
+  display: block;
+  height: 100%;
+}
+
+.split-figure {
+  color: var(--ink-1);
+  font-size: 0.8rem;
+  min-width: 6rem;
+  text-align: right;
+}
+
+.split-note {
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  min-width: 6rem;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  /* The bar is the first thing to go: the two figures beside it carry
+     the same information and a 40px bar carries none. */
+  .split-bar {
+    display: none;
+  }
+
+  .split-figure,
+  .split-note {
+    min-width: 0;
+  }
+
+  .split-row {
+    justify-content: space-between;
+  }
 }

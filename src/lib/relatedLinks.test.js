@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { DESTINATIONS, circuitForRound, relatedLinks, roundForCircuit } from './relatedLinks.js';
+import {
+  DESTINATIONS,
+  circuitForRound,
+  isSprintRound,
+  relatedLinks,
+  roundForCircuit,
+} from './relatedLinks.js';
 
 const calendar = [
   { round: 1, circuitId: 'albert_park' },
-  { round: 12, circuitId: 'silverstone' },
+  { round: 12, circuitId: 'silverstone', sprint: true },
 ];
 
 describe('relatedLinks', () => {
@@ -73,5 +79,19 @@ describe('roundForCircuit', () => {
     expect(roundForCircuit(calendar, 'monza')).toBe('');
     expect(roundForCircuit(calendar, '')).toBe('');
     expect(roundForCircuit(null, 'monza')).toBe('');
+  });
+});
+
+describe('isSprintRound', () => {
+  it('is true only for a round the calendar flags', () => {
+    expect(isSprintRound(calendar, 12)).toBe(true);
+    expect(isSprintRound(calendar, '12')).toBe(true);
+    expect(isSprintRound(calendar, 1)).toBe(false);
+  });
+
+  it('is false rather than throwing when there is nothing to check', () => {
+    expect(isSprintRound(null, 12)).toBe(false);
+    expect(isSprintRound(calendar, '')).toBe(false);
+    expect(isSprintRound(calendar, 99)).toBe(false);
   });
 });

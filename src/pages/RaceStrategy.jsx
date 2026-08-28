@@ -8,7 +8,7 @@ import LapTimeChart from '../components/LapTimeChart.jsx';
 import UndercutLedger from '../components/UndercutLedger.jsx';
 import { formatLapTime } from '../lib/formatTime.js';
 import { driverCode, driverIndex, driverName } from '../lib/driverNames.js';
-import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { circuitForRound, isSprintRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 
 const COMPOUND_TOKEN = {
@@ -439,11 +439,21 @@ export default function RaceStrategy() {
 
           <RelatedLinks
             context={`Each link opens on round ${round} rather than its own default.`}
-            links={relatedLinks(['/lines', '/whatif', '/errors', '/qualifying', '/circuits'], {
-              round,
-              session: 'R',
-              circuit: circuitForRound(season.data?.calendar, round),
-            })}
+            links={relatedLinks(
+              [
+                '/qualifying',
+                ...(isSprintRound(season.data?.calendar, round) ? ['/sprint'] : []),
+                '/lines',
+                '/whatif',
+                '/errors',
+                '/circuits',
+              ],
+              {
+                round,
+                session: 'R',
+                circuit: circuitForRound(season.data?.calendar, round),
+              },
+            )}
           />
         </>
       )}

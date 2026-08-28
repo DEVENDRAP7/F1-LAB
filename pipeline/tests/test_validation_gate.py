@@ -507,6 +507,24 @@ class TestSprintDocument:
         errors = validate_export.check_sprint()
         assert any("publishes rho None" in e for e in errors)
 
+    def test_a_stale_classification_flag_fails(self, tmp_path, monkeypatch):
+        # The failure this exists for: a document written when "Lapped"
+        # was read as a non-finish, validated after the reading changed.
+        def rewrite(document):
+            document["rounds"][0]["drivers"][0]["raceClassified"] = False
+
+        self._write(tmp_path, monkeypatch, mutate=rewrite)
+        errors = validate_export.check_sprint()
+        assert any("which now reads as True" in e for e in errors)
+
+    def test_a_status_nobody_has_classified_fails(self, tmp_path, monkeypatch):
+        def rewrite(document):
+            document["rounds"][0]["drivers"][0]["raceStatus"] = "Classified"
+
+        self._write(tmp_path, monkeypatch, mutate=rewrite)
+        errors = validate_export.check_sprint()
+        assert any("does not classify: Classified" in e for e in errors)
+
     def test_no_sprint_document_is_not_an_error(self, tmp_path, monkeypatch):
         monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
         assert validate_export.check_sprint() == []

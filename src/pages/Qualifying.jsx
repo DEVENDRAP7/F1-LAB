@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
-import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { circuitForRound, isSprintRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 import { formatLapTime } from '../lib/formatTime.js';
 import { driverIndex, driverCode, driverName } from '../lib/driverNames.js';
@@ -239,11 +239,21 @@ export default function Qualifying() {
 
       <RelatedLinks
         context={`Each link opens on round ${round} rather than its own default.`}
-        links={relatedLinks(['/lines', '/style', '/aero', '/strategy', '/circuits'], {
-          round,
-          session: 'Q',
-          circuit: circuitForRound(season?.calendar, round),
-        })}
+        links={relatedLinks(
+          [
+            '/strategy',
+            ...(isSprintRound(season?.calendar, round) ? ['/sprint'] : []),
+            '/lines',
+            '/style',
+            '/aero',
+            '/circuits',
+          ],
+          {
+            round,
+            session: 'Q',
+            circuit: circuitForRound(season?.calendar, round),
+          },
+        )}
       />
     </section>
   );

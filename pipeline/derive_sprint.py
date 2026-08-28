@@ -38,14 +38,29 @@ from __future__ import annotations
 
 import math
 
-# Ergast's status convention, which Jolpica inherits: a classified
-# finisher reads "Finished" or "+N Lap(s)". Everything else - a
-# retirement, a disqualification, a car that never started - is a
-# status string naming the cause. Matching the two positive forms is
-# safer than trying to enumerate the causes, which are open-ended.
-FINISHED = "Finished"
+# What counts as having raced, read off the feed rather than remembered.
+#
+# The first cut of this matched "Finished" and Ergast's classic "+N
+# Lap(s)" form, and threw away two thirds of a race: this feed writes a
+# car that was lapped as "Lapped", full stop. Alonso finished ninth for
+# two points at Zandvoort with that status, and the code called him a
+# non-finisher. Both spellings are accepted now - the classic form
+# because the endpoint may still emit it, "Lapped" because it is what
+# the 2026 results actually say.
+#
+# The list is positive on purpose. Enumerating the ways a race can end
+# badly is open-ended; enumerating the two ways it can end well is not.
+# A status this does not recognise excludes that driver from the
+# figures, which is visible in the excluded count, and is reported by
+# name so it can be looked at rather than absorbed.
+CLASSIFIED_STATUSES = ("Finished", "Lapped")
 LAPPED_PREFIX = "+"
 LAPPED_SUFFIX = ("Lap", "Laps")
+
+# Statuses seen in this feed that mean a driver did not race to the
+# flag. Nothing is computed from this list - it exists so that a status
+# outside both sets can be reported as one nobody has looked at yet.
+KNOWN_UNCLASSIFIED_STATUSES = ("Retired", "Disqualified", "Did not start")
 
 # Below this many drivers a rank correlation is not reported at all.
 # Five is not a magic number and is not a claim that six is enough; it
@@ -55,14 +70,34 @@ MIN_CORRELATION_N = 5
 
 
 def classified(status: str | None) -> bool:
-    """Whether a results row is a driver who finished the race."""
+    """Whether a results row is a driver who raced to the flag."""
     if not status:
         return False
-    if status == FINISHED:
+    if status in CLASSIFIED_STATUSES:
         return True
     if not status.startswith(LAPPED_PREFIX):
         return False
     return status.rstrip(".").split(" ")[-1] in LAPPED_SUFFIX
+
+
+def unrecognised_statuses(rounds: list[dict]) -> list[str]:
+    """Status strings that are neither a finish nor a known non-finish.
+
+    A results feed can add a word at any time, and the damage it does
+    here is quiet: an unfamiliar status silently drops that driver from
+    every mean and every correlation. Naming them makes the gate able to
+    fail on one instead.
+    """
+    seen = set()
+    for round_ in rounds:
+        for driver in round_.get("drivers", []):
+            for key in ("sprintStatus", "raceStatus"):
+                status = driver.get(key)
+                if not status or classified(status):
+                    continue
+                if status not in KNOWN_UNCLASSIFIED_STATUSES:
+                    seen.add(status)
+    return sorted(seen)
 
 
 def ranks(values: list[float]) -> list[float]:
@@ -269,6 +304,7 @@ def build_season(rounds: list[dict]) -> dict:
 
     return {
         "roundsRun": len(rounds),
+        "unrecognisedStatuses": unrecognised_statuses(rounds),
         "medianRho": _median(rhos) if rhos else None,
         "rhoRoundsCounted": len(rhos),
         "sprintMeanPlacesChanged": (sum(sprint_means) / len(sprint_means)) if sprint_means else None,
@@ -292,6 +328,11 @@ LIMITATIONS = [
     f"{MIN_CORRELATION_N}. It measures agreement between two orders that "
     "already happened. It is not a forecast, and the ordinary reason two "
     "orders agree is that the same cars were quick on both days.",
+    "A driver counts as having raced if the results feed calls them "
+    "Finished or Lapped. Every other status - a retirement, a "
+    "disqualification, a car that never started - is excluded from the "
+    "figures and counted in the excluded column instead, so the sample "
+    "each number rests on is always visible.",
     "Retirements are excluded from every figure here. A results feed "
     "gives a retired driver a finishing position, but that position is "
     "an ordering of who stopped when, not a racing outcome.",

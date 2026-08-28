@@ -15,6 +15,11 @@ export const DESTINATIONS = {
     note: 'The grid as it was set, and the team-mate gap behind it.',
     carries: ['round'],
   },
+  '/sprint': {
+    label: 'Sprint Weekends',
+    note: 'Both races of the weekend, and how far the two orders agreed.',
+    carries: ['round'],
+  },
   '/lines': {
     label: 'Racing Lines',
     note: 'Two fastest laps overlaid metre by metre, with the delta between them.',
@@ -78,4 +83,13 @@ export function roundForCircuit(calendar, circuitId) {
   const matches = calendar.filter((r) => r.circuitId === circuitId);
   if (matches.length === 0) return '';
   return matches[matches.length - 1].round;
+}
+
+// Only sprint rounds have a sprint weekend to link to. Offering the link
+// on every round would land two thirds of them on whatever sprint the
+// page defaults to, which is the failure these links exist to avoid.
+export function isSprintRound(calendar, round) {
+  if (!calendar || !round) return false;
+  const match = calendar.find((r) => String(r.round) === String(round));
+  return Boolean(match?.sprint);
 }

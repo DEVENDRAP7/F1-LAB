@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from derive_sprint import (  # noqa: E402
     MIN_CORRELATION_N,
+    unrecognised_statuses,
     build,
     build_round,
     build_season,
@@ -42,12 +43,15 @@ class TestClassified:
         assert classified("Finished")
 
     def test_lapped_counts(self):
+        # Both spellings: the classic Ergast form, and the one this feed
+        # actually writes. Missing the second cost two thirds of a race.
         assert classified("+1 Lap")
         assert classified("+2 Laps")
+        assert classified("Lapped")
 
     def test_a_retirement_does_not(self):
-        assert not classified("Engine")
-        assert not classified("Accident")
+        assert not classified("Retired")
+        assert not classified("Disqualified")
         assert not classified("Did not start")
 
     def test_a_missing_status_does_not(self):
@@ -236,3 +240,37 @@ class TestBuild:
         assert doc["season"]["roundsRun"] == 0
         assert len(doc["limitations"]) >= 5
         assert all(isinstance(line, str) and line for line in doc["limitations"])
+
+
+class TestUnrecognisedStatuses:
+    """A status nobody has looked at drops drivers from every figure
+    silently, so it has to be reported by name."""
+
+    def _round(self, sprint_status, race_status):
+        return build_round(
+            ROUND,
+            [result("A", 1, 1, status=sprint_status)],
+            [result("A", 1, 1, status=race_status)],
+        )
+
+    def test_the_statuses_this_feed_writes_are_all_recognised(self):
+        rounds = [
+            self._round(a, b)
+            for a, b in [
+                ("Finished", "Lapped"),
+                ("Retired", "Disqualified"),
+                ("Did not start", "Finished"),
+            ]
+        ]
+        assert unrecognised_statuses(rounds) == []
+
+    def test_a_new_word_is_reported(self):
+        assert unrecognised_statuses([self._round("Finished", "Classified")]) == ["Classified"]
+
+    def test_reported_once_and_sorted(self):
+        rounds = [self._round("Withdrawn", "Excluded"), self._round("Excluded", "Finished")]
+        assert unrecognised_statuses(rounds) == ["Excluded", "Withdrawn"]
+
+    def test_it_travels_in_the_season_block(self):
+        out = build_season([self._round("Finished", "Classified")])
+        assert out["unrecognisedStatuses"] == ["Classified"]

@@ -323,6 +323,24 @@ def check_sprint() -> list[str]:
                 )
 
             drivers = entry.get("drivers", [])
+            # Who counted as having raced, re-decided from the status
+            # each row carries. A document written under an older
+            # reading of the feed's vocabulary is stale in a way that
+            # recomputing the means from its own flags cannot see: the
+            # flags themselves are what went wrong.
+            for driver in drivers:
+                for status_key, flag_key in (
+                    ("sprintStatus", "sprintClassified"),
+                    ("raceStatus", "raceClassified"),
+                ):
+                    expected = derive_sprint.classified(driver.get(status_key))
+                    if bool(driver.get(flag_key)) != expected:
+                        errors.append(
+                            f"{sprint_path}: round {round_} marks {driver.get('driverCode')} "
+                            f"{flag_key}={driver.get(flag_key)} for status "
+                            f"{driver.get(status_key)!r}, which now reads as {expected}"
+                        )
+
             for key, grid_key, finish_key, flag in (
                 ("sprintMovement", "sprintGrid", "sprintFinish", "sprintClassified"),
                 ("raceMovement", "raceGrid", "raceFinish", "raceClassified"),
@@ -365,6 +383,18 @@ def check_sprint() -> list[str]:
                 errors.append(
                     f"{sprint_path}: round {round_} withholds rho without saying why"
                 )
+
+        # A status string this project has never seen drops those drivers
+        # from every mean and every correlation without saying so. It is
+        # named in the document and fails here, rather than quietly
+        # shrinking a sample nobody is watching.
+        unseen = derive_sprint.unrecognised_statuses(document.get("rounds", []))
+        if unseen:
+            errors.append(
+                f"{sprint_path}: the results feed used status(es) this project does "
+                f"not classify: {', '.join(unseen)} — those drivers are excluded from "
+                "every figure until the derivation is taught what they mean"
+            )
 
         season_block = derive_sprint.build_season(document.get("rounds", []))
         for key in ("medianRho", "sprintMeanPlacesChanged", "raceMeanPlacesChanged"):
