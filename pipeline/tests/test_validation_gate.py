@@ -400,3 +400,113 @@ class TestErrorReviewReachesItsFetch:
             tmp_path, monkeypatch,
             stored_version=run_refresh.ERROR_REVIEW_SCHEMA_VERSION)
         assert calls == []
+
+
+class TestSprintDocument:
+    """The sprint gate recomputes the published figures from the published
+    rows, so a document that is internally wrong fails before it deploys."""
+
+    def _write(self, tmp_path, monkeypatch, mutate=None, codes=None):
+        import derive_sprint
+
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        codes = codes or ["A", "B", "C", "D", "E", "F"]
+
+        def row(code, position, grid, status="Finished", points=0.0, laps=19):
+            return {
+                "position": str(position), "grid": grid, "driverCode": code,
+                "driverName": f"{code} Driver", "team": "Team", "status": status,
+                "points": points, "laps": laps,
+            }
+
+        info = {"round": 2, "raceName": "Chinese Grand Prix",
+                "circuitId": "shanghai", "date": "2026-03-15"}
+        sprint = [row(c, i + 1, len(codes) - i, points=8.0 - i) for i, c in enumerate(codes)]
+        race = [row(c, i + 1, len(codes) - i, points=25.0 - i, laps=56)
+                for i, c in enumerate(codes)]
+        document = derive_sprint.build(
+            2026, [derive_sprint.build_round(info, sprint, race)],
+            "2026-03-15T00:00:00Z", "test",
+        )
+
+        (tmp_path / "season.json").write_text(json.dumps({
+            "year": 2026,
+            "calendar": [{"round": 2, "raceName": "Chinese Grand Prix",
+                          "circuitId": "shanghai", "date": "2026-03-15", "sprint": True}],
+        }))
+        (tmp_path / "standings.json").write_text(json.dumps({
+            "standings": [{"driverCode": c, "driverName": f"{c} Driver",
+                           "team": "Team", "points": 500.0, "wins": 0, "position": i + 1}
+                          for i, c in enumerate(codes)],
+        }))
+
+        if mutate:
+            mutate(document)
+        out = tmp_path / "2026"
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "sprint.json").write_text(json.dumps(document))
+        return document
+
+    def test_a_consistent_document_passes(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch)
+        assert validate_export.check_sprint() == []
+
+    def test_a_doctored_rho_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch,
+                    lambda d: d["rounds"][0]["rankAgreement"].update({"rho": 0.99}))
+        errors = validate_export.check_sprint()
+        assert any("publishes rho 0.99" in e for e in errors)
+
+    def test_a_doctored_movement_mean_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch,
+                    lambda d: d["rounds"][0]["sprintMovement"].update({"meanAbsolute": 99.0}))
+        errors = validate_export.check_sprint()
+        assert any("sprintMovement says 99.0" in e for e in errors)
+
+    def test_a_round_the_calendar_does_not_flag_as_a_sprint_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch)
+        season = json.loads((tmp_path / "season.json").read_text())
+        season["calendar"][0]["sprint"] = False
+        (tmp_path / "season.json").write_text(json.dumps(season))
+        errors = validate_export.check_sprint()
+        assert any("does not flag it as one" in e for e in errors)
+
+    def test_points_that_do_not_fit_the_season_total_fail(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch)
+        standings = json.loads((tmp_path / "standings.json").read_text())
+        for row in standings["standings"]:
+            row["points"] = 1.0
+        (tmp_path / "standings.json").write_text(json.dumps(standings))
+        errors = validate_export.check_sprint()
+        assert any("for the season" in e for e in errors)
+
+    def test_a_driver_missing_from_the_standings_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch)
+        standings = json.loads((tmp_path / "standings.json").read_text())
+        standings["standings"] = standings["standings"][1:]
+        (tmp_path / "standings.json").write_text(json.dumps(standings))
+        errors = validate_export.check_sprint()
+        assert any("does not appear in the standings" in e for e in errors)
+
+    def test_a_thin_sample_withholds_rho_and_still_passes(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, codes=["A", "B", "C"])
+        assert validate_export.check_sprint() == []
+
+    def test_a_withheld_rho_must_say_why(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, codes=["A", "B", "C"],
+                    mutate=lambda d: d["rounds"][0]["rankAgreement"].update(
+                        {"withheldReason": None}))
+        errors = validate_export.check_sprint()
+        assert any("withholds rho without saying why" in e for e in errors)
+
+    def test_a_number_where_a_refusal_belongs_fails(self, tmp_path, monkeypatch):
+        # The document is built with rho present; replacing it with a
+        # refusal must not pass just because None is "close enough".
+        self._write(tmp_path, monkeypatch,
+                    lambda d: d["rounds"][0]["rankAgreement"].update({"rho": None}))
+        errors = validate_export.check_sprint()
+        assert any("publishes rho None" in e for e in errors)
+
+    def test_no_sprint_document_is_not_an_error(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        assert validate_export.check_sprint() == []

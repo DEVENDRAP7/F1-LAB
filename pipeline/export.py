@@ -107,6 +107,16 @@ def export_qualifying(year: int, payload: dict) -> Path:
     return path
 
 
+def export_sprint(year: int, payload: dict) -> Path:
+    """The season's sprint weekends: both races of each, side by side."""
+    out_dir = PUBLIC_DATA / str(year)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "sprint.json"
+    path.write_text(json.dumps(payload, separators=(",", ":")))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_refusals(year: int, ledger: dict) -> Path:
     """The ledger of everything the site declined to publish."""
     out_dir = PUBLIC_DATA / str(year)

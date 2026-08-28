@@ -26,6 +26,7 @@ import derive_telemetry
 import derive_errors
 import derive_compounds
 import derive_qualifying
+import derive_sprint
 import derive_refusals
 import export
 from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
@@ -883,6 +884,60 @@ def refresh_qualifying(year: int, calendar: list[dict]) -> None:
           f"{len(head_to_head['teams'])} team-mate pairing(s)")
 
 
+SPRINT_SCHEMA_VERSION = 1
+
+
+def refresh_sprint(year: int, calendar: list[dict]) -> None:
+    """Both races of every sprint weekend that has run.
+
+    Gated on the calendar's `sprint` flag rather than on the sprint
+    endpoint returning something: the endpoint answers for every round,
+    with an empty race list where there was no sprint, and asking it
+    twenty-four times to learn what the calendar already says is a
+    request per round for nothing.
+
+    Fetched whole each refresh for the same reason qualifying is: a
+    results table can be amended after the fact by a penalty, and an
+    incremental cache would keep the version that has been superseded.
+    """
+    today = datetime.date.today().isoformat()
+    rounds = []
+    for round_info in calendar:
+        if not round_info.get("sprint") or round_info["date"] > today:
+            continue
+        try:
+            sprint = ingest.fetch_sprint_results(year, round_info["round"])["results"]
+            race = ingest.fetch_race_results(year, round_info["round"])["results"]
+        except Exception as exc:  # noqa: BLE001 - one round must not abort the rest
+            print(f"[sprint] round {round_info['round']}: unavailable "
+                  f"({type(exc).__name__}: {exc})")
+            continue
+        # Both halves or neither. Half a sprint weekend is a page that
+        # compares one race against nothing, and every figure here is a
+        # comparison between the two.
+        if not sprint or not race:
+            print(f"[sprint] round {round_info['round']}: "
+                  f"{len(sprint)} sprint and {len(race)} race result(s) — skipped")
+            continue
+        rounds.append(derive_sprint.build_round(round_info, sprint, race))
+
+    if not rounds:
+        print("[sprint] no sprint weekend has both results published yet")
+        return
+
+    doc = derive_sprint.build(
+        year,
+        rounds,
+        ingest._now_iso(),
+        f"Jolpica-F1 {year} sprint and race results",
+    )
+    doc["schemaVersion"] = SPRINT_SCHEMA_VERSION
+    export.export_sprint(year, doc)
+    rho = doc["season"]["medianRho"]
+    print(f"[sprint] {len(rounds)} weekend(s), median rho "
+          f"{'withheld' if rho is None else format(rho, '.3f')}")
+
+
 def refresh_telemetry_index(year: int) -> None:
     """List what the telemetry backfill has actually produced.
 
@@ -989,6 +1044,7 @@ def main() -> int:
                 telemetry_budget -= 1
 
     refresh_qualifying(args.year, season_config["calendar"])
+    refresh_sprint(args.year, season_config["calendar"])
     refresh_telemetry_index(args.year)
     refresh_standings(args.year, season_config["calendar"])
     refresh_upcoming(args.year, season_config["calendar"])

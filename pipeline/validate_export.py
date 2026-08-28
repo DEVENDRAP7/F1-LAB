@@ -10,6 +10,7 @@ import json
 import sys
 
 from common import CONFIG_DIR, PUBLIC_DATA, BudgetExceeded
+import derive_sprint
 import export
 
 
@@ -280,6 +281,149 @@ def check_qualifying_cross_source() -> list[str]:
     return errors
 
 
+def check_sprint() -> list[str]:
+    """Re-derive the sprint document's own figures from its own rows.
+
+    Every number on the sprint page is computed from driver rows that
+    ship in the same file, so the gate can recompute all of them and
+    compare. That is the check that would have caught the manifest
+    corruption earlier in this project: a document can be internally
+    wrong while every unit test passes, and the only way to notice is to
+    redo the arithmetic against what was actually published.
+
+    It also checks the document against two others - the calendar it
+    claims rounds from, and the standings its points have to fit inside.
+    """
+    errors = []
+    try:
+        season = json.loads((PUBLIC_DATA / "season.json").read_text())
+    except (json.JSONDecodeError, OSError):
+        season = None
+
+    for sprint_path in sorted(PUBLIC_DATA.glob("*/sprint.json")):
+        try:
+            document = json.loads(sprint_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            errors.append(f"{sprint_path}: unreadable")
+            continue
+
+        calendar = {}
+        if season:
+            calendar = {str(r["round"]): r for r in season.get("calendar", [])}
+
+        for entry in document.get("rounds", []):
+            round_ = str(entry.get("round"))
+            listed = calendar.get(round_)
+            if calendar and not listed:
+                errors.append(f"{sprint_path}: round {round_} is not on the calendar")
+            elif listed and not listed.get("sprint"):
+                errors.append(
+                    f"{sprint_path}: round {round_} is published as a sprint weekend "
+                    "but the calendar does not flag it as one"
+                )
+
+            drivers = entry.get("drivers", [])
+            for key, grid_key, finish_key, flag in (
+                ("sprintMovement", "sprintGrid", "sprintFinish", "sprintClassified"),
+                ("raceMovement", "raceGrid", "raceFinish", "raceClassified"),
+            ):
+                published = entry.get(key) or {}
+                recomputed = derive_sprint.movement(drivers, grid_key, finish_key, flag)
+                if not _same_number(published.get("meanAbsolute"), recomputed["meanAbsolute"]):
+                    errors.append(
+                        f"{sprint_path}: round {round_} {key} says "
+                        f"{published.get('meanAbsolute')} but its own rows give "
+                        f"{recomputed['meanAbsolute']}"
+                    )
+                if published.get("sample") != recomputed["sample"]:
+                    errors.append(
+                        f"{sprint_path}: round {round_} {key} claims a sample of "
+                        f"{published.get('sample')} over {recomputed['sample']} usable row(s)"
+                    )
+
+            both = [
+                d for d in drivers
+                if d.get("sprintClassified") and d.get("raceClassified")
+                and d.get("sprintFinish") and d.get("raceFinish")
+            ]
+            published = entry.get("rankAgreement") or {}
+            recomputed = derive_sprint.spearman(
+                [float(d["sprintFinish"]) for d in both],
+                [float(d["raceFinish"]) for d in both],
+            )
+            if not _same_number(published.get("rho"), recomputed):
+                errors.append(
+                    f"{sprint_path}: round {round_} publishes rho {published.get('rho')} "
+                    f"but its own rows give {recomputed}"
+                )
+            if published.get("n") != len(both):
+                errors.append(
+                    f"{sprint_path}: round {round_} claims rho over {published.get('n')} "
+                    f"driver(s) but {len(both)} were classified in both races"
+                )
+            if recomputed is None and not published.get("withheldReason"):
+                errors.append(
+                    f"{sprint_path}: round {round_} withholds rho without saying why"
+                )
+
+        season_block = derive_sprint.build_season(document.get("rounds", []))
+        for key in ("medianRho", "sprintMeanPlacesChanged", "raceMeanPlacesChanged"):
+            if not _same_number((document.get("season") or {}).get(key), season_block[key]):
+                errors.append(
+                    f"{sprint_path}: season {key} says "
+                    f"{(document.get('season') or {}).get(key)} but the rounds give "
+                    f"{season_block[key]}"
+                )
+
+        errors += _check_sprint_points_fit_standings(sprint_path, document)
+
+    return errors
+
+
+def _same_number(published, recomputed, tolerance: float = 1e-9) -> bool:
+    """None must match None: a withheld figure and a computed one are
+    different claims, and treating them as interchangeable is how a
+    refusal quietly turns into a number."""
+    if published is None or recomputed is None:
+        return published is None and recomputed is None
+    return abs(float(published) - float(recomputed)) <= tolerance
+
+
+def _check_sprint_points_fit_standings(sprint_path, document) -> list[str]:
+    """Points taken on sprint weekends cannot exceed a driver's season.
+
+    Two documents built from different endpoints, so this can be wrong
+    in a way the arithmetic checks above cannot: a round counted twice,
+    or a driver's rows joined under the wrong code, shows up here as
+    points that do not fit inside a total nobody disputes.
+    """
+    try:
+        standings = json.loads((PUBLIC_DATA / "standings.json").read_text())
+    except (json.JSONDecodeError, OSError):
+        return []
+
+    totals = {row["driverCode"]: row["points"] for row in standings.get("standings", [])}
+    if not totals:
+        return []
+
+    errors = []
+    for row in (document.get("season") or {}).get("pointsByDriver", []):
+        total = totals.get(row["driverCode"])
+        if total is None:
+            errors.append(
+                f"{sprint_path}: {row['driverCode']} scores on sprint weekends "
+                "but does not appear in the standings"
+            )
+            continue
+        if row["weekendPoints"] > total + 1e-9:
+            errors.append(
+                f"{sprint_path}: {row['driverCode']} is credited with "
+                f"{row['weekendPoints']} points from sprint weekends but has "
+                f"{total} for the season"
+            )
+    return errors
+
+
 def main() -> int:
     errors = (
         check_budgets()
@@ -288,6 +432,7 @@ def main() -> int:
         + check_whatif()
         + check_line_manifests()
         + check_qualifying_cross_source()
+        + check_sprint()
     )
 
     if errors:
