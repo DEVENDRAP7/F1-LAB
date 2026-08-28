@@ -2,11 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import { MAX_SERIES, seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
+import RelatedLinks from '../components/RelatedLinks.jsx';
 import StintChart from '../components/StintChart.jsx';
 import LapTimeChart from '../components/LapTimeChart.jsx';
 import UndercutLedger from '../components/UndercutLedger.jsx';
 import { formatLapTime } from '../lib/formatTime.js';
 import { driverCode, driverIndex, driverName } from '../lib/driverNames.js';
+import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { useUrlState } from '../lib/urlState.js';
 
 const COMPOUND_TOKEN = {
   SOFT: 'soft',
@@ -27,7 +30,7 @@ const COMPOUND_TOKEN = {
 
 export default function RaceStrategy() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
-  const [round, setRound] = useState('');
+  const [round, setRound] = useUrlState('round');
   const [race, setRace] = useState({ status: 'idle', data: null });
   const [selected, setSelected] = useState([]);
   const [showTable, setShowTable] = useState(false);
@@ -433,6 +436,15 @@ export default function RaceStrategy() {
             </ul>
             <p className="panel-note mono">source: {data.source}</p>
           </section>
+
+          <RelatedLinks
+            context={`Each link opens on round ${round} rather than its own default.`}
+            links={relatedLinks(['/lines', '/whatif', '/errors', '/qualifying', '/circuits'], {
+              round,
+              session: 'R',
+              circuit: circuitForRound(season.data?.calendar, round),
+            })}
+          />
         </>
       )}
     </section>

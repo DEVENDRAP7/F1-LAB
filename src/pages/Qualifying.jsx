@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
+import RelatedLinks from '../components/RelatedLinks.jsx';
+import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { useUrlState } from '../lib/urlState.js';
 import { formatLapTime } from '../lib/formatTime.js';
 import { driverIndex, driverCode, driverName } from '../lib/driverNames.js';
 import { seriesColor } from '../theme/palette.js';
@@ -23,7 +26,7 @@ const SEGMENTS = [
 export default function Qualifying() {
   const [doc, setDoc] = useState({ status: 'loading', data: null });
   const [season, setSeason] = useState(null);
-  const [round, setRound] = useState('');
+  const [round, setRound] = useUrlState('round');
 
   useEffect(() => {
     let cancelled = false;
@@ -35,8 +38,11 @@ export default function Qualifying() {
       .then((data) => {
         if (cancelled) return;
         setDoc({ status: 'ready', data });
-        const last = data.rounds?.[data.rounds.length - 1];
-        if (last) setRound(String(last.round));
+        // Default to the latest round, unless the URL already names one that
+        // this document actually has: a shared link should land where it says.
+        const available = (data.rounds ?? []).map((r) => String(r.round));
+        const last = available[available.length - 1] ?? '';
+        setRound((current) => (available.includes(current) ? current : last));
       })
       .catch(() => !cancelled && setDoc({ status: 'empty', data: null }));
 
@@ -230,6 +236,15 @@ export default function Qualifying() {
         </ul>
         <p className="panel-note mono">source: {doc.data.source}</p>
       </section>
+
+      <RelatedLinks
+        context={`Each link opens on round ${round} rather than its own default.`}
+        links={relatedLinks(['/lines', '/style', '/aero', '/strategy', '/circuits'], {
+          round,
+          session: 'Q',
+          circuit: circuitForRound(season?.calendar, round),
+        })}
+      />
     </section>
   );
 }

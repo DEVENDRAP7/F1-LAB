@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
+import RelatedLinks from '../components/RelatedLinks.jsx';
+import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { useUrlState } from '../lib/urlState.js';
 import StrategyEditor from '../components/StrategyEditor.jsx';
 import OutcomeChart from '../components/OutcomeChart.jsx';
 import { monteCarlo, median } from '../lib/whatifModel.js';
@@ -67,9 +70,9 @@ function summarise(totals) {
 
 export default function WhatIf() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
-  const [round, setRound] = useState('');
+  const [round, setRound] = useUrlState('round');
   const [doc, setDoc] = useState({ status: 'idle', data: null });
-  const [driverId, setDriverId] = useState('');
+  const [driverId, setDriverId] = useUrlState('driver');
   const [strategy, setStrategy] = useState(null);
 
   useEffect(() => {
@@ -124,7 +127,6 @@ export default function WhatIf() {
     if (!round) return undefined;
     let cancelled = false;
     setDoc({ status: 'loading', data: null });
-    setDriverId('');
     setStrategy(null);
     fetch(dataPath(`2026/${round}/R/whatif.json`))
       .then((res) => {
@@ -138,9 +140,16 @@ export default function WhatIf() {
           .filter(([, entry]) => entry.validation.validated)
           .map(([id]) => id)
           .sort();
-        if (validated.length > 0) setDriverId(validated[0]);
+        // A driver named in the URL keeps the selection across a round change
+        // if this round validated them too; otherwise fall back to the first
+        // rather than leaving the page pointed at nobody.
+        setDriverId((current) => (validated.includes(current) ? current : validated[0] ?? ''));
       })
-      .catch(() => !cancelled && setDoc({ status: 'empty', data: null }));
+      .catch(() => {
+        if (cancelled) return;
+        setDoc({ status: 'empty', data: null });
+        setDriverId('');
+      });
     return () => {
       cancelled = true;
     };
@@ -502,6 +511,15 @@ export default function WhatIf() {
           </ul>
         </section>
       )}
+
+      <RelatedLinks
+        context={`Each link opens on round ${round} rather than its own default.`}
+        links={relatedLinks(['/strategy', '/errors', '/lines', '/circuits'], {
+          round,
+          session: 'R',
+          circuit: circuitForRound(season.data?.calendar, round),
+        })}
+      />
     </section>
   );
 }

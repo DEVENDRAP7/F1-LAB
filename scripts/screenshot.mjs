@@ -126,6 +126,66 @@ for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/circuits',
   await m2.close();
 }
 
+// Deep links. The round is in the URL so a link can carry it; the way that
+// silently breaks is a page's own "open on the newest round" effect winning the
+// race and overwriting what the URL asked for. Loading the link and reading the
+// control back is the only check that catches it.
+const deep = await browser.newPage({ viewport: { width: 1280, height: 1000 }, colorScheme: 'dark' });
+for (const [route, expected] of [
+  ['/lines?round=11&session=R', { round: '11', session: 'R' }],
+  ['/strategy?round=3', { round: '3' }],
+  ['/style?round=11&session=R', { round: '11', session: 'R' }],
+  ['/aero?round=11&session=R', { round: '11', session: 'R' }],
+  ['/whatif?round=3', { round: '3' }],
+  ['/errors?round=11', { round: '11' }],
+  ['/qualifying?round=5', { round: '5' }],
+  ['/circuits?circuit=silverstone', {}],
+]) {
+  await deep.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
+  await deep.waitForTimeout(1400);
+  const selects = await deep.$$eval('select', (nodes) => nodes.map((n) => n.value));
+  if (expected.round && selects[0] !== expected.round) {
+    problems.push(`deep ${route}: round select is ${selects[0]}, expected ${expected.round}`);
+  }
+  if (expected.session && selects[1] !== expected.session) {
+    problems.push(`deep ${route}: session select is ${selects[1]}, expected ${expected.session}`);
+  }
+  const hash = await deep.evaluate(() => window.location.hash);
+  if (expected.round && !hash.includes(`round=${expected.round}`)) {
+    problems.push(`deep ${route}: hash drifted to ${hash}`);
+  }
+}
+
+// The picker has to write back to the URL too, or the links people copy out of
+// the address bar say something other than what is on screen.
+await deep.goto(`http://localhost:${PORT}${BASE}/#/strategy`, { waitUntil: 'networkidle' });
+await deep.waitForTimeout(1200);
+await deep.selectOption('select', '5');
+await deep.waitForTimeout(600);
+const written = await deep.evaluate(() => window.location.hash);
+if (!written.includes('round=5')) problems.push(`picking a round left the URL at ${written}`);
+
+// And the other half: following a related link has to land on the same round,
+// which is the whole point of the panel.
+await deep.goto(`http://localhost:${PORT}${BASE}/#/strategy?round=11`, { waitUntil: 'networkidle' });
+await deep.waitForTimeout(1200);
+const relatedCount = await deep.$$eval('.related-link', (n) => n.length);
+if (relatedCount === 0) problems.push('strategy: no related links rendered');
+const hrefs = await deep.$$eval('.related-link', (n) => n.map((a) => a.getAttribute('href')));
+for (const href of hrefs) {
+  if (!/round=11|circuit=/.test(href)) problems.push(`strategy related link carries nothing: ${href}`);
+}
+await deep.$$eval('.related-link', (n) => n.find((a) => a.getAttribute('href').includes('/lines')).click());
+await deep.waitForTimeout(1600);
+const landed = await deep.evaluate(() => window.location.hash);
+if (!landed.includes('/lines') || !landed.includes('round=11')) {
+  problems.push(`following a related link landed on ${landed}`);
+}
+const landedRound = await deep.$$eval('select', (n) => n[0]?.value);
+if (landedRound !== '11') problems.push(`related link landed on round ${landedRound}`);
+await deep.screenshot({ path: '/tmp/related-lines.png', fullPage: true });
+await deep.close();
+
 console.log('desktop:', JSON.stringify(desktopStats));
 console.log('mobile :', JSON.stringify(mobileStats),
   mobileStats.scrollW > mobileStats.clientW ? 'HORIZONTAL OVERFLOW' : 'no overflow');

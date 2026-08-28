@@ -11,6 +11,9 @@ import {
 } from '../lib/aero.js';
 import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
+import RelatedLinks from '../components/RelatedLinks.jsx';
+import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { useUrlSelection, useUrlState } from '../lib/urlState.js';
 import GGDiagram from '../components/GGDiagram.jsx';
 import EnvelopeChart from '../components/EnvelopeChart.jsx';
 import ChannelMap from '../components/ChannelMap.jsx';
@@ -41,7 +44,7 @@ const MAX_COMPARE = 3;
 
 export default function AeroExplainer() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
-  const [round, setRound] = useState('');
+  const [round, setRound] = useUrlState('round');
   const [manifest, setManifest] = useState({ status: 'idle', data: null });
   const [selected, setSelected] = useState([]);
   const [lines, setLines] = useState({});
@@ -50,7 +53,8 @@ export default function AeroExplainer() {
   // on low fuel and fresh tyres it is the highest-load lap of the
   // weekend, which is the one an aero page is about. The race fills in
   // where qualifying has nothing.
-  const [session, setSession] = useState('Q');
+  const [session, setSession] = useUrlState('session', 'Q');
+  const setSelection = useUrlSelection({ session: 'Q' });
 
   useEffect(() => {
     let cancelled = false;
@@ -84,8 +88,8 @@ export default function AeroExplainer() {
         if (cancelled) return;
         const found = newestRoundWithLines(listing, candidates);
         if (found) {
-          setSession(found.session);
-          setRound(found.round);
+          // One write, not two: see lib/urlState.js on why.
+          setSelection({ round: found.round, session: found.session });
           return;
         }
       } catch {
@@ -202,6 +206,13 @@ export default function AeroExplainer() {
                 {r.round} · {r.raceName}
               </option>
             ))}
+          </select>
+        </label>
+        <label className="field">
+          Session{' '}
+          <select value={session} onChange={(e) => setSession(e.target.value)}>
+            <option value="Q">Qualifying</option>
+            <option value="R">Race</option>
           </select>
         </label>
         {lap && (
@@ -456,6 +467,15 @@ export default function AeroExplainer() {
               </li>
             </ul>
           </section>
+
+          <RelatedLinks
+            context={`Each link opens on round ${round} rather than its own default.`}
+            links={relatedLinks(['/lines', '/style', '/circuits', '/strategy'], {
+              round,
+              session,
+              circuit: circuitForRound(season.data?.calendar, round),
+            })}
+          />
         </>
       )}
     </section>

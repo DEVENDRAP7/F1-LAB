@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
+import RelatedLinks from '../components/RelatedLinks.jsx';
+import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { useUrlState } from '../lib/urlState.js';
 import { formatDelta, formatLapTime } from '../lib/formatTime.js';
 
 // M7 — Driver Error Review.
@@ -23,9 +26,9 @@ const SEVERITY_ORDER = { major: 0, moderate: 1, minor: 2 };
 
 export default function ErrorReview() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
-  const [round, setRound] = useState('');
+  const [round, setRound] = useUrlState('round');
   const [review, setReview] = useState({ status: 'idle', data: null });
-  const [driver, setDriver] = useState('');
+  const [driver, setDriver] = useUrlState('driver');
 
   useEffect(() => {
     let cancelled = false;
@@ -76,7 +79,6 @@ export default function ErrorReview() {
     if (!round) return undefined;
     let cancelled = false;
     setReview({ status: 'loading', data: null });
-    setDriver('');
     fetch(dataPath(`2026/${round}/R/errors.json`))
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -86,9 +88,16 @@ export default function ErrorReview() {
         if (cancelled) return;
         setReview({ status: 'ready', data });
         const codes = Object.keys(data.drivers ?? {}).sort();
-        if (codes.length > 0) setDriver(codes[0]);
+        // A driver named in the URL survives a round change when this round
+        // has them too; otherwise fall back to the first rather than showing
+        // an empty panel for a driver who is not in this race.
+        setDriver((current) => (codes.includes(current) ? current : codes[0] ?? ''));
       })
-      .catch(() => !cancelled && setReview({ status: 'empty', data: null }));
+      .catch(() => {
+        if (cancelled) return;
+        setReview({ status: 'empty', data: null });
+        setDriver('');
+      });
     return () => {
       cancelled = true;
     };
@@ -305,6 +314,15 @@ export default function ErrorReview() {
               ))}
             </ul>
           </section>
+
+          <RelatedLinks
+            context={`Each link opens on round ${round} rather than its own default.`}
+            links={relatedLinks(['/strategy', '/whatif', '/lines', '/circuits'], {
+              round,
+              session: 'R',
+              circuit: circuitForRound(season.data?.calendar, round),
+            })}
+          />
         </>
       )}
     </section>

@@ -1452,3 +1452,51 @@ tbody tr.is-on {
   font-size: 0.82rem;
   line-height: 1.45;
 }
+
+/* Cross-page links carrying the current round. Sits at the foot of a page as
+   the "what next" rather than competing with the content above it, so it is
+   quieter than a module card: no lift on hover, just an edge. */
+.related-panel {
+  margin-top: 2rem;
+}
+
+.related-links {
+  display: grid;
+  gap: 0.6rem;
+  /* 205px so the widest set here (five links, on Race Strategy) still lands on
+     one row at desktop width rather than orphaning the fifth. */
+  grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+  list-style: none;
+  margin: 0.7rem 0 0;
+  padding: 0;
+}
+
+.related-link {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  height: 100%;
+  padding: 0.65rem 0.8rem;
+  text-decoration: none;
+  transition: border-color 120ms ease;
+}
+
+.related-link:hover,
+.related-link:focus-visible {
+  border-color: var(--accent-edge);
+}
+
+.related-link-name {
+  color: var(--accent-0);
+  font-weight: 600;
+}
+
+.related-link-note {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+  line-height: 1.35;
+}

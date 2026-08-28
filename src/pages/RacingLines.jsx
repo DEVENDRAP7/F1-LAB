@@ -18,6 +18,9 @@ import {
 } from '../lib/telemetryIndex.js';
 import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
+import RelatedLinks from '../components/RelatedLinks.jsx';
+import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { useUrlSelection, useUrlState } from '../lib/urlState.js';
 import TelemetryTrace from '../components/TelemetryTrace.jsx';
 import TrackMap from '../components/TrackMap.jsx';
 
@@ -93,12 +96,13 @@ const COLOUR_CHANNELS = {
 
 export default function RacingLines() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
-  const [round, setRound] = useState('');
+  const [round, setRound] = useUrlState('round');
   // Opens on qualifying: it is the faster lap of the weekend, so it is
   // the one worth landing on. If no round has a qualifying line yet the
   // finder below falls back to the race rather than showing an empty
   // state on a page that does have data.
-  const [session, setSession] = useState('Q');
+  const [session, setSession] = useUrlState('session', 'Q');
+  const setSelection = useUrlSelection({ session: 'Q' });
   const [manifest, setManifest] = useState({ status: 'idle', data: null, error: null });
   const [selected, setSelected] = useState([]);
   const [lines, setLines] = useState({});
@@ -150,8 +154,8 @@ export default function RacingLines() {
         setIndex(listing);
         const found = newestRoundWithLines(listing, candidates, [session, 'R']);
         if (found) {
-          setSession(found.session);
-          setRound(found.round);
+          // One write, not two: see lib/urlState.js on why.
+          setSelection({ round: found.round, session: found.session });
         }
       } catch {
         // No index published yet — the picker still works by hand.
@@ -630,6 +634,15 @@ export default function RacingLines() {
               </div>
             </section>
           )}
+
+          <RelatedLinks
+            context={`Each link opens on round ${round} rather than its own default.`}
+            links={relatedLinks(['/aero', '/style', '/circuits', '/strategy'], {
+              round,
+              session,
+              circuit: circuitForRound(season.data?.calendar, round),
+            })}
+          />
         </>
       )}
     </section>

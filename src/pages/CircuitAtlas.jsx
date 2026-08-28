@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
+import RelatedLinks from '../components/RelatedLinks.jsx';
+import { relatedLinks, roundForCircuit } from '../lib/relatedLinks.js';
+import { useUrlState } from '../lib/urlState.js';
 import TrackMap from '../components/TrackMap.jsx';
 import { loadManifest, loadRacingLine } from '../lib/racingLine.js';
 import { accelerationTrace } from '../lib/aero.js';
@@ -30,7 +33,7 @@ import { seriesColor } from '../theme/palette.js';
 
 export default function CircuitAtlas() {
   const [state, setState] = useState({ status: 'loading', season: null });
-  const [selected, setSelected] = useState('');
+  const [selected, setSelected] = useUrlState('circuit');
   const [circuit, setCircuit] = useState({ status: 'idle', data: null });
 
   useEffect(() => {
@@ -44,8 +47,13 @@ export default function CircuitAtlas() {
         if (cancelled) return;
         setState({ status: 'ready', season });
         const today = new Date().toISOString().slice(0, 10);
+        // Default to the most recent round that has run, unless the URL
+        // already names a circuit on this calendar — a shared link should
+        // land on the track it says, not on whatever is newest.
         const run = season.calendar.filter((r) => r.date <= today);
-        if (run.length > 0) setSelected(run[run.length - 1].circuitId);
+        const known = new Set(season.calendar.map((r) => r.circuitId));
+        const newest = run.length > 0 ? run[run.length - 1].circuitId : '';
+        setSelected((current) => (known.has(current) ? current : newest));
       })
       .catch(() => {
         if (!cancelled) setState({ status: 'empty', season: null });
@@ -368,6 +376,14 @@ export default function CircuitAtlas() {
           </tbody>
         </table>
       </div>
+
+      <RelatedLinks
+        context="Each link opens on the round run at this circuit rather than its own default."
+        links={relatedLinks(['/lines', '/aero', '/strategy', '/qualifying'], {
+          round: roundForCircuit(state.season?.calendar, selected),
+          session: 'Q',
+        })}
+      />
     </section>
   );
 }

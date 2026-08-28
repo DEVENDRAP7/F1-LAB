@@ -86,6 +86,15 @@ load time rather than written into the copy.
   the model reproduces within 1%. It estimates a race time and says
   nothing about finishing position.
 
+Every page that is about one race weekend keeps that selection in the
+URL — `#/lines?round=12&session=Q` opens on round 12's qualifying lines —
+and ends with links to the other pages carrying the same round across, so
+a question that starts on the strategy board can be followed to the
+racing line, the counterfactual and the circuit without re-picking the
+round four times. A link whose target has nothing to carry is left out
+rather than shown, because landing on another page's default is the thing
+the links exist to stop.
+
 Race Strategy — stints coloured by the real compound, with the undercut
 ledger and per-stint pace fits below:
 

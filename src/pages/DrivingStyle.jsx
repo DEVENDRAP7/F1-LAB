@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
+import RelatedLinks from '../components/RelatedLinks.jsx';
+import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
+import { useUrlSelection, useUrlState } from '../lib/urlState.js';
 import { loadManifest, loadRacingLine } from '../lib/racingLine.js';
 import { loadTelemetryIndex, newestRoundWithLines } from '../lib/telemetryIndex.js';
 import { accelerationTrace } from '../lib/aero.js';
@@ -21,8 +24,9 @@ import { formatLapTime } from '../lib/formatTime.js';
 
 export default function DrivingStyle() {
   const [season, setSeason] = useState(null);
-  const [round, setRound] = useState('');
-  const [session, setSession] = useState('Q');
+  const [round, setRound] = useUrlState('round');
+  const [session, setSession] = useUrlState('session', 'Q');
+  const setSelection = useUrlSelection({ session: 'Q' });
   const [manifest, setManifest] = useState({ status: 'loading', data: null });
   const [lines, setLines] = useState({});
   // The other session for the same round, loaded only to compare against.
@@ -53,8 +57,8 @@ export default function DrivingStyle() {
         const index = await loadTelemetryIndex(season.year);
         const found = newestRoundWithLines(index, candidates);
         if (found && !cancelled) {
-          setSession(found.session);
-          setRound(found.round);
+          // One write, not two: see lib/urlState.js on why.
+          setSelection({ round: found.round, session: found.session });
           return;
         }
       } catch {
@@ -398,6 +402,15 @@ export default function DrivingStyle() {
               </li>
             </ul>
           </section>
+
+          <RelatedLinks
+            context={`Each link opens on round ${round} rather than its own default.`}
+            links={relatedLinks(['/lines', '/aero', '/qualifying', '/strategy'], {
+              round,
+              session,
+              circuit: circuitForRound(season?.calendar, round),
+            })}
+          />
         </>
       )}
     </section>
