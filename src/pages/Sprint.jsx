@@ -73,7 +73,15 @@ export default function Sprint() {
 
   const weekend = useMemo(() => {
     if (!doc.data || !round) return null;
-    return doc.data.rounds.find((r) => String(r.round) === round) ?? null;
+    const found = doc.data.rounds.find((r) => String(r.round) === round);
+    if (!found) return null;
+    // Finishing order, not alphabetical. The derivation sorts by driver
+    // code so its output is stable to diff; a reader wants the race.
+    const order = (a, b) =>
+      (a.raceFinish ?? 99) - (b.raceFinish ?? 99)
+      || (a.sprintFinish ?? 99) - (b.sprintFinish ?? 99)
+      || a.driverCode.localeCompare(b.driverCode);
+    return { ...found, drivers: [...found.drivers].sort(order) };
   }, [doc.data, round]);
 
   if (doc.status === 'loading') {
@@ -90,6 +98,10 @@ export default function Sprint() {
   }
 
   const { season: summary, rounds, limitations } = doc.data;
+  // One scale across the points table, so bar length means points. Scaling
+  // each bar to its own total made every bar full width, which said only
+  // "100% of this driver's points" — true of everyone, and useless.
+  const pointsScale = Math.max(1, ...summary.pointsByDriver.map((r) => r.weekendPoints));
   const shorter = summary.sprintMeanPlacesChanged != null
     && summary.raceMeanPlacesChanged != null
     && summary.sprintMeanPlacesChanged < summary.raceMeanPlacesChanged;
@@ -212,7 +224,7 @@ export default function Sprint() {
               <p className="panel-note">{weekend.rankAgreement.withheldReason}</p>
             )}
 
-            <div className="table-scroll table-wide">
+            <div className="table-scroll table-wide is-full">
               <table>
                 <caption className="visually-hidden">
                   {weekend.raceName}: sprint and grand prix results side by side
@@ -222,9 +234,9 @@ export default function Sprint() {
                     <th scope="col">Driver</th>
                     <th scope="col">Team</th>
                     <th scope="col" className="tabular">Sprint</th>
-                    <th scope="col" className="tabular">Δ</th>
+                    <th scope="col" className="tabular">Sprint Δ</th>
                     <th scope="col" className="tabular">GP</th>
-                    <th scope="col" className="tabular">Δ</th>
+                    <th scope="col" className="tabular">GP Δ</th>
                     <th scope="col" className="tabular">Sprint pts</th>
                     <th scope="col" className="tabular">GP pts</th>
                   </tr>
@@ -299,14 +311,14 @@ export default function Sprint() {
                   <span
                     className="split-fill"
                     style={{
-                      width: `${(row.sprintPoints / row.weekendPoints) * 100}%`,
+                      width: `${(row.sprintPoints / pointsScale) * 100}%`,
                       background: seriesColor(0),
                     }}
                   />
                   <span
                     className="split-fill"
                     style={{
-                      width: `${(row.racePoints / row.weekendPoints) * 100}%`,
+                      width: `${(row.racePoints / pointsScale) * 100}%`,
                       background: seriesColor(1),
                     }}
                   />
@@ -324,8 +336,9 @@ export default function Sprint() {
             <span className="legend-swatch" style={{ background: seriesColor(0) }} /> sprint
             {'  '}
             <span className="legend-swatch" style={{ background: seriesColor(1) }} /> grand prix.
-            The figures beside each bar are the points themselves, so the bar is a reading
-            aid rather than the only place the number appears.
+            Bar length is points, on one scale across the table, split at the point where
+            the sprint's share ends. The two figures beside it are the points themselves, so
+            the bar is a reading aid rather than the only place the number appears.
           </p>
         </section>
       )}

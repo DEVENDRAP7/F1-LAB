@@ -39,6 +39,11 @@ const MODULES = [
     line: 'Team-mate head to head — the one comparison where the car is held constant.',
   },
   {
+    to: '/sprint',
+    name: 'Sprint Weekends',
+    line: 'Two races, one circuit, two grids, a day apart — and how far the orders agreed.',
+  },
+  {
     to: '/errors',
     name: 'Error Review',
     line: 'What race control recorded, kept strictly apart from what this site merely noticed.',

@@ -81,6 +81,17 @@ load time rather than written into the copy.
   the order this lap meets them, which is not the circuit's official
   corner numbering — no source here publishes that. No downforce figure
   either, because that needs constants none of them publish.
+- **Sprint Weekends** — the second race of a sprint weekend, which the
+  rest of the site does not show: the same drivers, cars and circuit,
+  racing twice from two different grids inside a day. Places changed
+  between grid and flag for each race, stated as places and not as
+  overtakes, with the lap counts beside them rather than divided into
+  them; and Spearman's rho between the two finishing orders, per round,
+  withheld below five drivers classified in both. A driver counts as
+  having raced if the feed calls them Finished or Lapped — the first
+  version of that rule missed "Lapped", threw away fifty-one rows, and
+  passed every test, so the gate now re-decides it from each published
+  row rather than trusting the flag stored beside it.
 - **What-If Engine** — replay a race with a different strategy, on
   parameters fitted to that race and only for drivers whose real race
   the model reproduces within 1%. It estimates a race time and says
