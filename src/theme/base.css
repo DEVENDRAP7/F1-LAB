@@ -5,8 +5,12 @@
   position: relative;
 }
 
-/* A single wide wash behind the page. Costs nothing, and stops the
-   background reading as one flat slab of near-black. */
+/* The room the glass sits in. Translucent surfaces have nothing to be
+   translucent over unless there is something behind them, so this is
+   now three washes and a vignette rather than one flat slab: two lit
+   corners, a cool floor low down, and darkened edges that push the
+   centre of the page forward. Fixed, so it does not move under the
+   content and cost a repaint on every scroll. */
 .app-shell::before {
   content: '';
   position: fixed;
@@ -15,7 +19,32 @@
   z-index: 0;
   background:
     radial-gradient(1100px 520px at 12% -8%, var(--accent-glow), transparent 70%),
-    radial-gradient(900px 460px at 92% 4%, var(--hot-glow), transparent 72%);
+    radial-gradient(900px 460px at 92% 4%, var(--hot-glow), transparent 72%),
+    radial-gradient(1200px 700px at 50% 118%, var(--accent-glow), transparent 76%),
+    radial-gradient(140% 110% at 50% 40%, transparent 42%, rgba(0, 0, 0, 0.32));
+}
+
+/* A faint grid, well under the noise floor of the type. It gives the
+   blurred panels something with structure to pick up, which is what
+   makes a blur read as glass rather than as a soft fill. */
+.app-shell::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  /* Subliminal on purpose. The first cut of this was at half opacity in
+     the line colour and read as a broken layout — hard rules marching
+     across the page behind the type. It has to be below the point where
+     you would notice it as lines and above the point where the blur has
+     nothing to pick up. */
+  opacity: 0.14;
+  background-image:
+    linear-gradient(to right, var(--line-strong) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line-strong) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(90% 70% at 50% 0%, #000, transparent 70%);
+  mask-image: radial-gradient(90% 70% at 50% 0%, #000, transparent 70%);
 }
 
 .app-shell > * {
@@ -28,11 +57,13 @@
   gap: 0.35rem;
   padding: 0.6rem 1.25rem;
   border-bottom: 1px solid var(--line);
-  /* A lit edge along the top of the app, so the shell reads as an
-     instrument rather than a plain document. */
-  background:
-    linear-gradient(180deg, var(--bg-2), var(--bg-1));
-  box-shadow: var(--shadow-1);
+  /* The one surface content actually passes behind, so it is the one
+     that has to be actual glass: tinted, blurred, and lit along its top
+     edge. */
+  background: var(--glass-tint-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -64,18 +95,44 @@
   padding: 0.35rem 0.7rem;
   border-radius: var(--radius);
   border: 1px solid transparent;
-  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .app-nav a:hover {
   color: var(--ink-0);
   background: var(--bg-3);
+  box-shadow: inset 0 1px 0 var(--glass-rim);
 }
 
+/* The active tab is pressed into the bar rather than raised off it —
+   a groove, not a button. It is where you already are. */
 .app-nav a.active {
   color: var(--accent-0);
   background: var(--accent-glow);
   border-color: var(--accent-edge);
+  box-shadow: var(--groove);
+}
+
+/* Links had no rule of their own, so every inline link on the site was
+   the browser default: a dark blue that all but vanishes on this
+   surface, and a visited purple that means nothing here. */
+a {
+  color: var(--accent-0);
+  text-decoration-color: var(--accent-edge);
+  text-underline-offset: 0.18em;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+
+a:hover {
+  color: var(--ink-0);
+  text-decoration-color: currentColor;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 main {
@@ -120,12 +177,18 @@ tbody tr:hover {
   background: var(--accent-glow);
 }
 
+/* Dashed and recessed, on purpose: an empty state is a hole in the
+   page where a panel would be, and it should read as one rather than as
+   another card with nothing in it. */
 .empty-state {
   border: 1px dashed var(--line-strong);
-  background: color-mix(in srgb, var(--bg-1) 70%, transparent);
-  border-radius: var(--radius);
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-radius: 14px;
   padding: 2rem;
   max-width: 42rem;
+  box-shadow: var(--groove);
 }
 
 .empty-state-title {
@@ -141,14 +204,16 @@ tbody tr:hover {
 }
 
 .warning-banner {
-  background: color-mix(in srgb, var(--warn) 14%, var(--bg-1));
+  background: color-mix(in srgb, var(--warn) 14%, var(--glass-tint-strong));
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid transparent;
   border-left: 3px solid var(--warn);
-  border-radius: var(--radius);
+  border-radius: 10px;
   padding: 0.8rem 1rem;
   margin-bottom: 1rem;
   color: var(--ink-0);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
 }
 
 .generated-at {
@@ -165,12 +230,24 @@ tbody tr:hover {
 }
 
 .controls-row select {
-  background: var(--bg-2);
+  background: var(--glass-tint-strong);
   color: var(--ink-0);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 0.25rem 0.5rem;
+  border-radius: 7px;
+  padding: 0.3rem 0.55rem;
   font-family: var(--font-display);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.controls-row select:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
+}
+
+.controls-row select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .driver-picker {
@@ -187,19 +264,34 @@ tbody tr:hover {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0.34rem 0.8rem;
-  background: var(--bg-2);
+  background: var(--glass-tint-strong);
   color: var(--ink-1);
   cursor: pointer;
   font-weight: 600;
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
   transition: color 120ms ease, background 120ms ease,
-    border-color 120ms ease, transform 120ms ease;
+    border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
 .driver-chip:hover {
   color: var(--ink-0);
   background: var(--bg-3);
   border-color: var(--line-strong);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
+}
+
+/* Selected sits down into the surface. A chip that is on and a chip
+   that is merely hovered must not both read as raised, or the state
+   the selection carries is told only by a border colour. */
+.driver-chip.is-on {
+  transform: none;
+  box-shadow: var(--groove);
+}
+
+.driver-chip:active {
+  transform: translateY(0);
+  box-shadow: var(--groove);
 }
 
 .lines-layout {
@@ -226,7 +318,8 @@ tbody tr:hover {
   display: block;
   background: var(--bg-1);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 10px;
+  box-shadow: var(--groove);
 }
 
 .trace-panel canvas:focus-visible {
@@ -302,24 +395,50 @@ tbody tr:hover {
   color: var(--ink-1);
 }
 
+/* The primary surface. Tinted glass over the page's own light, lit
+   along the top edge, shaded along the bottom, with a two-part shadow
+   under it. The border-radius goes up: a 4px corner on a 1000px pane
+   reads as a cut edge, and glass has thickness. */
 .panel {
   position: relative;
   border: 1px solid var(--line);
-  border-radius: calc(var(--radius) * 2);
-  background: var(--grad-panel);
+  border-radius: 14px;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   padding: 1.15rem 1.4rem 1.4rem;
   margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-2);
+  box-shadow:
+    var(--elev-2),
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 var(--glass-underside);
   overflow: hidden;
 }
 
-/* A hairline of accent along the top edge gives each panel a lit
-   leading edge, which is what separates a card from a grey rectangle. */
+/* The specular: a soft highlight in the top-left corner, where the
+   light in the background field is coming from. It is what stops all
+   the panels down a page reading as one repeated stamp — each one
+   catches the light in the same place, which is how a real material
+   behaves. */
+.panel::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 60%;
+  height: 130px;
+  pointer-events: none;
+  background: radial-gradient(120% 100% at 0% 0%, var(--glass-rim-strong), transparent 68%);
+  opacity: 0.6;
+}
+
+/* A hairline of accent along the top edge, over the white rim: the rim
+   gives the edge its thickness, this gives it its colour. */
 .panel::before {
   content: '';
   position: absolute;
   inset: 0 0 auto 0;
   height: 1px;
+  z-index: 1;
   background: linear-gradient(90deg, var(--accent-edge), transparent 55%);
 }
 
@@ -327,6 +446,10 @@ tbody tr:hover {
   margin-bottom: 1rem;
 }
 
+/* Some panels carry a bare h2 rather than a .panel-head wrapper, and
+   those were the only headings on the site without the accent tick — a
+   difference in markup showing up as a difference in design. */
+.panel > h2,
 .panel-head h2 {
   margin: 0 0 0.3rem;
   font-size: 0.95rem;
@@ -341,6 +464,7 @@ tbody tr:hover {
 
 /* A short accent tick before every panel title — cheap, consistent, and
    it gives the eye a repeating landmark down a long page. */
+.panel > h2::before,
 .panel-head h2::before {
   content: '';
   width: 3px;
@@ -398,6 +522,8 @@ tbody tr:hover {
   flex: 1 1 auto;
   height: 100%;
   min-width: 0;
+  border-radius: 5px;
+  box-shadow: var(--groove);
 }
 
 .stint-seg {
@@ -550,13 +676,17 @@ tbody tr:hover {
 /* Long, scannable tables (lap-by-lap times) get an internal scroll so
    they do not push the rest of the page away. Reference tables meant to
    be read whole — the calendar — opt out with .is-full. */
+/* Recessed: a table is a window cut into the panel, not another card
+   sitting on it. */
 .table-scroll {
   overflow-x: auto;
   max-height: 420px;
   overflow-y: auto;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 10px;
   margin-top: 0.75rem;
+  background: color-mix(in srgb, var(--bg-1) 55%, transparent);
+  box-shadow: var(--groove);
 }
 
 .table-scroll.is-full {
@@ -589,7 +719,11 @@ tbody tr:hover {
 .table-scroll thead th {
   position: sticky;
   top: 0;
+  /* Opaque, not glass: rows scrolling under a blurred header turn the
+     header's own labels into mush. It is raised off the rows with a
+     shadow instead. */
   background: var(--bg-2);
+  box-shadow: 0 1px 0 var(--line-strong), 0 6px 12px -8px rgba(0, 0, 0, 0.6);
   z-index: 1;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
@@ -619,8 +753,13 @@ tr.is-muted td {
   font-weight: 600;
 }
 
+/* Selected has to be unmistakable and must not rest on colour alone.
+   Three channels: it is pressed into the surface, its rim is the accent,
+   and its label takes the accent colour. */
 .driver-chip.is-on {
-  background: var(--bg-2);
+  background: var(--accent-glow);
+  border-color: var(--accent-edge);
+  color: var(--ink-0);
 }
 
 .link-button {
@@ -695,10 +834,11 @@ tr.is-muted td {
   width: 110px;
   height: 6px;
   background: var(--bg-2);
-  border-radius: 3px;
+  border-radius: 999px;
   overflow: hidden;
   vertical-align: middle;
   margin-right: 0.6rem;
+  box-shadow: var(--groove);
 }
 
 .gap-bar {
@@ -853,16 +993,23 @@ tr.is-muted td {
 .figure {
   position: relative;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
+  /* A lone tile in an auto-fit grid takes the whole row, which turned a
+     single refusal count on the Refusals page into a 1200px-wide card
+     with one number in it. Capped, so one tile reads like one of four
+     rather than like a banner. */
+  max-width: 32rem;
   padding: 0.8rem 0.9rem;
-  background: var(--bg-2);
+  background: var(--glass-tint-strong);
   overflow: hidden;
-  transition: border-color 120ms ease, transform 120ms ease;
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
 .figure:hover {
   border-color: var(--accent-edge);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
 }
 
 .figure::after {
@@ -1066,9 +1213,12 @@ tr.is-muted td {
 
 .verified-note {
   border-left: 3px solid var(--status-good);
-  padding: 0.55rem 0.85rem;
-  background: color-mix(in srgb, var(--status-good) 9%, transparent);
-  border-radius: var(--radius);
+  padding: 0.65rem 0.95rem;
+  background: color-mix(in srgb, var(--status-good) 9%, var(--glass-tint));
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-radius: 10px;
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
 }
 
 
@@ -1086,6 +1236,26 @@ tr.is-muted td {
   max-width: 74ch;
 }
 
+/* A limitations list is the longest text on most of these pages and it
+   was leaving half the panel empty on a wide screen. Two columns above
+   the point where a single column stops being a comfortable measure. */
+@media (min-width: 1100px) {
+  /* .panel-limitations ul is listed too, and by name: it carries its own
+     76ch cap at a higher specificity, so widening .reason-list alone left
+     every limitations panel on the site still in one narrow column. */
+  .reason-list,
+  .panel-limitations ul {
+    columns: 2;
+    column-gap: 2.8rem;
+    max-width: none;
+  }
+
+  .reason-list li,
+  .panel-limitations ul li {
+    break-inside: avoid;
+  }
+}
+
 .page-sub {
   font-size: 1.02rem;
 }
@@ -1098,7 +1268,11 @@ tr.is-muted td {
    neutral by design) still reads as a bar against either surface, and so
    the boundary between two stints is never colour alone. */
 .stint-seg {
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 1px 2px rgba(0, 0, 0, 0.35);
+  background-image: var(--fill-sheen);
 }
 
 .stint-seg-label {
@@ -1312,16 +1486,21 @@ tbody tr.is-on {
    colour is never carrying the result on its own. */
 .h2h-bar {
   background: var(--bg-2);
-  border-radius: 4px;
+  border-radius: 999px;
   display: flex;
   flex: 1;
   height: 12px;
   overflow: hidden;
+  box-shadow: var(--groove);
 }
 
+/* The sheen is white at low alpha and nothing else. Every fill on this
+   site carries a validated colour, and a gradient that shifted the hue
+   would quietly move what the colour means. */
 .h2h-fill {
   display: block;
   height: 100%;
+  background-image: var(--fill-sheen);
 }
 
 /* A 2px surface gap between the two fills, so a 12-0 does not read as a
@@ -1423,9 +1602,9 @@ tbody tr.is-on {
 }
 
 .module-card {
-  background: var(--bg-2);
+  background: var(--glass-tint-strong);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
   color: inherit;
   display: flex;
   flex-direction: column;
@@ -1433,13 +1612,15 @@ tbody tr.is-on {
   height: 100%;
   padding: 0.75rem 0.85rem;
   text-decoration: none;
-  transition: border-color 120ms ease, transform 120ms ease;
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
 .module-card:hover,
 .module-card:focus-visible {
   border-color: var(--accent-edge);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
 }
 
 .module-name {
@@ -1473,9 +1654,10 @@ tbody tr.is-on {
 }
 
 .related-link {
-  background: var(--bg-2);
+  background: var(--glass-tint-strong);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
   color: inherit;
   display: flex;
   flex-direction: column;
@@ -1483,12 +1665,14 @@ tbody tr.is-on {
   height: 100%;
   padding: 0.65rem 0.8rem;
   text-decoration: none;
-  transition: border-color 120ms ease;
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
 .related-link:hover,
 .related-link:focus-visible {
   border-color: var(--accent-edge);
+  transform: translateY(-2px);
+  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
 }
 
 .related-link-name {
@@ -1540,17 +1724,19 @@ tbody tr.is-on {
 
 .split-bar {
   background: var(--bg-2);
-  border-radius: 2px;
+  border-radius: 999px;
   display: flex;
   flex: 1 1 auto;
   height: 12px;
   min-width: 0;
   overflow: hidden;
+  box-shadow: var(--groove);
 }
 
 .split-fill {
   display: block;
   height: 100%;
+  background-image: var(--fill-sheen);
 }
 
 .split-figure {
@@ -1581,5 +1767,53 @@ tbody tr.is-on {
 
   .split-row {
     justify-content: space-between;
+  }
+}
+
+
+/* ---------- when the depth has to come off ----------
+
+   Two settings turn the material off rather than dimming it. Both are
+   accessibility settings, not preferences about taste: a translucent,
+   blurred surface is genuinely harder to read for some people, and a
+   card that lifts under the pointer is motion.
+
+   The opaque fallbacks are the same colours the glass resolves to, so
+   nothing moves and nothing changes contrast — only the material. */
+@media (prefers-reduced-transparency: reduce) {
+  .app-nav,
+  .panel,
+  .empty-state,
+  .warning-banner,
+  .figure,
+  .module-card,
+  .related-link,
+  .controls-row select,
+  .driver-chip {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--bg-2);
+  }
+
+  .app-shell::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figure,
+  .module-card,
+  .related-link,
+  .driver-chip {
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  .figure:hover,
+  .module-card:hover,
+  .module-card:focus-visible,
+  .related-link:hover,
+  .related-link:focus-visible,
+  .driver-chip:hover {
+    transform: none;
   }
 }

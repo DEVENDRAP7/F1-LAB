@@ -177,7 +177,16 @@ export default function SeasonLedger() {
         </p>
       )}
 
-      <table className="ledger-table">
+      <section className="panel">
+        <div className="panel-head">
+          <h2>The championship as it stands</h2>
+          <p className="panel-note">
+            Accumulated here from each round's results, not copied from the published
+            table — the cross-check above is what says the two agree.
+          </p>
+        </div>
+        <div className="table-scroll is-full">
+          <table className="ledger-table">
         <thead>
           <tr>
             <th scope="col" className="tabular">Pos</th>
@@ -228,8 +237,10 @@ export default function SeasonLedger() {
               </td>
             </tr>
           ))}
-        </tbody>
-      </table>
+          </tbody>
+          </table>
+        </div>
+      </section>
     </section>
   );
 }

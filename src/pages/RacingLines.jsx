@@ -323,8 +323,14 @@ export default function RacingLines() {
   const availableDrivers = manifest.status === 'ready' ? Object.keys(manifest.data.drivers) : [];
 
   return (
-    <section>
-      <h1>Racing Lines</h1>
+    <section className="page">
+      <header className="page-head">
+        <h1>Racing Lines</h1>
+        <p className="page-sub">
+          Two drivers' fastest laps laid over each other metre by metre — the same piece of
+          track driven twice, and where the difference between them was actually made.
+        </p>
+      </header>
       <div className="controls-row">
         <label>
           Round{' '}
@@ -415,6 +421,18 @@ export default function RacingLines() {
 
       {manifest.status === 'ready' && !manifest.data.unavailable && (
         <>
+          {/* The map and its traces are the page, and they were the one
+              thing on the site sitting bare on the background rather than
+              on a surface of their own. */}
+          <section className="panel">
+            <div className="panel-head">
+              <h2>The lap, and the lap beside it</h2>
+              <p className="panel-note">
+                Select up to {MAX_DRIVERS} drivers. Hovering any trace moves the crosshair on
+                all of them and on the map, so a spike in one channel can be found on the
+                track it happened at.
+              </p>
+            </div>
           <div className="driver-picker">
             {availableDrivers.map((code) => (
               <label key={code} className="driver-chip">
@@ -496,6 +514,7 @@ export default function RacingLines() {
               </div>
             </div>
           )}
+          </section>
 
           {active.length >= 2 && (
             <section className="panel">

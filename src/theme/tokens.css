@@ -27,7 +27,13 @@
 
   --ink-0: #f2f5fa;
   --ink-1: #a9b4c9;
-  --ink-2: #6b7791;
+  /* Stepped up from #6b7791. Measured off the rendered page rather than
+     off the token: the smallest text on the site — figure captions, the
+     generated-at line, the sample counts under every figure — was
+     landing at 3.9:1 on the panel surface, under the 4.5 a body size
+     that small needs. Same hue and saturation, one step lighter, which
+     puts it at 4.55 on a panel and 5.18 on the page. */
+  --ink-2: #76829a;
 
   /* Signature accent. Used for interactive state, active nav, focus
    * rings and heading rules — never to encode a value. */
@@ -45,6 +51,54 @@
 
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-2: 0 6px 20px rgba(0, 0, 0, 0.45);
+
+  /* ---------- depth ----------
+   *
+   * Surfaces here are glass: a translucent tint over the page's own
+   * light, a lit rim where the light catches the top edge, and a shadow
+   * underneath. Three things have to be true at once or it reads as fog
+   * rather than as a pane of something.
+   *
+   * The rim does most of the work. A translucent panel with a blur and
+   * no rim looks like a smudge; the same panel with a 1px inset
+   * highlight along its top edge reads as a physical edge immediately,
+   * because that is where a real edge catches the light.
+   *
+   * Elevation is two shadows, never one. A single soft shadow is
+   * ambient occlusion with nothing casting it. A tight, dark contact
+   * shadow directly under the element plus a wide, soft ambient one is
+   * what the eye reads as height — the first says "it is touching
+   * here", the second says "it is above that".
+   */
+  --glass-tint: rgba(24, 32, 49, 0.72);
+  --glass-tint-strong: rgba(30, 40, 62, 0.86);
+  --glass-blur: blur(18px) saturate(135%);
+  --glass-rim: rgba(255, 255, 255, 0.09);
+  --glass-rim-strong: rgba(255, 255, 255, 0.15);
+  /* The underside. A dark inset along the bottom edge is the other half
+     of a rim: lit on top, shaded beneath, which is what gives a flat
+     rectangle a thickness. */
+  --glass-underside: rgba(0, 0, 0, 0.32);
+
+  --elev-1:
+    0 1px 1px rgba(0, 0, 0, 0.34),
+    0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --elev-2:
+    0 1px 1px rgba(0, 0, 0, 0.4),
+    0 10px 26px -8px rgba(0, 0, 0, 0.55);
+  --elev-3:
+    0 2px 2px rgba(0, 0, 0, 0.45),
+    0 22px 50px -14px rgba(0, 0, 0, 0.65);
+
+  /* A groove for a bar to sit in: the track is recessed, the fill sits
+     proud of it. Used on every bar chart drawn in DOM rather than
+     canvas. */
+  --groove:
+    inset 0 1px 2px rgba(0, 0, 0, 0.45),
+    inset 0 -1px 0 var(--glass-rim);
+  /* Applied over a fill whose colour encodes something: a highlight
+     only, no hue shift, so the value the colour carries is unchanged. */
+  --fill-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 62%);
 
   --sector-green: #16c172;
   --sector-yellow: #e8c547;
@@ -146,7 +200,10 @@
     --line-strong: #b3bfd4;
     --ink-0: #0d1117;
     --ink-1: #465063;
-    --ink-2: #6e7a92;
+    /* Stepped down from #6e7a92 for the same reason and by the same
+       measurement: 4.21 on the light panel, now 5.00 there and 4.53 on
+       the page behind it. */
+    --ink-2: #636e84;
 
     --accent-0: #1e6fd9;
     --accent-1: #17579f;
@@ -158,6 +215,32 @@
     --grad-panel: linear-gradient(180deg, #ffffff, var(--bg-2));
     --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.06);
     --shadow-2: 0 8px 24px rgba(16, 24, 40, 0.1);
+
+    /* Glass on a light surface is a different material, not the dark
+       one inverted. The tint goes lighter than the page rather than
+       darker, the rim stays white but has less to catch, and the
+       shadows are cool and much weaker — a hard black shadow on white
+       reads as a sticker, not as glass. */
+    --glass-tint: rgba(255, 255, 255, 0.78);
+    --glass-tint-strong: rgba(255, 255, 255, 0.92);
+    --glass-rim: rgba(255, 255, 255, 0.9);
+    --glass-rim-strong: rgba(255, 255, 255, 1);
+    --glass-underside: rgba(16, 24, 40, 0.08);
+
+    --elev-1:
+      0 1px 1px rgba(16, 24, 40, 0.05),
+      0 2px 6px -1px rgba(16, 24, 40, 0.07);
+    --elev-2:
+      0 1px 1px rgba(16, 24, 40, 0.06),
+      0 10px 26px -8px rgba(16, 24, 40, 0.16);
+    --elev-3:
+      0 2px 2px rgba(16, 24, 40, 0.07),
+      0 22px 50px -14px rgba(16, 24, 40, 0.22);
+
+    --groove:
+      inset 0 1px 2px rgba(16, 24, 40, 0.14),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+    --fill-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 62%);
 
     --pos-1: #b8860b;
     --pos-2: #6b7689;
