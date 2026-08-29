@@ -1,12 +1,14 @@
 {
-  "generated_at": "2026-08-28T18:45:26Z",
+  "generated_at": "2026-08-29T10:11:39Z",
   "next": {
     "round": 13,
     "raceName": "Italian Grand Prix",
     "circuitName": "Autodromo Nazionale di Monza",
     "circuitId": "monza",
     "date": "2026-09-06",
-    "sprint": false
+    "sprint": false,
+    "lat": 45.6156,
+    "long": 9.28111
   },
   "historyYearsRequested": [
     2025,

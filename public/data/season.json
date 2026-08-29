@@ -7,7 +7,9 @@
       "circuitName": "Albert Park Grand Prix Circuit",
       "circuitId": "albert_park",
       "date": "2026-03-08",
-      "sprint": false
+      "sprint": false,
+      "lat": -37.8497,
+      "long": 144.968
     },
     {
       "round": 2,
@@ -15,7 +17,9 @@
       "circuitName": "Shanghai International Circuit",
       "circuitId": "shanghai",
       "date": "2026-03-15",
-      "sprint": true
+      "sprint": true,
+      "lat": 31.3389,
+      "long": 121.22
     },
     {
       "round": 3,
@@ -23,7 +27,9 @@
       "circuitName": "Suzuka Circuit",
       "circuitId": "suzuka",
       "date": "2026-03-29",
-      "sprint": false
+      "sprint": false,
+      "lat": 34.8431,
+      "long": 136.541
     },
     {
       "round": 4,
@@ -31,7 +37,9 @@
       "circuitName": "Miami International Autodrome",
       "circuitId": "miami",
       "date": "2026-05-03",
-      "sprint": true
+      "sprint": true,
+      "lat": 25.9581,
+      "long": -80.2389
     },
     {
       "round": 5,
@@ -39,7 +47,9 @@
       "circuitName": "Circuit Gilles Villeneuve",
       "circuitId": "villeneuve",
       "date": "2026-05-24",
-      "sprint": true
+      "sprint": true,
+      "lat": 45.5,
+      "long": -73.5228
     },
     {
       "round": 6,
@@ -47,7 +57,9 @@
       "circuitName": "Circuit de Monaco",
       "circuitId": "monaco",
       "date": "2026-06-07",
-      "sprint": false
+      "sprint": false,
+      "lat": 43.7347,
+      "long": 7.42056
     },
     {
       "round": 7,
@@ -55,7 +67,9 @@
       "circuitName": "Circuit de Barcelona-Catalunya",
       "circuitId": "catalunya",
       "date": "2026-06-14",
-      "sprint": false
+      "sprint": false,
+      "lat": 41.57,
+      "long": 2.26111
     },
     {
       "round": 8,
@@ -63,7 +77,9 @@
       "circuitName": "Red Bull Ring",
       "circuitId": "red_bull_ring",
       "date": "2026-06-28",
-      "sprint": false
+      "sprint": false,
+      "lat": 47.2197,
+      "long": 14.7647
     },
     {
       "round": 9,
@@ -71,7 +87,9 @@
       "circuitName": "Silverstone Circuit",
       "circuitId": "silverstone",
       "date": "2026-07-05",
-      "sprint": true
+      "sprint": true,
+      "lat": 52.0786,
+      "long": -1.01694
     },
     {
       "round": 10,
@@ -79,7 +97,9 @@
       "circuitName": "Circuit de Spa-Francorchamps",
       "circuitId": "spa",
       "date": "2026-07-19",
-      "sprint": false
+      "sprint": false,
+      "lat": 50.4372,
+      "long": 5.97139
     },
     {
       "round": 11,
@@ -87,7 +107,9 @@
       "circuitName": "Hungaroring",
       "circuitId": "hungaroring",
       "date": "2026-07-26",
-      "sprint": false
+      "sprint": false,
+      "lat": 47.5789,
+      "long": 19.2486
     },
     {
       "round": 12,
@@ -95,7 +117,9 @@
       "circuitName": "Circuit Park Zandvoort",
       "circuitId": "zandvoort",
       "date": "2026-08-23",
-      "sprint": true
+      "sprint": true,
+      "lat": 52.3888,
+      "long": 4.54092
     },
     {
       "round": 13,
@@ -103,7 +127,9 @@
       "circuitName": "Autodromo Nazionale di Monza",
       "circuitId": "monza",
       "date": "2026-09-06",
-      "sprint": false
+      "sprint": false,
+      "lat": 45.6156,
+      "long": 9.28111
     },
     {
       "round": 14,
@@ -111,7 +137,9 @@
       "circuitName": "Madring",
       "circuitId": "madring",
       "date": "2026-09-13",
-      "sprint": false
+      "sprint": false,
+      "lat": 40.46528,
+      "long": -3.61528
     },
     {
       "round": 15,
@@ -119,7 +147,9 @@
       "circuitName": "Baku City Circuit",
       "circuitId": "baku",
       "date": "2026-09-26",
-      "sprint": false
+      "sprint": false,
+      "lat": 40.3725,
+      "long": 49.8533
     },
     {
       "round": 16,
@@ -127,7 +157,9 @@
       "circuitName": "Sepang International Circuit",
       "circuitId": "sepang",
       "date": "2026-10-04",
-      "sprint": false
+      "sprint": false,
+      "lat": 2.76083,
+      "long": 101.738
     },
     {
       "round": 17,
@@ -135,7 +167,9 @@
       "circuitName": "Marina Bay Street Circuit",
       "circuitId": "marina_bay",
       "date": "2026-10-11",
-      "sprint": true
+      "sprint": true,
+      "lat": 1.2914,
+      "long": 103.864
     },
     {
       "round": 18,
@@ -143,7 +177,9 @@
       "circuitName": "Circuit of the Americas",
       "circuitId": "americas",
       "date": "2026-10-25",
-      "sprint": false
+      "sprint": false,
+      "lat": 30.1328,
+      "long": -97.6411
     },
     {
       "round": 19,
@@ -151,7 +187,9 @@
       "circuitName": "Aut\u00f3dromo Hermanos Rodr\u00edguez",
       "circuitId": "rodriguez",
       "date": "2026-11-01",
-      "sprint": false
+      "sprint": false,
+      "lat": 19.4042,
+      "long": -99.0907
     },
     {
       "round": 20,
@@ -159,7 +197,9 @@
       "circuitName": "Aut\u00f3dromo Jos\u00e9 Carlos Pace",
       "circuitId": "interlagos",
       "date": "2026-11-08",
-      "sprint": false
+      "sprint": false,
+      "lat": -23.7036,
+      "long": -46.6997
     },
     {
       "round": 21,
@@ -167,7 +207,9 @@
       "circuitName": "Las Vegas Strip Street Circuit",
       "circuitId": "vegas",
       "date": "2026-11-22",
-      "sprint": false
+      "sprint": false,
+      "lat": 36.1147,
+      "long": -115.173
     },
     {
       "round": 22,
@@ -175,7 +217,9 @@
       "circuitName": "Losail International Circuit",
       "circuitId": "losail",
       "date": "2026-11-29",
-      "sprint": false
+      "sprint": false,
+      "lat": 25.49,
+      "long": 51.4542
     },
     {
       "round": 23,
@@ -183,7 +227,9 @@
       "circuitName": "Yas Marina Circuit",
       "circuitId": "yas_marina",
       "date": "2026-12-06",
-      "sprint": false
+      "sprint": false,
+      "lat": 24.4672,
+      "long": 54.6031
     }
   ],
   "entryList": [
@@ -412,5 +458,5 @@
       "permanentNumber": null
     }
   ],
-  "generated_at": "2026-08-28T18:44:41Z"
+  "generated_at": "2026-08-29T10:03:01Z"
 }
