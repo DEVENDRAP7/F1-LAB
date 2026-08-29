@@ -28,6 +28,10 @@ import derive_compounds
 import derive_qualifying
 import derive_sprint
 import derive_pit_loss
+import derive_conditions
+import derive_overtakes
+import derive_radio
+import ingest_weather
 import derive_refusals
 import export
 from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
@@ -885,6 +889,202 @@ def refresh_qualifying(year: int, calendar: list[dict]) -> None:
           f"{len(head_to_head['teams'])} team-mate pairing(s)")
 
 
+CONDITIONS_SCHEMA_VERSION = 1
+OVERTAKES_SCHEMA_VERSION = 1
+RADIO_SCHEMA_VERSION = 1
+
+
+def refresh_conditions(year: int, calendar: list[dict],
+                       race_sessions: list[dict],
+                       qualifying_sessions: list[dict]) -> None:
+    """Session conditions from two sources that do not know each other.
+
+    OpenF1 measures at the circuit; Open-Meteo reanalyses the same hours
+    at the coordinates Jolpica publishes for that circuit. Only air
+    temperature is common to both, and comparing it is the point: it is
+    the second independent cross-check in this project, after qualifying
+    lap times against official results.
+    """
+    today = datetime.date.today().isoformat()
+    rounds = []
+    for round_info in calendar:
+        if round_info["date"] > today:
+            continue
+        sessions = []
+        for label, pool in (("R", race_sessions), ("Q", qualifying_sessions)):
+            session = _match_openf1_session(round_info, pool or [])
+            if not session:
+                continue
+            try:
+                trackside = ingest_openf1.fetch_weather(session["sessionKey"])
+            except Exception as exc:  # noqa: BLE001
+                print(f"[conditions] round {round_info['round']} {label}: trackside "
+                      f"unavailable ({type(exc).__name__}: {exc})")
+                continue
+
+            hours = []
+            archive_meta = None
+            lat, lon = round_info.get("lat"), round_info.get("long")
+            if lat is not None and lon is not None:
+                day = (session.get("dateStart") or round_info["date"])[:10]
+                try:
+                    archive = ingest_weather.fetch_archive(lat, lon, day)
+                    archive_meta = {
+                        "latitude": archive.get("latitude"),
+                        "longitude": archive.get("longitude"),
+                        "day": day,
+                    }
+                    hours = derive_conditions.hours_within(
+                        archive, session.get("dateStart"), session.get("dateEnd"),
+                    )
+                except Exception as exc:  # noqa: BLE001 - the check is additive
+                    print(f"[conditions] round {round_info['round']} {label}: archive "
+                          f"unavailable ({type(exc).__name__}: {exc})")
+
+            sessions.append({
+                "session": label,
+                "sessionKey": session["sessionKey"],
+                "dateStart": session.get("dateStart"),
+                "archiveLocation": archive_meta,
+                "conditions": derive_conditions.assess(trackside, hours),
+            })
+
+        if sessions:
+            rounds.append({
+                "round": round_info["round"],
+                "raceName": round_info["raceName"],
+                "circuitId": round_info.get("circuitId"),
+                "sessions": sessions,
+            })
+
+    if not rounds:
+        print("[conditions] no session carried a weather channel")
+        return
+
+    doc = derive_conditions.build(
+        year, rounds, ingest._now_iso(),
+        "OpenF1 weather (measured at the circuit) cross-checked against the "
+        "Open-Meteo historical archive (CC BY 4.0) at the coordinates Jolpica-F1 "
+        "publishes for that circuit",
+    )
+    doc["schemaVersion"] = CONDITIONS_SCHEMA_VERSION
+    export.export_conditions(year, doc)
+    print(f"[conditions] {doc['publishedCount']} session(s) published, "
+          f"{doc['withheldCount']} withheld")
+
+
+def refresh_overtakes(year: int, calendar: list[dict],
+                      race_sessions: list[dict]) -> None:
+    """Position changes per race, and a measurement of the feed's gaps."""
+    today = datetime.date.today().isoformat()
+    races = []
+    for round_info in calendar:
+        if round_info["date"] > today:
+            continue
+        session = _match_openf1_session(round_info, race_sessions or [])
+        if not session:
+            continue
+        try:
+            changes = ingest_openf1.fetch_overtakes(session["sessionKey"])
+            drivers = ingest_openf1.fetch_drivers(session["sessionKey"])
+            results = ingest.fetch_race_results(year, round_info["round"])["results"]
+        except Exception as exc:  # noqa: BLE001
+            print(f"[overtakes] round {round_info['round']}: unavailable "
+                  f"({type(exc).__name__}: {exc})")
+            continue
+
+        numbers_by_code = {
+            d.get("code"): d.get("driverNumber")
+            for d in drivers if d.get("code") and d.get("driverNumber")
+        }
+        races.append({
+            "round": round_info["round"],
+            "raceName": round_info["raceName"],
+            "circuitId": round_info.get("circuitId"),
+            "overtakes": derive_overtakes.assess(changes, results, numbers_by_code),
+        })
+
+    if not races:
+        print("[overtakes] no race carried a position-change feed")
+        return
+
+    doc = derive_overtakes.build(
+        year, races, ingest._now_iso(),
+        "OpenF1 overtakes (beta), checked against Jolpica-F1 grid and finishing positions",
+    )
+    doc["schemaVersion"] = OVERTAKES_SCHEMA_VERSION
+    export.export_overtakes(year, doc)
+    print(f"[overtakes] {doc['publishedCount']} race(s) published, "
+          f"{doc['withheldCount']} withheld")
+
+
+def refresh_radio(year: int, calendar: list[dict], race_sessions: list[dict]) -> None:
+    """The broadcast team-radio timeline: who, when, and a link to the clip.
+
+    Metadata only. No audio is copied here and nothing is transcribed —
+    see pipeline/derive_radio.py for why both of those are refusals
+    rather than omissions.
+    """
+    today = datetime.date.today().isoformat()
+    races = []
+    for round_info in calendar:
+        if round_info["date"] > today:
+            continue
+        session = _match_openf1_session(round_info, race_sessions or [])
+        if not session:
+            continue
+        try:
+            clips = ingest_openf1.fetch_team_radio(session["sessionKey"])
+            drivers = ingest_openf1.fetch_drivers(session["sessionKey"])
+            laps = ingest_openf1.fetch_laps(session["sessionKey"])
+        except Exception as exc:  # noqa: BLE001
+            print(f"[radio] round {round_info['round']}: unavailable "
+                  f"({type(exc).__name__}: {exc})")
+            continue
+
+        codes_by_number = {
+            d.get("driverNumber"): d.get("code")
+            for d in drivers if d.get("driverNumber")
+        }
+        lap_starts = _lap_start_times(laps)
+        races.append({
+            "round": round_info["round"],
+            "raceName": round_info["raceName"],
+            "circuitId": round_info.get("circuitId"),
+            "radio": derive_radio.assess(clips, lap_starts, codes_by_number),
+        })
+
+    if not races:
+        print("[radio] no race carried a team-radio feed")
+        return
+
+    doc = derive_radio.build(
+        year, races, ingest._now_iso(),
+        "OpenF1 team_radio — broadcast selections, linked at source, never transcribed",
+    )
+    doc["schemaVersion"] = RADIO_SCHEMA_VERSION
+    export.export_radio(year, doc)
+    print(f"[radio] {doc['publishedCount']} race(s) published, "
+          f"{doc['withheldCount']} withheld")
+
+
+def _lap_start_times(laps: list[dict]) -> list[tuple[int, object]]:
+    """One start time per lap number, earliest across the field.
+
+    A lap number means the same thing for everyone on the timing sheet,
+    so the earliest car to start lap N is when lap N began.
+    """
+    starts: dict[int, object] = {}
+    for lap in laps:
+        number = lap.get("lapNumber")
+        started = ingest_openf1._parse_iso(lap.get("dateStart"))
+        if number is None or started is None:
+            continue
+        if number not in starts or started < starts[number]:
+            starts[number] = started
+    return sorted(starts.items())
+
+
 PIT_LOSS_SCHEMA_VERSION = 1
 
 
@@ -1095,6 +1295,10 @@ def main() -> int:
     refresh_qualifying(args.year, season_config["calendar"])
     refresh_sprint(args.year, season_config["calendar"])
     refresh_pit_loss(args.year, season_config["calendar"])
+    refresh_conditions(args.year, season_config["calendar"],
+                       openf1_sessions, qualifying_sessions)
+    refresh_overtakes(args.year, season_config["calendar"], openf1_sessions)
+    refresh_radio(args.year, season_config["calendar"], openf1_sessions)
     refresh_telemetry_index(args.year)
     refresh_standings(args.year, season_config["calendar"])
     refresh_upcoming(args.year, season_config["calendar"])

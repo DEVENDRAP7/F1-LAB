@@ -108,9 +108,25 @@ def fetch_season_calendar(year: int = SEASON_YEAR) -> list[dict]:
             "circuitId": r["Circuit"]["circuitId"],
             "date": r["date"],
             "sprint": "Sprint" in r,
+            # Published coordinates, so a second weather source can be
+            # asked about the right place. Typing a circuit's latitude
+            # from memory would be the same mistake as numbering its
+            # corners from memory.
+            **_circuit_location(r["Circuit"].get("Location")),
         }
         for r in races
     ]
+
+
+def _circuit_location(location: dict | None) -> dict:
+    """Latitude and longitude, or nothing. A circuit whose coordinates
+    the feed omits gets no coordinates rather than a plausible pair."""
+    if not location:
+        return {}
+    try:
+        return {"lat": float(location["lat"]), "long": float(location["long"])}
+    except (KeyError, TypeError, ValueError):
+        return {}
 
 
 def fetch_entry_list(year: int = SEASON_YEAR) -> list[dict]:

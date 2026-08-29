@@ -601,3 +601,153 @@ class TestPitLossDocument:
     def test_no_pit_loss_document_is_not_an_error(self, tmp_path, monkeypatch):
         monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
         assert validate_export.check_pit_loss() == []
+
+
+class TestConditionsCrossSource:
+    """The gate that makes the second cross-source check mean something."""
+
+    def _write(self, tmp_path, monkeypatch, trackside_air, archive_air, mutate=None):
+        import derive_conditions
+
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        rows = [{"airTemperatureC": trackside_air, "trackTemperatureC": 40.0,
+                 "humidityPct": 50, "windSpeedMs": 3.0, "rainfall": 0}] * 30
+        hours = [{"time": "2026-08-23T14:00", "airTemperatureC": archive_air,
+                  "humidityPct": 51, "windSpeedMs": 3.1, "precipitationMm": 0.0}]
+        document = derive_conditions.build(
+            2026,
+            [{"round": 12, "raceName": "Dutch Grand Prix", "circuitId": "zandvoort",
+              "sessions": [{"session": "R", "sessionKey": 1, "dateStart": "x",
+                            "archiveLocation": None,
+                            "conditions": derive_conditions.assess(rows, hours)}]}],
+            "2026-01-01T00:00:00Z", "test",
+        )
+        if mutate:
+            mutate(document)
+        (tmp_path / "2026").mkdir(parents=True, exist_ok=True)
+        (tmp_path / "2026" / "conditions.json").write_text(json.dumps(document))
+        return document
+
+    def test_two_agreeing_sources_pass(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, 22.0, 23.0)
+        assert validate_export.check_conditions() == []
+
+    def test_disagreeing_sources_are_withheld_by_the_derivation(self, tmp_path, monkeypatch):
+        doc = self._write(tmp_path, monkeypatch, 22.0, 45.0)
+        conditions = doc["rounds"][0]["sessions"][0]["conditions"]
+        assert conditions["published"] is False
+        assert validate_export.check_conditions() == []
+
+    def test_publishing_over_a_disagreement_is_a_hard_failure(self, tmp_path, monkeypatch):
+        def force(document):
+            document["rounds"][0]["sessions"][0]["conditions"]["published"] = True
+            document["publishedCount"] = 1
+
+        self._write(tmp_path, monkeypatch, 22.0, 45.0, mutate=force)
+        errors = validate_export.check_conditions()
+        assert any("disagree about" in e for e in errors)
+
+    def test_a_doctored_gap_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, 22.0, 23.0,
+                    lambda d: d["rounds"][0]["sessions"][0]["conditions"]["crossCheck"]
+                    .update({"deltaC": 0.0}))
+        errors = validate_export.check_conditions()
+        assert any("publishes a 0.0C gap" in e for e in errors)
+
+    def test_a_withheld_session_must_say_why(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, 22.0, 45.0,
+                    lambda d: d["rounds"][0]["sessions"][0]["conditions"]
+                    .pop("withheldReason"))
+        errors = validate_export.check_conditions()
+        assert any("without saying why" in e for e in errors)
+
+
+class TestOvertakesArithmetic:
+    def _write(self, tmp_path, monkeypatch, mutate=None):
+        import derive_overtakes
+
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        events = [{"overtakingDriverNumber": 1, "overtakenDriverNumber": 4}] * 25
+        results = [{"driverCode": "VER", "grid": 10, "position": "5"}]
+        document = derive_overtakes.build(
+            2026,
+            [{"round": 12, "raceName": "Dutch Grand Prix", "circuitId": "zandvoort",
+              "overtakes": derive_overtakes.assess(events, results, {"VER": 1})}],
+            "2026-01-01T00:00:00Z", "test",
+        )
+        if mutate:
+            mutate(document)
+        (tmp_path / "2026").mkdir(parents=True, exist_ok=True)
+        (tmp_path / "2026" / "overtakes.json").write_text(json.dumps(document))
+        return document
+
+    def test_a_consistent_race_passes(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch)
+        assert validate_export.check_overtakes() == []
+
+    def test_a_change_with_only_one_side_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch,
+                    lambda d: d["races"][0]["overtakes"]["byDriver"][1].update({"suffered": 3}))
+        errors = validate_export.check_overtakes()
+        assert any("every change has one of each" in e for e in errors)
+
+    def test_a_net_that_is_not_made_minus_suffered_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch,
+                    lambda d: d["races"][0]["overtakes"]["byDriver"][0].update({"net": 99}))
+        errors = validate_export.check_overtakes()
+        assert any("net that is not made minus suffered" in e for e in errors)
+
+    def test_a_doctored_completeness_residual_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch,
+                    lambda d: d["races"][0]["overtakes"]["completeness"]["rows"][0]
+                    .update({"residual": 0}))
+        errors = validate_export.check_overtakes()
+        assert any("residual that is not" in e for e in errors)
+
+
+class TestRadioNeverTranscribed:
+    """The no-transcript rule is enforced by the gate, not by a comment."""
+
+    def _write(self, tmp_path, monkeypatch, mutate=None):
+        import derive_radio
+
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        clips = [{"date": f"2026-08-23T13:0{i}:00+00:00", "driverNumber": 44,
+                  "recordingUrl": f"https://example.invalid/{i}.mp3"} for i in range(6)]
+        document = derive_radio.build(
+            2026,
+            [{"round": 12, "raceName": "Dutch Grand Prix", "circuitId": "zandvoort",
+              "radio": derive_radio.assess(clips, [], {44: "HAM"})}],
+            "2026-01-01T00:00:00Z", "test",
+        )
+        if mutate:
+            mutate(document)
+        (tmp_path / "2026").mkdir(parents=True, exist_ok=True)
+        (tmp_path / "2026" / "radio.json").write_text(json.dumps(document))
+        return document
+
+    def test_links_only_passes(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch)
+        assert validate_export.check_radio() == []
+
+    def test_a_transcript_field_is_a_hard_failure(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch,
+                    lambda d: d["races"][0]["radio"]["timeline"][0]
+                    .update({"transcript": "box this lap"}))
+        errors = validate_export.check_radio()
+        assert any("never turns the audio into text" in e for e in errors)
+
+    def test_any_text_carrying_field_is_caught_not_just_transcript(self, tmp_path, monkeypatch):
+        for field in ("text", "message", "summary", "sentiment"):
+            self._write(tmp_path, monkeypatch,
+                        lambda d, f=field: d["races"][0]["radio"]["timeline"][0]
+                        .update({f: "anything"}))
+            errors = validate_export.check_radio()
+            assert any(f"'{field}' field" in e for e in errors), field
+
+    def test_a_clip_with_no_link_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch,
+                    lambda d: d["races"][0]["radio"]["timeline"][0]
+                    .update({"recordingUrl": None}))
+        errors = validate_export.check_radio()
+        assert any("no link to its recording" in e for e in errors)

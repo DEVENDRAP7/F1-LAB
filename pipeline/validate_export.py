@@ -10,7 +10,10 @@ import json
 import sys
 
 from common import CONFIG_DIR, PUBLIC_DATA, BudgetExceeded
+import derive_conditions
+import derive_overtakes
 import derive_pit_loss
+import derive_radio
 import derive_sprint
 import export
 
@@ -518,6 +521,156 @@ def check_pit_loss() -> list[str]:
     return errors
 
 
+def check_conditions() -> list[str]:
+    """The second cross-source check in this project, enforced.
+
+    Qualifying telemetry against official results was the first. This is
+    the second: a trackside thermometer against an independent
+    reanalysis of the same hours at the same coordinates. Both exist for
+    the same reason — everything else here is internally consistent by
+    construction and cannot be caught being wrong.
+    """
+    errors = []
+    for path in sorted(PUBLIC_DATA.glob("*/conditions.json")):
+        try:
+            document = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            errors.append(f"{path}: unreadable")
+            continue
+
+        published = 0
+        for round_ in document.get("rounds", []):
+            for entry in round_.get("sessions", []):
+                where = f"round {round_.get('round')} {entry.get('session')}"
+                conditions = entry.get("conditions") or {}
+                if not conditions.get("published"):
+                    if not conditions.get("withheldReason"):
+                        errors.append(
+                            f"{path}: {where} withholds its conditions without saying why"
+                        )
+                    continue
+
+                published += 1
+                check = conditions.get("crossCheck") or {}
+                recomputed = derive_conditions.cross_check(
+                    conditions.get("trackside") or {}, conditions.get("archive") or {},
+                )
+                if bool(check.get("compared")) != recomputed["compared"]:
+                    errors.append(
+                        f"{path}: {where} claims compared={check.get('compared')} but "
+                        f"its own summaries give {recomputed['compared']}"
+                    )
+                    continue
+                if not recomputed["compared"]:
+                    continue
+                if not _same_number(check.get("deltaC"), recomputed["deltaC"]):
+                    errors.append(
+                        f"{path}: {where} publishes a {check.get('deltaC')}C gap between "
+                        f"its sources but they are {recomputed['deltaC']}C apart"
+                    )
+                if not recomputed["agrees"]:
+                    errors.append(
+                        f"{path}: {where} publishes conditions its own two sources "
+                        f"disagree about by {recomputed['deltaC']:.1f}C — the trackside "
+                        f"feed says {recomputed['tracksideC']:.1f}C and the independent "
+                        f"archive says {recomputed['archiveC']:.1f}C"
+                    )
+
+        if document.get("publishedCount") != published:
+            errors.append(
+                f"{path}: claims {document.get('publishedCount')} published session(s) "
+                f"over {published} its own rows support"
+            )
+
+    return errors
+
+
+def check_overtakes() -> list[str]:
+    """Internal arithmetic on the position-change feed."""
+    errors = []
+    for path in sorted(PUBLIC_DATA.glob("*/overtakes.json")):
+        try:
+            document = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            errors.append(f"{path}: unreadable")
+            continue
+
+        for race in document.get("races", []):
+            where = f"round {race.get('round')}"
+            entry = race.get("overtakes") or {}
+            if not entry.get("published"):
+                if not entry.get("withheldReason"):
+                    errors.append(f"{path}: {where} withholds without saying why")
+                continue
+
+            by_driver = entry.get("byDriver") or []
+            made = sum(d.get("made", 0) for d in by_driver)
+            suffered = sum(d.get("suffered", 0) for d in by_driver)
+            # Every change has one driver on each side, so the two totals
+            # are the same number counted twice.
+            if made != suffered:
+                errors.append(
+                    f"{path}: {where} records {made} change(s) made and {suffered} "
+                    "suffered, and every change has one of each"
+                )
+            for driver in by_driver:
+                if driver.get("net") != driver.get("made", 0) - driver.get("suffered", 0):
+                    errors.append(
+                        f"{path}: {where} driver {driver.get('driverNumber')} has a net "
+                        "that is not made minus suffered"
+                    )
+            for row in (entry.get("completeness") or {}).get("rows", []):
+                if row.get("residual") != row.get("recordedNet", 0) - row.get("officialNet", 0):
+                    errors.append(
+                        f"{path}: {where} {row.get('driverCode')} has a residual that is "
+                        "not the recorded net minus the official one"
+                    )
+
+    return errors
+
+
+# Fields that would mean this project had turned audio into text. The
+# rule is a refusal, so the gate enforces it structurally rather than
+# leaving it to a comment nobody re-reads.
+FORBIDDEN_RADIO_FIELDS = ("transcript", "text", "message", "content", "summary",
+                          "sentiment", "tone", "audio", "clip")
+
+
+def check_radio() -> list[str]:
+    """No transcripts, no audio, and a link for every clip."""
+    errors = []
+    for path in sorted(PUBLIC_DATA.glob("*/radio.json")):
+        try:
+            document = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            errors.append(f"{path}: unreadable")
+            continue
+
+        for race in document.get("races", []):
+            where = f"round {race.get('round')}"
+            entry = race.get("radio") or {}
+            if not entry.get("published"):
+                if not entry.get("withheldReason"):
+                    errors.append(f"{path}: {where} withholds without saying why")
+                continue
+
+            for clip in entry.get("timeline") or []:
+                for field in FORBIDDEN_RADIO_FIELDS:
+                    if field in clip:
+                        errors.append(
+                            f"{path}: {where} carries a '{field}' field on a radio clip. "
+                            "This project publishes when a message exists and links the "
+                            "recording; it never turns the audio into text"
+                        )
+                if not clip.get("recordingUrl"):
+                    errors.append(
+                        f"{path}: {where} has a clip with no link to its recording, which "
+                        "leaves a reader nothing to check it against"
+                    )
+
+    return errors
+
+
 def main() -> int:
     errors = (
         check_budgets()
@@ -528,6 +681,9 @@ def main() -> int:
         + check_qualifying_cross_source()
         + check_sprint()
         + check_pit_loss()
+        + check_conditions()
+        + check_overtakes()
+        + check_radio()
     )
 
     if errors:

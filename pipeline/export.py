@@ -127,6 +127,30 @@ def export_pit_loss(year: int, payload: dict) -> Path:
     return path
 
 
+def _export_year_doc(year: int, name: str, payload: dict) -> Path:
+    out_dir = PUBLIC_DATA / str(year)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / name
+    path.write_text(json.dumps(payload, separators=(",", ":")))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
+def export_conditions(year: int, payload: dict) -> Path:
+    """Session conditions, from two sources and the check between them."""
+    return _export_year_doc(year, "conditions.json", payload)
+
+
+def export_overtakes(year: int, payload: dict) -> Path:
+    """Position changes per race, with the feed's own gaps measured."""
+    return _export_year_doc(year, "overtakes.json", payload)
+
+
+def export_radio(year: int, payload: dict) -> Path:
+    """Broadcast team-radio metadata. Links only — no audio, no transcripts."""
+    return _export_year_doc(year, "radio.json", payload)
+
+
 def export_refusals(year: int, ledger: dict) -> Path:
     """The ledger of everything the site declined to publish."""
     out_dir = PUBLIC_DATA / str(year)

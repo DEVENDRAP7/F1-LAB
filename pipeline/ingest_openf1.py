@@ -265,6 +265,90 @@ def fetch_race_control(session_key: int) -> list[dict]:
     ]
 
 
+def fetch_overtakes(session_key: int) -> list[dict]:
+    """Position changes during a race, from OpenF1's beta overtakes feed.
+
+    Found by going back through every endpoint this project had not
+    tried. It matters because five pages here carry some version of the
+    sentence "no source published by this project counts overtakes", and
+    that sentence was true when it was written and is not any more.
+
+    What it is NOT is a count of passes made on track. OpenF1's own
+    description is that an overtake is one driver exchanging positions
+    with another, "including both on-track passes and position changes
+    resulting from pit stops or post-race penalties", that it exists only
+    for races, and that it may be incomplete. All three of those travel
+    with every figure derived from it — a position-change feed described
+    as an overtake feed would be worse than the honest absence it
+    replaces.
+    """
+    rows = _get("overtakes", {"session_key": session_key})
+    return [
+        {
+            "date": r.get("date"),
+            "position": r.get("position"),
+            "overtakingDriverNumber": r.get("overtaking_driver_number"),
+            "overtakenDriverNumber": r.get("overtaken_driver_number"),
+        }
+        for r in rows
+    ]
+
+
+def fetch_weather(session_key: int) -> list[dict]:
+    """Conditions over the track, about once a minute.
+
+    Track temperature is the one here that no other source can supply:
+    an air temperature can be looked up for any point on earth, but the
+    temperature of the tarmac is measured at the circuit and published
+    by nobody else. It is also the number tyre behaviour actually turns
+    on, which is why every degradation figure on this site has been
+    published without any statement of the conditions it was measured in.
+    """
+    rows = _get("weather", {"session_key": session_key})
+    return [
+        {
+            "date": r.get("date"),
+            "airTemperatureC": r.get("air_temperature"),
+            "trackTemperatureC": r.get("track_temperature"),
+            "humidityPct": r.get("humidity"),
+            "pressureHpa": r.get("pressure"),
+            "rainfall": r.get("rainfall"),
+            "windSpeedMs": r.get("wind_speed"),
+            "windDirectionDeg": r.get("wind_direction"),
+        }
+        for r in rows
+    ]
+
+
+def fetch_team_radio(session_key: int) -> list[dict]:
+    """Broadcast team radio: who spoke, when, and where the clip lives.
+
+    This is the radio F1 puts on air and OpenF1 republishes as clip URLs.
+    Two things it is not.
+
+    It is not the teams' radio. OpenF1 states that only a limited
+    selection of communications is included, not the complete record, so
+    a driver with two clips is a driver the broadcast chose twice — never
+    a driver who said two things.
+
+    And it is not transcribed. Nothing on this site converts the audio to
+    text: a transcript this project generated would be a paraphrase
+    presented as a quotation, which is the exact failure the whole
+    project is built to avoid. The metadata is published and the clip is
+    linked at its source, so anyone reading can listen to the original
+    rather than to this project's account of it.
+    """
+    rows = _get("team_radio", {"session_key": session_key})
+    return [
+        {
+            "date": r.get("date"),
+            "driverNumber": r.get("driver_number"),
+            "recordingUrl": r.get("recording_url"),
+        }
+        for r in rows
+    ]
+
+
 def pick_fastest_laps(laps: list[dict]) -> dict[int, dict]:
     """The fastest timed lap per driver, as the basis for a racing line.
 

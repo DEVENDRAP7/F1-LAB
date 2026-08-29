@@ -38,10 +38,26 @@ Base: `https://api.openf1.org/v1`
 | `/race_control?session_key=` | flags, safety cars, penalties |
 | `/location?session_key=&driver_number=&date>…&date<…` | x/y/z position |
 | `/car_data?session_key=&driver_number=&date>…&date<…` | speed, throttle, brake, n_gear, drs, rpm |
+| `/weather?session_key=` | air and track temperature, humidity, pressure, wind, rainfall flag |
+| `/overtakes?session_key=` | position changes during a race (beta) |
+| `/team_radio?session_key=` | broadcast radio clip metadata and `recording_url` |
 
 - Range filters are query-string conventions (`date>2026-08-23T13:00:00`), not typed params
 - Honours `Retry-After` on 429
 - Docs: https://openf1.org/ · https://github.com/br-g/openf1
+
+### Open-Meteo historical archive
+
+Base: `https://archive-api.open-meteo.com/v1/archive`
+
+| Query | Used for |
+|---|---|
+| `latitude=&longitude=&start_date=&end_date=&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&timezone=UTC` | an independent second measurement of session conditions |
+
+- No API key. Data licence CC BY 4.0 — https://open-meteo.com/
+- Coordinates come from Jolpica's own `Circuit.Location`, never typed in
+- The only quantity both this and OpenF1 measure is air temperature, and comparing
+  them is the point: it is the second cross-source check in the project
 
 ### F1 live timing — tried, not used
 
@@ -90,5 +106,14 @@ not installed: playwright (npm i --no-save, for the screenshot scripts only)
 - No official F1 or FIA API, no team data, no logos or liveries
 - No FIA technical regulations document — which is why the 2026 aero and power-unit
   constants are still absent rather than recalled
-- No DRS zone map — the feed's `drs` integer codes have no verified mapping here
+- No DRS zone map. The `drs` integer codes were chased properly rather than
+  assumed unavailable: FastF1's own `car_data` docstring is the most detailed
+  public account of them and reads `0-14 (Odd DRS is Disabled, Even DRS is
+  Enabled?) (More Research Needed?)`, with `2` and `3` marked `(?)` and `10`,
+  `12` and `14` all `On (Unknown Distinction)`. The best public source says it
+  does not know, so this project does not either
+- No audio, and no transcripts of any audio. Team radio is published here as
+  metadata with a link to the clip at its own host; converting speech to text
+  would put this project's paraphrase where a quotation belongs, and the
+  validation gate fails a radio document carrying any text-bearing field
 - No scraping of any website
