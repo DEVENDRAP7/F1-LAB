@@ -999,17 +999,28 @@ def refresh_overtakes(year: int, calendar: list[dict],
             continue
         try:
             changes = ingest_openf1.fetch_overtakes(session["sessionKey"])
-            drivers = ingest_openf1.fetch_drivers(session["sessionKey"])
-            results = ingest.fetch_race_results(year, round_info["round"])["results"]
         except Exception as exc:  # noqa: BLE001
             print(f"[overtakes] round {round_info['round']}: unavailable "
                   f"({type(exc).__name__}: {exc})")
             continue
 
-        numbers_by_code = {
-            d.get("code"): d.get("driverNumber")
-            for d in drivers if d.get("code") and d.get("driverNumber")
-        }
+        # The completeness check needs the driver numbering and the
+        # official results, and both are wasted requests on a race the
+        # feed did not cover. The threshold decides before they are made.
+        numbers_by_code: dict[str, int] = {}
+        results: list[dict] = []
+        if len(changes) >= derive_overtakes.MIN_CHANGES:
+            try:
+                drivers = ingest_openf1.fetch_drivers(session["sessionKey"])
+                results = ingest.fetch_race_results(year, round_info["round"])["results"]
+            except Exception as exc:  # noqa: BLE001
+                print(f"[overtakes] round {round_info['round']}: results unavailable "
+                      f"({type(exc).__name__}: {exc})")
+                drivers = []
+            numbers_by_code = {
+                d.get("code"): d.get("driverNumber")
+                for d in drivers if d.get("code") and d.get("driverNumber")
+            }
         races.append({
             "round": round_info["round"],
             "raceName": round_info["raceName"],
@@ -1048,18 +1059,29 @@ def refresh_radio(year: int, calendar: list[dict], race_sessions: list[dict]) ->
             continue
         try:
             clips = ingest_openf1.fetch_team_radio(session["sessionKey"])
-            drivers = ingest_openf1.fetch_drivers(session["sessionKey"])
-            laps = ingest_openf1.fetch_laps(session["sessionKey"])
         except Exception as exc:  # noqa: BLE001
             print(f"[radio] round {round_info['round']}: unavailable "
                   f"({type(exc).__name__}: {exc})")
             continue
 
-        codes_by_number = {
-            d.get("driverNumber"): d.get("code")
-            for d in drivers if d.get("driverNumber")
-        }
-        lap_starts = _lap_start_times(laps)
+        # A race's lap listing is a few thousand rows and is needed only
+        # to place clips on laps. Most races this season release no radio
+        # at all, so the threshold is checked before that is fetched.
+        codes_by_number: dict[int, str] = {}
+        lap_starts: list = []
+        if len(clips) >= derive_radio.MIN_CLIPS:
+            try:
+                drivers = ingest_openf1.fetch_drivers(session["sessionKey"])
+                laps = ingest_openf1.fetch_laps(session["sessionKey"])
+            except Exception as exc:  # noqa: BLE001
+                print(f"[radio] round {round_info['round']}: lap listing unavailable "
+                      f"({type(exc).__name__}: {exc})")
+                drivers, laps = [], []
+            codes_by_number = {
+                d.get("driverNumber"): d.get("code")
+                for d in drivers if d.get("driverNumber")
+            }
+            lap_starts = _lap_start_times(laps)
         races.append({
             "round": round_info["round"],
             "raceName": round_info["raceName"],
