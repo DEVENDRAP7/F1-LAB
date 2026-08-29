@@ -18,6 +18,8 @@ import GGDiagram from '../components/GGDiagram.jsx';
 import EnvelopeChart from '../components/EnvelopeChart.jsx';
 import ChannelMap from '../components/ChannelMap.jsx';
 import { detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
+import { GRIP_LIMITED_TOLERANCE_PCT, cornerModel, impliedGripG } from '../lib/cornerModel.js';
+import { COAST_MIN_SPEED_KPH, dragFit } from '../lib/drag.js';
 
 // M8 — Aero Explainer, the measurable half.
 //
@@ -159,6 +161,12 @@ export default function AeroExplainer() {
           // map and the physics can never disagree about where a sample
           // was.
           points: Array.from(ch.x, (v, p) => [v / scale.x, ch.y[p] / scale.y]),
+          // The pedals, for the coasting test the drag fit needs. Both
+          // are published on the same grid as everything else.
+          channels: {
+            throttle: Array.from(ch.throttle ?? [], (v) => v / (scale.throttle ?? 1)),
+            brake: Array.from(ch.brake ?? [], (v) => v / (scale.brake ?? 1)),
+          },
           envelope: lateralEnvelope(trace),
           peaks: peaks(trace),
         };
@@ -171,6 +179,30 @@ export default function AeroExplainer() {
   // given kink loaded their car enough to register.
   const turns = useMemo(
     () => (series[0] ? detectTurns(series[0].trace) : []),
+    [series],
+  );
+
+  // The grip the lap behaves as if it had, and the reader's own override.
+  // Null means "follow the lap", so changing driver or round moves it.
+  const implied = useMemo(
+    () => (series[0] ? impliedGripG(turns, series[0].trace.curvature) : null),
+    [turns, series],
+  );
+  const [gripOverride, setGripOverride] = useState(null);
+  useEffect(() => setGripOverride(null), [round, session, series[0]?.code]);
+  const gripG = gripOverride ?? implied;
+
+  const model = useMemo(() => {
+    if (!series[0] || !gripG) return null;
+    // The model has no engine. Capping it at the speed the car actually
+    // reached on this lap is what stops it predicting 405 km/h through a
+    // 484 m kink and calling the driver 26% slow.
+    const topSpeedKph = Math.max(...series[0].trace.speedKph);
+    return cornerModel(turns, series[0].trace.curvature, gripG, { topSpeedKph });
+  }, [turns, series, gripG]);
+
+  const drag = useMemo(
+    () => (series[0] ? dragFit(series[0].trace, series[0].channels) : null),
     [series],
   );
 
@@ -422,6 +454,221 @@ export default function AeroExplainer() {
               <EnvelopeChart series={series} />
             )}
           </section>
+
+          {model && series[0] && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>The corner model, and how wrong it is</h2>
+                <p className="panel-note">
+                  A corner has a radius and a car has a grip limit, and steady-state
+                  cornering says <span className="mono">v = √(a·r)</span>. The radius is
+                  measured from the same curvature fit as everything else on this page. The
+                  grip is one number for the whole lap, so every corner below is predicted
+                  from geometry alone — feeding each corner its own measured g would return
+                  the speed it was taken at exactly, at every corner, and a model that
+                  reproduces its input is not a model.
+                </p>
+              </div>
+
+              <div className="figure-grid">
+                <div className="figure">
+                  <p className="figure-label">Grip the lap implies</p>
+                  <p className="figure-value mono">{implied.toFixed(2)}g</p>
+                  <p className="figure-sample">
+                    median of v²·κ at each turn's slowest point, over {turns.length} turn
+                    {turns.length === 1 ? '' : 's'}
+                  </p>
+                </div>
+                <div className="figure">
+                  <p className="figure-label">How wrong the model is</p>
+                  <p className="figure-value mono">
+                    {model.medianAbsErrorPct == null
+                      ? '—'
+                      : `${model.medianAbsErrorPct.toFixed(1)}%`}
+                  </p>
+                  <p className="figure-sample">
+                    median absolute error against the speed actually carried
+                  </p>
+                </div>
+                <div className="figure">
+                  <p className="figure-label">Corners at the limit</p>
+                  <p className="figure-value mono">
+                    {model.turnsGripLimited}/{model.turnsModelled}
+                  </p>
+                  <p className="figure-sample">
+                    within {GRIP_LIMITED_TOLERANCE_PCT}% of the model
+                    {model.turnsPowerLimited > 0
+                      ? ` · ${model.turnsPowerLimited} not modelled, faster than the car goes`
+                      : ''}
+                  </p>
+                </div>
+              </div>
+
+              <div className="controls-row grip-control">
+                <label>
+                  Grip{' '}
+                  <input
+                    type="range"
+                    min={Math.max(0.5, implied * 0.5)}
+                    max={Math.max(implied * 1.6, series[0].peaks.peakLateralG)}
+                    step={0.05}
+                    value={gripG}
+                    onChange={(e) => setGripOverride(Number(e.target.value))}
+                    aria-label="Lateral grip the model is allowed to assume, in g"
+                  />
+                </label>
+                <span className="mono generated-at">
+                  {gripG.toFixed(2)}g
+                  {gripOverride == null ? ' · as the lap implies' : ''}
+                </span>
+                {gripOverride != null && (
+                  <button type="button" className="link-button" onClick={() => setGripOverride(null)}>
+                    back to the lap
+                  </button>
+                )}
+              </div>
+
+              <div className="table-scroll table-wide is-full">
+                <caption className="visually-hidden">
+                  Each detected turn against the model at {gripG.toFixed(2)}g
+                </caption>
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Turn</th>
+                      <th scope="col" className="tabular">Radius</th>
+                      <th scope="col" className="tabular">Taken at</th>
+                      <th scope="col" className="tabular">Model says</th>
+                      <th scope="col" className="tabular">Difference</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {model.rows.map((row) => (
+                      <tr key={row.number}>
+                        <th scope="row" className="mono">
+                          T{row.number} <span className="legend-fullname">{row.direction}</span>
+                        </th>
+                        <td className="tabular">
+                          {row.radiusM == null ? '—' : `${Math.round(row.radiusM)} m`}
+                        </td>
+                        <td className="tabular">{Math.round(row.measuredKph)} km/h</td>
+                        <td className="tabular">
+                          {row.powerLimited
+                            ? `${Math.round(row.geometryKph)} km/h`
+                            : row.modelKph == null
+                              ? '—'
+                              : `${Math.round(row.modelKph)} km/h`}
+                        </td>
+                        <td className="tabular">
+                          {row.powerLimited ? (
+                            <span className="mono legend-fullname">faster than the car goes</span>
+                          ) : row.deltaPct == null ? (
+                            '—'
+                          ) : row.gripLimited ? (
+                            <span className="mono">at the limit</span>
+                          ) : (
+                            <span className={`mono ${row.deltaPct > 0 ? 'net-gain' : 'net-loss'}`}>
+                              {row.deltaPct > 0 ? '+' : ''}
+                              {row.deltaPct.toFixed(0)}%
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="chart-caption">
+                A corner near the model was grip-limited: the car was doing what the corner
+                allowed. A corner well below it was limited by something this model has no
+                term for — braking for what comes next, a compromised entry to protect the
+                exit onto a straight, traffic, a kerb, or a driver leaving margin. That is
+                not a mistake list and must not be read as one. There is no engine here, no
+                brakes, no gearbox, no sequence and no other cars: each corner is one
+                steady-state instant, and being slower than it is the normal case around
+                most of a lap. Where the geometry supports more speed than the car reached
+                anywhere on this lap, no model speed is printed at all: that corner is not
+                limited by grip.
+              </p>
+              <p className="chart-caption">
+                The corners that come out <em>above</em> the model are worth more than the
+                ones below it, and they are not noise. A single grip number is the model's
+                one assumption, and it is wrong in a specific direction: the fast corners
+                beat it because downforce gives the car more grip the quicker it is going.
+                That is the same fact the grip-against-speed panel plots directly. Across
+                the 88 laps published here the median lap sits 12% off this model.
+              </p>
+            </section>
+          )}
+
+          {drag && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>Apparent drag</h2>
+                <p className="panel-note">
+                  When a driver lifts and does not brake, everything resisting the car shows
+                  up at once, and it splits by how it scales with speed:{' '}
+                  <span className="mono">a = k·v² + c</span>. Drag is the v² term; whatever
+                  does not care how fast the car is going lands in c. Fitting that to real
+                  coasting samples would give k in units of 1/m — not{' '}
+                  <span className="mono">C_dA</span>, which needs the car's mass and the air
+                  density on the day, and neither is published anywhere this project can
+                  reach.
+                </p>
+              </div>
+
+              {drag.available ? (
+                <>
+                  <div className="figure-grid">
+                    <div className="figure">
+                      <p className="figure-label">Drag term</p>
+                      <p className="figure-value mono">{drag.k.toExponential(2)}</p>
+                      <p className="figure-sample">
+                        per metre · R² {drag.r2.toFixed(2)} over {drag.samples} coasting samples
+                      </p>
+                    </div>
+                    <div className="figure">
+                      <p className="figure-label">At 300 km/h</p>
+                      <p className="figure-value mono">
+                        {(drag.dragDecelAt(300) / 9.80665).toFixed(2)}g
+                      </p>
+                      <p className="figure-sample">shed to the v² term alone</p>
+                    </div>
+                    <div className="figure">
+                      <p className="figure-label">Crossover</p>
+                      <p className="figure-value mono">{Math.round(drag.crossoverKph)} km/h</p>
+                      <p className="figure-sample">
+                        above this the air is doing more of the slowing than the drivetrain
+                      </p>
+                    </div>
+                  </div>
+                  <p className="chart-caption">
+                    Fitted over {Math.round(drag.speedRangeKph[0])}–
+                    {Math.round(drag.speedRangeKph[1])} km/h. Engine braking in gear is not
+                    perfectly speed-independent, so some of it sits in the v² term too: this
+                    is apparent drag, not drag.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <EmptyState
+                    title="Not measurable on this lap"
+                    reason={drag.reason}
+                  />
+                  <p className="chart-caption">
+                    This is the normal outcome, not a gap waiting on a fix. A flying lap is
+                    spent on the throttle or on the brakes; genuine coasting — off both
+                    pedals, above {COAST_MIN_SPEED_KPH} km/h, going roughly straight — barely
+                    happens. Across the 88 laps published here the median lap has{' '}
+                    <strong>one</strong> such sample and 38 laps have none, so the
+                    coefficient is left unpublished rather than fitted to corner-entry lifts
+                    that would return a number with no drag in it.
+                  </p>
+                </>
+              )}
+            </section>
+          )}
 
           <section className="panel panel-limitations">
             <div className="panel-head">

@@ -77,7 +77,14 @@ load time rather than written into the copy.
   driver's fastest lap, computed from the published racing line: a g-g
   diagram, the lateral g the car sustained at each speed, the driven lap
   coloured by the load it was carrying, and each detected turn with its
-  entry speed, minimum speed and sustained load. Turns are numbered in
+  entry speed, minimum speed and sustained load. Then a corner model:
+  every turn's radius comes off the same curvature fit, one grip number
+  is taken for the whole lap, and `v = √(a·r)` predicts each corner from
+  geometry alone — with a slider on the grip, no prediction at all where
+  the geometry allows more speed than the car reached, and the median
+  error printed beside the output rather than left for the reader to
+  work out. The corners that beat the model are the fast ones, which is
+  downforce showing up as a residual. Turns are numbered in
   the order this lap meets them, which is not the circuit's official
   corner numbering — no source here publishes that. No downforce figure
   either, because that needs constants none of them publish.
@@ -295,14 +302,26 @@ and no traffic model. It reports a race time and the spread around it.
 
 ## Not built yet
 
-The **Aero Explainer** ships only its measurable half. Lateral and
-longitudinal acceleration are computed from the published racing line —
-curvature fitted to the position trace, times speed squared — so they are
-measurements of the lap. The regulation half is absent: it needs
+Two things the **Aero Explainer** does not carry, for two different
+reasons.
+
+The regulation half is absent because it has no source: it needs
 `config/regulations_2026.json` verified against the published FIA
-technical regulations, and there is no source for downforce in newtons or
+technical regulations, and there is no route to downforce in newtons or
 `C_dA` without mass, air density and frontal area, none of which any feed
-here publishes. The page names all of that rather than filling it in.
+here publishes.
+
+The **drag coefficient is absent because the laps do not contain it**,
+which is a different claim and a measured one. Coasting — off the
+throttle, off the brakes, above 150 km/h, going roughly straight — is the
+only condition where the deceleration splits cleanly into a v² term and a
+constant one. A flying lap barely has any: across the 88 laps published
+here the median lap carries **one** such sample and 38 laps carry none.
+One lap of 88 clears the fitting gate, and its constant term comes out at
+-33 m/s² — a 3.4 g acceleration while coasting — which is a fit to a
+gradient, not to drag. So the panel ships the refusal with that number
+rather than a coefficient. `scripts/aero_survey.mjs` re-derives all of it
+from the published artifacts.
 
 The telemetry backfill is incremental: each refresh builds at most four
 rounds, newest first, and skips rounds already exported. Rounds 9, 10

@@ -1817,3 +1817,62 @@ tbody tr.is-on {
     transform: none;
   }
 }
+
+/* The grip slider on the corner model. A range input inherits none of
+   the control styling above, so it gets the same groove-and-raised
+   treatment by hand: the track is recessed, the thumb sits proud of it. */
+.grip-control {
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.grip-control input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  width: min(280px, 60vw);
+  vertical-align: middle;
+}
+
+.grip-control input[type='range']::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  box-shadow: var(--groove);
+}
+
+.grip-control input[type='range']::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  box-shadow: var(--groove);
+}
+
+.grip-control input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--accent-0);
+  border: 1px solid var(--accent-edge);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim-strong);
+  cursor: pointer;
+}
+
+.grip-control input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-0);
+  border: 1px solid var(--accent-edge);
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim-strong);
+  cursor: pointer;
+}
+
+.grip-control input[type='range']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
