@@ -405,7 +405,7 @@ export default function DrivingStyle() {
 
           <RelatedLinks
             context={`Each link opens on round ${round} rather than its own default.`}
-            links={relatedLinks(['/lines', '/aero', '/qualifying', '/strategy'], {
+            links={relatedLinks(['/lines', '/aero', '/aero-rig', '/qualifying', '/strategy'], {
               round,
               session,
               circuit: circuitForRound(season?.calendar, round),

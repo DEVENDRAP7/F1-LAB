@@ -656,7 +656,7 @@ export default function RacingLines() {
 
           <RelatedLinks
             context={`Each link opens on round ${round} rather than its own default.`}
-            links={relatedLinks(['/aero', '/style', '/circuits', '/strategy'], {
+            links={relatedLinks(['/aero', '/aero-rig', '/style', '/circuits', '/strategy'], {
               round,
               session,
               circuit: circuitForRound(season.data?.calendar, round),

@@ -41,6 +41,12 @@ jobs:
           pip install -q numpy pytest
           python -m pytest pipeline/tests -q
 
+      # Regenerates the Aero Rig's data from whatever racing lines the
+      # telemetry backfill has committed, so the rig is never more than
+      # one deploy behind the published position traces.
+      - name: Export aero signature
+        run: node scripts/aero_export.mjs --out public/data/2026/aero.json
+
       - name: Build
         run: npm run build
 

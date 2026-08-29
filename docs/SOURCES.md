@@ -87,10 +87,13 @@ pytest>=8.0
 JavaScript (`package.json`):
 
 ```
-react, react-dom, react-router-dom
+react, react-dom, react-router-dom, three
 dev: vite, @vitejs/plugin-react, vitest, eslint
 not installed: playwright (npm i --no-save, for the screenshot scripts only)
 ```
+
+`three` renders the Aero Rig's 3D car — lazy-loaded on `/aero-rig` alone, via
+`React.lazy`, so it never lands in the initial bundle any other page pays for.
 
 ## Written here, not sourced
 
@@ -100,6 +103,11 @@ not installed: playwright (npm i --no-save, for the screenshot scripts only)
 - Colour tokens in `src/theme/tokens.css` — validated with a palette checker, not copied
 - Every model: curvature fit, aero, tyre degradation, what-if, corner detection,
   mini-sectors, qualifying head-to-head
+- Aero Rig geometry (`src/lib/aeroRigScene.js`) — a schematic drawn to widely
+  published 2026 regulation characteristics (a narrower front wing, a
+  three-element rear wing, no beam wing, 18-inch wheels), not scanned or
+  modelled from any team's real bodywork, and not sized against the FIA's own
+  technical regulations document, which this project does not have
 
 ## Deliberately not used
 

@@ -1789,7 +1789,9 @@ tbody tr.is-on {
   .module-card,
   .related-link,
   .controls-row select,
-  .driver-chip {
+  .driver-chip,
+  .mode-switch,
+  .rig-hint {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background: var(--bg-2);
@@ -1875,4 +1877,182 @@ tbody tr.is-on {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
   border-radius: 999px;
+}
+
+/* ---------- aero rig ----------
+ *
+ * The 3D chamber and its readout. The canvas is sized from its own
+ * width via aspect-ratio rather than a viewport-height fraction: inside
+ * an app's own chrome (a phone, an embedded webview) "60% of the
+ * window" is not a stable quantity, and an aspect-ratio box is the same
+ * shape everywhere it is dropped. The description of whatever is
+ * selected lives in normal document flow directly under the chamber —
+ * never overlaid on the canvas — so it can never hide the part it is
+ * describing, on any screen. */
+.rig-chamber {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px 10px 0 0;
+  background: radial-gradient(120% 90% at 50% 0%, var(--bg-2) 0%, var(--bg-1) 55%, var(--bg-0) 100%);
+}
+
+.rig-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 280px;
+  max-height: 78vh;
+  touch-action: none;
+}
+
+.rig-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  padding: clamp(0.85rem, 2vw, 1.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.mode-switch {
+  pointer-events: auto;
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--glass-tint-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  overflow: hidden;
+  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
+}
+
+.mode-switch button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.mode-switch button + button {
+  border-left: 1px solid var(--line);
+}
+
+.mode-switch button[aria-pressed='true'] {
+  background: var(--accent-0);
+  color: var(--bg-0);
+  font-weight: 700;
+}
+
+.mode-switch button:focus-visible {
+  outline: 2px solid var(--accent-0);
+  outline-offset: -2px;
+}
+
+.rig-hint {
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  background: var(--glass-tint-strong);
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.readout-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+  background: var(--glass-tint-strong);
+  border: 1px solid var(--line);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.4rem;
+}
+
+.readout {
+  /* flex-basis sets the main-axis size, and the main axis becomes
+     height once the mobile rule below switches this row to a column —
+     a length basis meant as a row width would turn into a tall box with
+     mostly blank space under two lines of text. flex-basis: 0 plus
+     min-width lets flex-grow still share out row space on wide screens,
+     and costs nothing in column mode, where height is content's to
+     decide. */
+  flex: 1 1 0;
+  min-width: 16rem;
+  max-width: 46rem;
+  border-left: 2px solid var(--accent-0);
+  padding-left: 0.9rem;
+}
+
+.readout h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink-0);
+}
+
+.readout p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--ink-1);
+}
+
+.rig-mode-note {
+  flex: 0 0 auto;
+  align-self: center;
+  max-width: 22rem;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+}
+
+.verdict-badge {
+  display: inline-flex;
+  margin-top: 0.55rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.verdict-badge.is-m {
+  color: var(--accent-0);
+}
+
+.verdict-badge.is-s {
+  color: var(--status-warning);
+}
+
+.verdict-badge.is-r {
+  color: var(--status-critical);
+}
+
+@media (max-width: 640px) {
+  .readout-bar {
+    flex-direction: column;
+  }
+
+  .rig-hint-drag {
+    display: none;
+  }
 }

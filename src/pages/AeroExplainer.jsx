@@ -717,7 +717,7 @@ export default function AeroExplainer() {
 
           <RelatedLinks
             context={`Each link opens on round ${round} rather than its own default.`}
-            links={relatedLinks(['/lines', '/style', '/circuits', '/strategy'], {
+            links={relatedLinks(['/aero-rig', '/lines', '/style', '/circuits', '/strategy'], {
               round,
               session,
               circuit: circuitForRound(season.data?.calendar, round),

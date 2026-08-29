@@ -64,6 +64,11 @@ const MODULES = [
     line: 'Cornering load computed from the driven line: a g-g diagram and grip against speed.',
   },
   {
+    to: '/aero-rig',
+    name: 'Aero Rig',
+    line: 'The 2026 car in 3D, built to the published regulations, wearing a measured downforce signature.',
+  },
+  {
     to: '/whatif',
     name: 'What-If Engine',
     line: 'Replay a race on a different strategy — only where the model reproduces the real one.',

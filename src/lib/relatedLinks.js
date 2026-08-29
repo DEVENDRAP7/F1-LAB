@@ -35,6 +35,11 @@ export const DESTINATIONS = {
     note: 'Cornering load from a curvature fit, with the working shown.',
     carries: ['round', 'session'],
   },
+  '/aero-rig': {
+    label: 'Aero Rig',
+    note: 'The 2026 car in 3D, with the same measured signature by speed.',
+    carries: ['round', 'session'],
+  },
   '/circuits': {
     label: 'Circuit Atlas',
     note: 'The measured outline, elevation, and turn-by-turn table.',

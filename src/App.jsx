@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, NavLink } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import SeasonLedger from './pages/SeasonLedger.jsx';
@@ -13,6 +14,12 @@ import Sprint from './pages/Sprint.jsx';
 import TeamRadio from './pages/TeamRadio.jsx';
 import DrivingStyle from './pages/DrivingStyle.jsx';
 import Refusals from './pages/Refusals.jsx';
+import EmptyState from './components/EmptyState.jsx';
+
+// three.js is a heavy, WebGL-only dependency that only the Aero Rig
+// needs, so its whole page is a separate chunk fetched on first visit
+// rather than weight every other page carries on load.
+const AeroRig = lazy(() => import('./pages/AeroRig.jsx'));
 
 // HashRouter, not BrowserRouter: GitHub Pages has no server-side rewrite,
 // so deep links must live entirely in the URL fragment.
@@ -32,6 +39,7 @@ export default function App() {
           <NavLink to="/radio">Team Radio</NavLink>
           <NavLink to="/style">Driving Style</NavLink>
           <NavLink to="/aero">Aero</NavLink>
+          <NavLink to="/aero-rig">Aero Rig</NavLink>
           <NavLink to="/whatif">What-If</NavLink>
           <NavLink to="/upcoming">Upcoming</NavLink>
           <NavLink to="/refusals">Refusals</NavLink>
@@ -49,6 +57,21 @@ export default function App() {
             <Route path="/radio" element={<TeamRadio />} />
             <Route path="/style" element={<DrivingStyle />} />
             <Route path="/aero" element={<AeroExplainer />} />
+            <Route
+              path="/aero-rig"
+              element={
+                <Suspense
+                  fallback={
+                    <EmptyState
+                      title="Loading the rig…"
+                      reason="Fetching the 3D viewer, a separate chunk from the rest of the site."
+                    />
+                  }
+                >
+                  <AeroRig />
+                </Suspense>
+              }
+            />
             <Route path="/whatif" element={<WhatIf />} />
             <Route path="/upcoming" element={<UpcomingBrief />} />
             <Route path="/refusals" element={<Refusals />} />

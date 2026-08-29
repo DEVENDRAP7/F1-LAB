@@ -94,6 +94,15 @@ load time rather than written into the copy.
   the order this lap meets them, which is not the circuit's official
   corner numbering — no source here publishes that. No downforce figure
   either, because that needs constants none of them publish.
+- **Aero Rig** — a 3D, clickable schematic of the 2026 car, built to widely
+  published regulation characteristics rather than scanned or modelled from
+  any team's real bodywork. An active-aero mode switch flattens both wings
+  for the straight, and every part carries its own verdict on click:
+  measured, schematic, or refused, so the model's own realism never implies
+  more certainty than this project has. The numbers around it — top speed,
+  sustained lateral g, the downforce signature by speed band — are the same
+  measured racing-line arithmetic as the Aero Explainer, run once per
+  published lap by `scripts/aero_export.mjs`.
 - **Sprint Weekends** — the second race of a sprint weekend, which the
   rest of the site does not show: the same drivers, cars and circuit,
   racing twice from two different grids inside a day. Places changed
