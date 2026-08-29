@@ -128,9 +128,49 @@
           "reason": "too few usable laps"
         }
       ]
+    },
+    {
+      "module": "Pit loss",
+      "rule": "A pit loss becomes a circuit constant only where enough drivers had a measurable racing stop and their figures agree.",
+      "published": 4,
+      "refused": 8,
+      "entries": [
+        {
+          "scope": "Round 1 \u00b7 Albert Park Grand Prix Circuit",
+          "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        },
+        {
+          "scope": "Round 2 \u00b7 Shanghai International Circuit",
+          "reason": "1 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        },
+        {
+          "scope": "Round 5 \u00b7 Circuit Gilles Villeneuve",
+          "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        },
+        {
+          "scope": "Round 6 \u00b7 Circuit de Monaco",
+          "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        },
+        {
+          "scope": "Round 7 \u00b7 Circuit de Barcelona-Catalunya",
+          "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        },
+        {
+          "scope": "Round 9 \u00b7 Silverstone Circuit",
+          "reason": "the middle half of 17 drivers spans 17.0-28.3s, which is 48% of the median \u2014 above the 25% this project treats as agreement. What happened to each driver dominates whatever the pit lane costs"
+        },
+        {
+          "scope": "Round 10 \u00b7 Circuit de Spa-Francorchamps",
+          "reason": "the middle half of 10 drivers spans 18.3-28.4s, which is 45% of the median \u2014 above the 25% this project treats as agreement. What happened to each driver dominates whatever the pit lane costs"
+        },
+        {
+          "scope": "Round 12 \u00b7 Circuit Park Zandvoort",
+          "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        }
+      ]
     }
   ],
-  "totalRefused": 327,
+  "totalRefused": 335,
   "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion.",
-  "generated_at": "2026-08-28T18:45:26Z"
+  "generated_at": "2026-08-29T09:44:02Z"
 }

@@ -10,6 +10,7 @@ import json
 import sys
 
 from common import CONFIG_DIR, PUBLIC_DATA, BudgetExceeded
+import derive_pit_loss
 import derive_sprint
 import export
 
@@ -454,6 +455,69 @@ def _check_sprint_points_fit_standings(sprint_path, document) -> list[str]:
     return errors
 
 
+def check_pit_loss() -> list[str]:
+    """Re-derive every circuit's pit loss from the documents it read.
+
+    This one is worth checking twice because it is a second read of data
+    published elsewhere: the what-if fits are the measurement, and this
+    file is a summary of them. A summary that has drifted from its source
+    is the failure mode, so the gate goes back to the source.
+    """
+    errors = []
+    for path in sorted(PUBLIC_DATA.glob("*/pitloss.json")):
+        year = path.parent.name
+        try:
+            document = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            errors.append(f"{path}: unreadable")
+            continue
+
+        published = 0
+        for entry in document.get("circuits", []):
+            round_ = entry.get("round")
+            whatif_path = PUBLIC_DATA / year / str(round_) / "R" / "whatif.json"
+            if not whatif_path.exists():
+                errors.append(
+                    f"{path}: round {round_} is listed but {whatif_path.name} is not "
+                    "published, so nothing measured it"
+                )
+                continue
+            try:
+                whatif = json.loads(whatif_path.read_text())
+            except (json.JSONDecodeError, OSError):
+                errors.append(f"{whatif_path}: unreadable")
+                continue
+
+            recomputed = derive_pit_loss.assess(derive_pit_loss.driver_losses(whatif))
+            claimed = entry.get("pitLoss") or {}
+            if bool(claimed.get("published")) != recomputed["published"]:
+                errors.append(
+                    f"{path}: round {round_} says published={claimed.get('published')} "
+                    f"but its own source gives {recomputed['published']}"
+                )
+                continue
+            if recomputed["published"]:
+                published += 1
+                for key in ("medianS", "q1S", "q3S", "drivers"):
+                    if not _same_number(claimed.get(key), recomputed[key]):
+                        errors.append(
+                            f"{path}: round {round_} publishes {key}={claimed.get(key)} "
+                            f"but the what-if fit gives {recomputed[key]}"
+                        )
+            elif not claimed.get("withheldReason"):
+                errors.append(
+                    f"{path}: round {round_} withholds a pit loss without saying why"
+                )
+
+        if document.get("publishedCount") != published:
+            errors.append(
+                f"{path}: claims {document.get('publishedCount')} published circuit(s) "
+                f"over {published} that its own rows support"
+            )
+
+    return errors
+
+
 def main() -> int:
     errors = (
         check_budgets()
@@ -463,6 +527,7 @@ def main() -> int:
         + check_line_manifests()
         + check_qualifying_cross_source()
         + check_sprint()
+        + check_pit_loss()
     )
 
     if errors:

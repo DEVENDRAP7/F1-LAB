@@ -117,6 +117,16 @@ def export_sprint(year: int, payload: dict) -> Path:
     return path
 
 
+def export_pit_loss(year: int, payload: dict) -> Path:
+    """Measured pit loss per circuit, and the circuits with none."""
+    out_dir = PUBLIC_DATA / str(year)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "pitloss.json"
+    path.write_text(json.dumps(payload, separators=(",", ":")))
+    check_file_budget(path, MAX_FILE_BYTES)
+    return path
+
+
 def export_refusals(year: int, ledger: dict) -> Path:
     """The ledger of everything the site declined to publish."""
     out_dir = PUBLIC_DATA / str(year)

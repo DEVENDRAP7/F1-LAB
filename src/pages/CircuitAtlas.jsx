@@ -35,6 +35,9 @@ export default function CircuitAtlas() {
   const [state, setState] = useState({ status: 'loading', season: null });
   const [selected, setSelected] = useUrlState('circuit');
   const [circuit, setCircuit] = useState({ status: 'idle', data: null });
+  // Pit loss is measured per race and summarised per circuit, so it
+  // arrives in one season-level file rather than with the geometry.
+  const [pitLoss, setPitLoss] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,6 +144,22 @@ export default function CircuitAtlas() {
     };
   }, [circuit]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch(dataPath('2026/pitloss.json'))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => !cancelled && setPitLoss(data))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const circuitPitLoss = useMemo(
+    () => (pitLoss?.circuits ?? []).find((c) => c.circuitId === selected) ?? null,
+    [pitLoss, selected],
+  );
+
   const runRounds = useMemo(() => {
     if (!state.season) return [];
     const today = new Date().toISOString().slice(0, 10);
@@ -240,7 +259,29 @@ export default function CircuitAtlas() {
                 <p className="figure-note">{scale.source}</p>
               </div>
             )}
+            {circuitPitLoss?.pitLoss?.published && (
+              <div className="figure">
+                <p className="figure-label">Pit loss</p>
+                <p className="figure-value mono">
+                  {circuitPitLoss.pitLoss.medianS.toFixed(1)}s
+                </p>
+                <p className="figure-sample">
+                  median over {circuitPitLoss.pitLoss.drivers} drivers · middle half{' '}
+                  {circuitPitLoss.pitLoss.q1S.toFixed(1)}–{circuitPitLoss.pitLoss.q3S.toFixed(1)}s
+                </p>
+                <p className="figure-note">{pitLoss.source}</p>
+              </div>
+            )}
           </div>
+
+          {circuitPitLoss && !circuitPitLoss.pitLoss.published && (
+            <p className="chart-caption">
+              <strong>No pit loss published for this circuit.</strong>{' '}
+              {circuitPitLoss.pitLoss.withheldReason}. Every stop this project measures is
+              the in-lap and out-lap running slower than that driver's own fitted pace, added
+              together — so it is what the stop cost, not the pit lane's own delta.
+            </p>
+          )}
 
           {turns.status === 'ready' && turns.elevation && (
             <>

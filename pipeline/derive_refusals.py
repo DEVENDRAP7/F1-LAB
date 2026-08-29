@@ -182,6 +182,30 @@ def collect(public_data, year: int) -> dict:
 
     # --- Upcoming brief --------------------------------------------
     upcoming = _load(public_data / "upcoming.json")
+    # --- Pit loss --------------------------------------------------
+    pit_loss = _load(year_dir / "pitloss.json")
+    if pit_loss:
+        withheld = [
+            {
+                "scope": f"Round {c.get('round')} · {c.get('circuitName') or c.get('circuitId')}",
+                "reason": c["pitLoss"]["withheldReason"],
+            }
+            for c in pit_loss.get("circuits", [])
+            if not (c.get("pitLoss") or {}).get("published")
+            and (c.get("pitLoss") or {}).get("withheldReason")
+        ]
+        if withheld or pit_loss.get("publishedCount"):
+            groups.append({
+                "module": "Pit loss",
+                "rule": (
+                    "A pit loss becomes a circuit constant only where enough drivers "
+                    "had a measurable racing stop and their figures agree."
+                ),
+                "published": pit_loss.get("publishedCount", 0),
+                "refused": len(withheld),
+                "entries": withheld,
+            })
+
     if upcoming and upcoming.get("history") is None and upcoming.get("reason"):
         groups.append({
             "module": "Upcoming brief",

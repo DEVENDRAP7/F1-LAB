@@ -528,3 +528,76 @@ class TestSprintDocument:
     def test_no_sprint_document_is_not_an_error(self, tmp_path, monkeypatch):
         monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
         assert validate_export.check_sprint() == []
+
+
+class TestPitLossDocument:
+    """The pit-loss file is a summary of the what-if fits, so the gate
+    goes back to those fits rather than trusting the summary."""
+
+    def _write(self, tmp_path, monkeypatch, losses, mutate=None):
+        import derive_pit_loss
+
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        race_dir = tmp_path / "2026" / "3" / "R"
+        race_dir.mkdir(parents=True, exist_ok=True)
+        (race_dir / "whatif.json").write_text(json.dumps({
+            "round": 3,
+            "drivers": {
+                f"d{i}": {"params": {"pit_loss_s": v}} for i, v in enumerate(losses)
+            },
+        }))
+
+        assessment = derive_pit_loss.assess(losses)
+        document = derive_pit_loss.build(
+            2026,
+            [{"circuitId": "suzuka", "circuitName": "Suzuka", "round": 3,
+              "raceName": "Japanese Grand Prix", "pitLoss": assessment}],
+            "2026-01-01T00:00:00Z", "test",
+        )
+        if mutate:
+            mutate(document)
+        (tmp_path / "2026" / "pitloss.json").write_text(json.dumps(document))
+        return document
+
+    def _tight(self, n=7):
+        return [20.0 + i * 0.1 for i in range(n)]
+
+    def test_a_document_matching_its_source_passes(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, self._tight())
+        assert validate_export.check_pit_loss() == []
+
+    def test_a_doctored_median_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, self._tight(),
+                    lambda d: d["circuits"][0]["pitLoss"].update({"medianS": 99.0}))
+        errors = validate_export.check_pit_loss()
+        assert any("publishes medianS=99.0" in e for e in errors)
+
+    def test_publishing_a_figure_the_source_withholds_fails(self, tmp_path, monkeypatch):
+        # One stop: the source refuses. Flipping the flag must not pass.
+        self._write(tmp_path, monkeypatch, [45.8],
+                    lambda d: d["circuits"][0]["pitLoss"].update(
+                        {"published": True, "medianS": 45.8}))
+        errors = validate_export.check_pit_loss()
+        assert any("says published=True" in e for e in errors)
+
+    def test_a_withheld_circuit_must_say_why(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, [45.8],
+                    lambda d: d["circuits"][0]["pitLoss"].pop("withheldReason"))
+        errors = validate_export.check_pit_loss()
+        assert any("without saying why" in e for e in errors)
+
+    def test_a_miscounted_header_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, self._tight(),
+                    lambda d: d.update({"publishedCount": 5}))
+        errors = validate_export.check_pit_loss()
+        assert any("claims 5 published" in e for e in errors)
+
+    def test_a_circuit_whose_source_is_gone_fails(self, tmp_path, monkeypatch):
+        self._write(tmp_path, monkeypatch, self._tight())
+        (tmp_path / "2026" / "3" / "R" / "whatif.json").unlink()
+        errors = validate_export.check_pit_loss()
+        assert any("nothing measured it" in e for e in errors)
+
+    def test_no_pit_loss_document_is_not_an_error(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(validate_export, "PUBLIC_DATA", tmp_path)
+        assert validate_export.check_pit_loss() == []

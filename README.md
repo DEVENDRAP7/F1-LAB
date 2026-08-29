@@ -50,6 +50,12 @@ load time rather than written into the copy.
   which no source here publishes. Elevation is drawn where the feed's own
   z channel is really elevation — Spa measures 102 m of climb, and a
   circuit whose z does not vary gets the reason instead of a flat line.
+  It also carries a measured pit loss where one exists: the median
+  across the drivers who had a stop the what-if fit could measure, with
+  the middle half printed beside it. Four
+  circuits of twelve publish one. Shanghai has a single 45.8s stop and
+  Silverstone has seventeen drivers spanning 17–28s, and neither is a
+  property of a pit lane, so neither is published.
 - **Racing Lines** — per-driver fastest laps from qualifying or the race,
   decoded from Int16 position binaries, with linked speed and throttle
   traces on a shared distance axis, the line colourable by any published

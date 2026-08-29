@@ -27,6 +27,7 @@ import derive_errors
 import derive_compounds
 import derive_qualifying
 import derive_sprint
+import derive_pit_loss
 import derive_refusals
 import export
 from common import CONFIG_DIR, PUBLIC_DATA, SEASON_YEAR, SourcedValue
@@ -884,6 +885,54 @@ def refresh_qualifying(year: int, calendar: list[dict]) -> None:
           f"{len(head_to_head['teams'])} team-mate pairing(s)")
 
 
+PIT_LOSS_SCHEMA_VERSION = 1
+
+
+def refresh_pit_loss(year: int, calendar: list[dict]) -> None:
+    """Per-circuit pit loss, read back out of what is already published.
+
+    No fetching at all: the what-if document for each race carries the
+    stop losses its fit measured, per driver. This is the second read of
+    that data rather than a second measurement of it, which is why it
+    runs after the races have been written and why a round with no
+    what-if simply has no pit loss.
+    """
+    rows = []
+    for round_info in calendar:
+        path = PUBLIC_DATA / str(year) / str(round_info["round"]) / "R" / "whatif.json"
+        if not path.exists():
+            continue
+        try:
+            whatif = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError) as exc:
+            print(f"[pitloss] round {round_info['round']}: unreadable ({exc})")
+            continue
+        losses = derive_pit_loss.driver_losses(whatif)
+        rows.append({
+            "circuitId": round_info.get("circuitId"),
+            "circuitName": round_info.get("circuitName"),
+            "round": round_info["round"],
+            "raceName": round_info["raceName"],
+            "pitLoss": derive_pit_loss.assess(losses),
+        })
+
+    if not rows:
+        print("[pitloss] no race has a published what-if fit to read stops from")
+        return
+
+    doc = derive_pit_loss.build(
+        year,
+        rows,
+        ingest._now_iso(),
+        f"measured from the published {year} what-if fits, which measure each "
+        "racing stop against that driver's own fitted pace",
+    )
+    doc["schemaVersion"] = PIT_LOSS_SCHEMA_VERSION
+    export.export_pit_loss(year, doc)
+    print(f"[pitloss] {doc['publishedCount']} circuit(s) published, "
+          f"{doc['withheldCount']} withheld")
+
+
 SPRINT_SCHEMA_VERSION = 1
 
 
@@ -1045,6 +1094,7 @@ def main() -> int:
 
     refresh_qualifying(args.year, season_config["calendar"])
     refresh_sprint(args.year, season_config["calendar"])
+    refresh_pit_loss(args.year, season_config["calendar"])
     refresh_telemetry_index(args.year)
     refresh_standings(args.year, season_config["calendar"])
     refresh_upcoming(args.year, season_config["calendar"])
