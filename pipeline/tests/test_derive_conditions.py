@@ -124,3 +124,24 @@ class TestSummariseArchive:
         out = summarise_archive(hours(n=3, precip=0.5))
         assert out["precipitationMm"] == 1.5
         assert out["hours"] == 3
+
+
+class TestSessionWindowRegression:
+    """A session with no end time silently produced no archive hours at
+    all, which reported as "no second source" on every race — the check
+    would have looked like it ran and never have run."""
+
+    def test_a_window_with_no_end_finds_nothing(self):
+        archive = {"hours": [{"time": "2026-08-23T14:00"}]}
+        assert hours_within(archive, "2026-08-23T14:05:00+00:00", None) == []
+
+    def test_the_session_fetcher_carries_an_end_time(self):
+        import ingest_openf1
+        import inspect
+        source = inspect.getsource(ingest_openf1.fetch_sessions)
+        assert '"dateEnd"' in source
+
+    def test_a_non_utc_window_is_normalised_before_matching(self):
+        import run_refresh
+        # 15:00+02:00 is 13:00 UTC, and the archive is requested in UTC.
+        assert run_refresh._utc_iso("2026-08-23T15:00:00+02:00").startswith("2026-08-23T13")

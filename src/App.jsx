@@ -10,6 +10,7 @@ import AeroExplainer from './pages/AeroExplainer.jsx';
 import WhatIf from './pages/WhatIf.jsx';
 import Qualifying from './pages/Qualifying.jsx';
 import Sprint from './pages/Sprint.jsx';
+import TeamRadio from './pages/TeamRadio.jsx';
 import DrivingStyle from './pages/DrivingStyle.jsx';
 import Refusals from './pages/Refusals.jsx';
 
@@ -28,6 +29,7 @@ export default function App() {
           <NavLink to="/qualifying">Qualifying</NavLink>
           <NavLink to="/sprint">Sprint</NavLink>
           <NavLink to="/errors">Error Review</NavLink>
+          <NavLink to="/radio">Team Radio</NavLink>
           <NavLink to="/style">Driving Style</NavLink>
           <NavLink to="/aero">Aero</NavLink>
           <NavLink to="/whatif">What-If</NavLink>
@@ -44,6 +46,7 @@ export default function App() {
             <Route path="/qualifying" element={<Qualifying />} />
             <Route path="/sprint" element={<Sprint />} />
             <Route path="/errors" element={<ErrorReview />} />
+            <Route path="/radio" element={<TeamRadio />} />
             <Route path="/style" element={<DrivingStyle />} />
             <Route path="/aero" element={<AeroExplainer />} />
             <Route path="/whatif" element={<WhatIf />} />

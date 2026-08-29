@@ -172,6 +172,11 @@ def fetch_sessions(year: int, session_name: str) -> list[dict]:
             "circuitKey": session.get("circuit_key"),
             "circuitShortName": session.get("circuit_short_name"),
             "dateStart": session.get("date_start"),
+            # Needed to ask a second weather source about the same hours.
+            # Without it every conditions cross-check would compare a
+            # session against an empty set of hours and quietly report
+            # that there was nothing to check.
+            "dateEnd": session.get("date_end"),
             "sessionName": session.get("session_name"),
             "year": session.get("year"),
         })

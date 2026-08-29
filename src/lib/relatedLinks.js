@@ -40,6 +40,11 @@ export const DESTINATIONS = {
     note: 'The measured outline, elevation, and turn-by-turn table.',
     carries: ['circuit'],
   },
+  '/radio': {
+    label: 'Team Radio',
+    note: 'What the broadcast released, when, and a link to the clip.',
+    carries: ['round'],
+  },
   '/errors': {
     label: 'Error Review',
     note: 'Laps that ran slow, flagged with the track state at the time.',

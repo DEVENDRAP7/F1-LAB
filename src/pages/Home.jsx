@@ -44,6 +44,11 @@ const MODULES = [
     line: 'Two races, one circuit, two grids, a day apart — and how far the orders agreed.',
   },
   {
+    to: '/radio',
+    name: 'Team Radio',
+    line: 'Who the broadcast put on air, on which lap — linked, never transcribed.',
+  },
+  {
     to: '/errors',
     name: 'Error Review',
     line: 'What race control recorded, kept strictly apart from what this site merely noticed.',

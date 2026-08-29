@@ -911,8 +911,14 @@ def refresh_conditions(year: int, calendar: list[dict],
         if round_info["date"] > today:
             continue
         sessions = []
-        for label, pool in (("R", race_sessions), ("Q", qualifying_sessions)):
-            session = _match_openf1_session(round_info, pool or [])
+        # Qualifying happens a day or two before the race it belongs to,
+        # so it needs the same slack the telemetry matcher uses. Matching
+        # it on the race's own date would silently find nothing.
+        for label, pool, slack in (
+            ("R", race_sessions, 1),
+            ("Q", qualifying_sessions, QUALIFYING_MATCH_SLACK_DAYS),
+        ):
+            session = _match_openf1_session(round_info, pool or [], slack_days=slack)
             if not session:
                 continue
             try:
@@ -934,8 +940,15 @@ def refresh_conditions(year: int, calendar: list[dict],
                         "longitude": archive.get("longitude"),
                         "day": day,
                     }
+                    # Normalised to UTC before the hours are matched.
+                    # The archive is requested in UTC, and comparing it
+                    # against a timestamp carrying any other offset would
+                    # shift a session's conditions by that offset without
+                    # failing anywhere.
                     hours = derive_conditions.hours_within(
-                        archive, session.get("dateStart"), session.get("dateEnd"),
+                        archive,
+                        _utc_iso(session.get("dateStart")),
+                        _utc_iso(session.get("dateEnd")),
                     )
                 except Exception as exc:  # noqa: BLE001 - the check is additive
                     print(f"[conditions] round {round_info['round']} {label}: archive "
@@ -1066,6 +1079,15 @@ def refresh_radio(year: int, calendar: list[dict], race_sessions: list[dict]) ->
     export.export_radio(year, doc)
     print(f"[radio] {doc['publishedCount']} race(s) published, "
           f"{doc['withheldCount']} withheld")
+
+
+def _utc_iso(value: str | None) -> str | None:
+    parsed = ingest_openf1._parse_iso(value)
+    if parsed is None:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.isoformat()
+    return parsed.astimezone(datetime.timezone.utc).isoformat()
 
 
 def _lap_start_times(laps: list[dict]) -> list[tuple[int, object]]:

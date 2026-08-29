@@ -34,6 +34,10 @@ export default function RaceStrategy() {
   const [race, setRace] = useState({ status: 'idle', data: null });
   const [selected, setSelected] = useState([]);
   const [showTable, setShowTable] = useState(false);
+  // Two season-level documents, each keyed by round: what the conditions
+  // were, and how many positions changed hands.
+  const [conditions, setConditions] = useState(null);
+  const [overtakes, setOvertakes] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +49,29 @@ export default function RaceStrategy() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    for (const [file, set] of [['conditions', setConditions], ['overtakes', setOvertakes]]) {
+      fetch(dataPath(`2026/${file}.json`))
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => !cancelled && set(data))
+        .catch(() => {});
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const raceConditions = useMemo(() => {
+    const entry = (conditions?.rounds ?? []).find((r) => String(r.round) === String(round));
+    return (entry?.sessions ?? []).find((sess) => sess.session === 'R') ?? null;
+  }, [conditions, round]);
+
+  const raceOvertakes = useMemo(
+    () => (overtakes?.races ?? []).find((r) => String(r.round) === String(round)) ?? null,
+    [overtakes, round],
+  );
 
   useEffect(() => {
     if (!round) return undefined;
@@ -426,6 +453,141 @@ export default function RaceStrategy() {
               degradation. Read it as net pace change per lap, not as a degradation rate.
             </p>
           </section>
+
+          {raceConditions && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>What the conditions were</h2>
+                <p className="panel-note">
+                  Every degradation slope on this page was measured in some weather, and
+                  until this existed the page never said which. Air temperature is measured
+                  twice, by two sources that do not know about each other: the circuit's own
+                  sensors, and an independent reanalysis of the same hours at the
+                  coordinates the calendar publishes for this circuit.
+                </p>
+              </div>
+
+              {raceConditions.conditions.published ? (
+                <>
+                  <div className="figure-grid">
+                    <div className="figure">
+                      <p className="figure-label">Track temperature</p>
+                      <p className="figure-value mono">
+                        {raceConditions.conditions.trackside.trackTemperatureC == null
+                          ? '—'
+                          : `${raceConditions.conditions.trackside.trackTemperatureC.toFixed(0)}°C`}
+                      </p>
+                      <p className="figure-sample">
+                        median over {raceConditions.conditions.trackside.samples} readings ·
+                        one source, no second opinion
+                      </p>
+                    </div>
+                    <div className="figure">
+                      <p className="figure-label">Air temperature</p>
+                      <p className="figure-value mono">
+                        {raceConditions.conditions.trackside.airTemperatureC == null
+                          ? '—'
+                          : `${raceConditions.conditions.trackside.airTemperatureC.toFixed(0)}°C`}
+                      </p>
+                      <p className="figure-sample">
+                        {raceConditions.conditions.crossCheck.compared
+                          ? `independent archive says ${
+                            raceConditions.conditions.crossCheck.archiveC.toFixed(1)}°C · ${
+                            raceConditions.conditions.crossCheck.deltaC.toFixed(1)}°C apart`
+                          : 'no second source reported this session'}
+                      </p>
+                    </div>
+                    <div className="figure">
+                      <p className="figure-label">Rain</p>
+                      <p className="figure-value mono">
+                        {raceConditions.conditions.trackside.rainfallShare == null
+                          ? '—'
+                          : `${Math.round(raceConditions.conditions.trackside.rainfallShare * 100)}%`}
+                      </p>
+                      <p className="figure-sample">
+                        share of readings carrying the rainfall flag — not how much fell
+                      </p>
+                    </div>
+                  </div>
+                  <p className="chart-caption">
+                    A median across the whole race, so a race that started dry and finished
+                    wet has a figure describing neither half — which is why the range is
+                    published with it:{' '}
+                    <span className="mono">
+                      track {raceConditions.conditions.trackside.trackRange?.minC?.toFixed(0)}–
+                      {raceConditions.conditions.trackside.trackRange?.maxC?.toFixed(0)}°C
+                    </span>
+                    . No figure anywhere on this site is corrected for any of this; the
+                    conditions are stated so a reader can see what a number was measured in.
+                  </p>
+                </>
+              ) : (
+                <EmptyState
+                  title="Conditions withheld for this race"
+                  reason={raceConditions.conditions.withheldReason}
+                />
+              )}
+            </section>
+          )}
+
+          {raceOvertakes && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>Positions changed hands</h2>
+                <p className="panel-note">
+                  Not overtakes. The feed's own description includes position changes from
+                  pit stops and from penalties applied after the race alongside passes made
+                  on track, and nothing published separates them.
+                </p>
+              </div>
+
+              {raceOvertakes.overtakes.published ? (
+                <>
+                  <div className="figure-grid">
+                    <div className="figure">
+                      <p className="figure-label">Position changes</p>
+                      <p className="figure-value mono">{raceOvertakes.overtakes.changes}</p>
+                      <p className="figure-sample">recorded across the race</p>
+                    </div>
+                    <div className="figure">
+                      <p className="figure-label">How complete that is</p>
+                      <p className="figure-value mono">
+                        {raceOvertakes.overtakes.completeness.medianAbsResidual == null
+                          ? '—'
+                          : raceOvertakes.overtakes.completeness.medianAbsResidual.toFixed(1)}
+                      </p>
+                      <p className="figure-sample">
+                        median places between the feed's net per driver and grid minus
+                        finish, over {raceOvertakes.overtakes.completeness.drivers} drivers
+                      </p>
+                    </div>
+                    <div className="figure">
+                      <p className="figure-label">Drivers it got exactly</p>
+                      <p className="figure-value mono">
+                        {raceOvertakes.overtakes.completeness.exact}/
+                        {raceOvertakes.overtakes.completeness.drivers}
+                      </p>
+                      <p className="figure-sample">
+                        the feed's net matches the official one place for place
+                      </p>
+                    </div>
+                  </div>
+                  <p className="chart-caption">
+                    The publisher calls this feed incomplete, so rather than repeat that,
+                    the page measures it. Each driver's net position change is known
+                    independently — grid minus finish, from the official results — and the
+                    feed implies its own. The gap between two accounts of the same quantity
+                    is what the feed missed.
+                  </p>
+                </>
+              ) : (
+                <EmptyState
+                  title="No position-change record for this race"
+                  reason={raceOvertakes.overtakes.withheldReason}
+                />
+              )}
+            </section>
+          )}
 
           <section className="panel panel-limitations">
             <h2>What this page cannot tell you</h2>
