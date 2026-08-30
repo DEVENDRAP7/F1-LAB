@@ -17,7 +17,7 @@ describe('PARTS', () => {
     // a mismatch here means a click on a real mesh finds no description.
     const taggedInScene = [
       'frontWing', 'frontFlap', 'nose', 'floor', 'sidepod', 'halo',
-      'airbox', 'rearWing', 'rearFlap', 'diffuser', 'wheel', 'suspension',
+      'airbox', 'camera', 'rearWing', 'rearFlap', 'diffuser', 'wheel', 'suspension',
     ];
     expect(Object.keys(PARTS).sort()).toEqual(taggedInScene.sort());
   });

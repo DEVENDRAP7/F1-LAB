@@ -105,6 +105,18 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   });
   const rubber = new THREE.MeshStandardMaterial({ color: 0x24272e, roughness: 0.95, metalness: 0.04 });
   const alloy = new THREE.MeshStandardMaterial({ color: 0xb9c2d0, roughness: 0.25, metalness: 0.9 });
+  // The halo is a carbon-skinned structure and reads near-black on every
+  // real car, not as bare titanium — but glossy enough to catch a rim
+  // light along its top edge, which is what stops it looking like a line
+  // drawn over the cockpit.
+  const haloMat = new THREE.MeshStandardMaterial({
+    color: 0x15181f, roughness: 0.32, metalness: 0.52,
+  });
+  // The camera pod's identification colour. Mandatory equipment in a
+  // mandated colour, not a livery choice.
+  const marker = new THREE.MeshStandardMaterial({
+    color: 0xd6dc1e, emissive: 0x3a4000, roughness: 0.44,
+  });
 
   const car = new THREE.Group();
   scene.add(car);
@@ -240,6 +252,57 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     return mesh;
   }
 
+  /** Sweep an upright oval section along a 3D curve.
+   *
+   *  Three's own TubeGeometry frames each section with a Frenet normal,
+   *  which rolls over where a curve's curvature reverses — on a loop like
+   *  the halo that puts a visible twist half way along a rail. Building
+   *  the frame from world up instead cannot twist: the section stays
+   *  vertical the whole way round, which is what the real part does. The
+   *  section is narrow across and deep vertically, so the halo comes out
+   *  as the blade it is rather than as a round rod. */
+  function sweep(curve, halfWide, halfTall, mat, part, steps = 108, sides = 12) {
+    const pos = [];
+    const index = [];
+    const up = new THREE.Vector3(0, 1, 0);
+    const across = new THREE.Vector3();
+    const upright = new THREE.Vector3();
+    for (let s = 0; s <= steps; s += 1) {
+      const t = s / steps;
+      const p = curve.getPointAt(t);
+      const tan = curve.getTangentAt(t);
+      across.crossVectors(tan, up).normalize();
+      upright.crossVectors(across, tan).normalize();
+      for (let i = 0; i < sides; i += 1) {
+        const a = (i / sides) * Math.PI * 2;
+        const c = Math.cos(a);
+        const sn = Math.sin(a);
+        pos.push(
+          p.x + across.x * halfWide * c + upright.x * halfTall * sn,
+          p.y + across.y * halfWide * c + upright.y * halfTall * sn,
+          p.z + across.z * halfWide * c + upright.z * halfTall * sn,
+        );
+      }
+    }
+    for (let s = 0; s < steps; s += 1) {
+      for (let i = 0; i < sides; i += 1) {
+        const j = (i + 1) % sides;
+        index.push(
+          s * sides + i, (s + 1) * sides + i, s * sides + j,
+          s * sides + j, (s + 1) * sides + i, (s + 1) * sides + j,
+        );
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setIndex(index);
+    geo.computeVertexNormals();
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.userData.part = part;
+    car.add(mesh);
+    return mesh;
+  }
+
   /* ---------------- dimensions ----------------
      Metres, from the published 2026 figures: 1.9 m over the wheels, under
      0.95 m at the rear wing, 18-inch wheels at 0.72 m diameter, a front
@@ -290,22 +353,27 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   /* ---------------- engine cover and airbox ----------------
      A separate volume sitting on the tub: the intake mouth behind the
      driver's head, tapering into the spine that feeds the rear wing. */
+  // The roll hoop stands BEHIND the driver's head, not over it — checked
+  // against side-on and overhead photographs of the real car, where the
+  // helmet sits clear in front of the intake and the hoop rises behind
+  // the headrest. An earlier build had the apex at the same station as
+  // the helmet, which put the intake in front of the driver's face.
   const COVER = [
-    { x: -0.40, w: 0.006, h: 0.006, cy: 0.600, q: 2.0 },
-    { x: -0.26, w: 0.098, h: 0.104, cy: 0.664, q: 2.0 },
-    { x: -0.06, w: 0.148, h: 0.152, cy: 0.694, q: 2.1 },
-    { x: 0.22, w: 0.170, h: 0.152, cy: 0.672, q: 2.3 },
-    { x: 0.60, w: 0.164, h: 0.136, cy: 0.624, q: 2.5 },
-    { x: 1.00, w: 0.136, h: 0.112, cy: 0.566, q: 2.6 },
-    { x: 1.40, w: 0.098, h: 0.086, cy: 0.506, q: 2.5 },
+    { x: 0.06, w: 0.006, h: 0.006, cy: 0.665, q: 2.0 },
+    { x: 0.16, w: 0.098, h: 0.104, cy: 0.694, q: 2.0 },
+    { x: 0.34, w: 0.150, h: 0.152, cy: 0.700, q: 2.1 },
+    { x: 0.58, w: 0.170, h: 0.148, cy: 0.676, q: 2.3 },
+    { x: 0.86, w: 0.164, h: 0.134, cy: 0.626, q: 2.5 },
+    { x: 1.14, w: 0.136, h: 0.112, cy: 0.566, q: 2.6 },
+    { x: 1.46, w: 0.098, h: 0.086, cy: 0.506, q: 2.5 },
     { x: 1.80, w: 0.060, h: 0.058, cy: 0.452, q: 2.4 },
     { x: 2.14, w: 0.034, h: 0.038, cy: 0.414, q: 2.3 },
   ];
   loft(COVER.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, s.q) })), body, 'airbox');
   // The intake mouth, dark so it reads as an opening rather than as bodywork.
   loft([
-    { x: -0.32, ring: ring(0.078, 0.070, 0.672, 2.0) },
-    { x: -0.16, ring: ring(0.072, 0.064, 0.678, 2.0) },
+    { x: 0.16, ring: ring(0.072, 0.064, 0.700, 2.0) },
+    { x: 0.30, ring: ring(0.066, 0.058, 0.704, 2.0) },
   ], dark, 'airbox', { capFront: false });
 
   /* ---------------- sidepods ----------------
@@ -507,46 +575,75 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   helmet.userData.part = 'halo';
   car.add(helmet);
 
-  // Halo: a hoop around the opening on two rear legs and one central pillar.
-  // Checked against real 2026 car photos side-on: this reads as a thick
-  // structural tube and a wide front pillar, not a thin wireframe hoop —
-  // the tube and pillar radii below are close to double what they were.
-  const haloHoop = new THREE.Mesh(new THREE.TorusGeometry(0.30, 0.046, 12, 30, Math.PI * 1.05), alloy);
-  haloHoop.rotation.x = Math.PI / 2;
-  haloHoop.rotation.z = -Math.PI * 0.03;
-  haloHoop.position.set(-0.10, 0.660, 0);
-  haloHoop.userData.part = 'halo';
-  car.add(haloHoop);
-  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.044, 0.054, 0.20, 12), alloy);
-  pillar.scale.set(1.5, 1, 0.85);
-  pillar.position.set(-0.42, 0.586, 0);
-  pillar.rotation.z = 0.22;
-  pillar.userData.part = 'halo';
-  car.add(pillar);
-  for (const side of [1, -1]) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.042, 0.18, 10), alloy);
-    leg.position.set(0.19, 0.600, side * 0.235);
-    leg.rotation.x = side * 0.2;
-    leg.userData.part = 'halo';
-    car.add(leg);
+  // Halo: one continuous blade from the left rear mount, round the front
+  // of the opening, back to the right rear mount — swept as a single part
+  // rather than assembled from a hoop plus two legs, because that is how
+  // it is actually made and the joins were showing.
+  //
+  // Checked against real car photos: the rails are a deep, narrow blade
+  // at about the height of the top of the helmet, they carry their
+  // widest point beside the driver's head, and they drop away steeply
+  // into the chassis behind it.
+  const haloPath = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.32, 0.560, 0.208),
+    new THREE.Vector3(0.17, 0.672, 0.264),
+    new THREE.Vector3(-0.02, 0.734, 0.292),
+    new THREE.Vector3(-0.22, 0.752, 0.252),
+    new THREE.Vector3(-0.38, 0.750, 0.148),
+    new THREE.Vector3(-0.45, 0.742, 0),
+    new THREE.Vector3(-0.38, 0.750, -0.148),
+    new THREE.Vector3(-0.22, 0.752, -0.252),
+    new THREE.Vector3(-0.02, 0.734, -0.292),
+    new THREE.Vector3(0.17, 0.672, -0.264),
+    new THREE.Vector3(0.32, 0.560, -0.208),
+  ], false, 'catmullrom', 0.3);
+  sweep(haloPath, 0.021, 0.040, haloMat, 'halo');
+
+  // The central front pillar. Wide seen from the side, thin seen from the
+  // driver's seat — the whole point of its section is to cost as little
+  // forward vision as a structural member can.
+  plate([[-0.052, 0], [0.052, 0], [0.036, 0.200], [-0.036, 0.200]],
+    0.038, haloMat, 'halo', -0.45, 0.548, 0);
+
+  /* ---------------- camera and antenna pod ----------------
+     On top of the roll hoop, which is where every real car carries it —
+     an earlier build had it stuck on the front of the halo, which no
+     photograph supports. Mandatory equipment: the same housing in the
+     same place on every car on the grid, in one of the two identification
+     colours the sport assigns between team-mates. */
+  // The housing lies along the car, lens forward, on a black base plate —
+  // not across it. A first pass had it as a lateral bar, which no
+  // photograph of the real thing supports.
+  const podFoot = new THREE.Mesh(new THREE.BoxGeometry(0.186, 0.040, 0.078), haloMat);
+  podFoot.position.set(0.330, 0.858, 0);
+  podFoot.userData.part = 'camera';
+  car.add(podFoot);
+
+  const pod = new THREE.Mesh(new THREE.CylinderGeometry(0.030, 0.030, 0.172, 18), marker);
+  pod.rotation.z = Math.PI / 2;
+  pod.position.set(0.300, 0.906, 0);
+  pod.userData.part = 'camera';
+  car.add(pod);
+
+  const podNose = new THREE.Mesh(new THREE.SphereGeometry(0.030, 18, 12), marker);
+  podNose.position.set(0.214, 0.906, 0);
+  podNose.userData.part = 'camera';
+  car.add(podNose);
+
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.014, 14), dark);
+  lens.rotation.z = Math.PI / 2;
+  lens.position.set(0.191, 0.906, 0);
+  lens.userData.part = 'camera';
+  car.add(lens);
+
+  // Three aerial stubs standing on the base plate behind the housing.
+  for (const z of [-0.030, 0, 0.030]) {
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.013, 0.054, 0.012), haloMat);
+    fin.position.set(0.408, 0.900, z);
+    fin.rotation.z = -0.10;
+    fin.userData.part = 'camera';
+    car.add(fin);
   }
-  // Marshal light / GPS tracker box, mandatory FIA-spec equipment on every
-  // car regardless of team, mounted at the halo's front-top edge — visible
-  // on every real 2026 car photo checked, so it earns a place here even
-  // though no source publishes its exact dimensions.
-  const aerial = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.044, 0.052), dark);
-  aerial.position.set(-0.36, 0.708, 0);
-  aerial.rotation.z = 0.12;
-  aerial.userData.part = 'halo';
-  car.add(aerial);
-  const aerialStripe = new THREE.Mesh(
-    new THREE.BoxGeometry(0.10, 0.014, 0.054),
-    new THREE.MeshStandardMaterial({ color: 0xe8d21a, emissive: 0x554400, roughness: 0.5 }),
-  );
-  aerialStripe.position.set(-0.36, 0.728, 0);
-  aerialStripe.rotation.z = 0.12;
-  aerialStripe.userData.part = 'halo';
-  car.add(aerialStripe);
   // Mirrors, small but the eye misses them.
   for (const side of [1, -1]) {
     const stalk = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.016, 0.10), carbon);

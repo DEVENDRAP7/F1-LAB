@@ -48,6 +48,13 @@ export const PARTS = {
       + 'shaped around that — a real aerodynamic cost of a safety part.',
     verdict: ['s', 'geometry from the published regulations'],
   },
+  camera: {
+    name: 'Camera and antenna pod',
+    text: 'The onboard camera housing and its aerials, on top of the roll hoop. Every car '
+      + 'carries the same equipment in the same place, in one of two assigned colours to tell '
+      + 'team-mates apart — one of the few parts here nobody chose for aerodynamic reasons.',
+    verdict: ['s', 'shape from photographs, not from any dimensioned source'],
+  },
   airbox: {
     name: 'Airbox and engine cover',
     text: 'Feeds the power unit and tapers into the rear-wing flow. The 2026 power unit '
