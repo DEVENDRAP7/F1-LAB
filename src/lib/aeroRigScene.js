@@ -430,11 +430,14 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
      Not decoration: a car without a cockpit opening, a radiator exit or a
      gearbox reads as a shape rather than as a machine. */
 
-  // Headrest padding around the cockpit opening.
+  // Head protection padding, wrapping behind and up the sides of the
+  // opening. Raised to stand proud of the cell rather than sit inside
+  // it: on the real car this is a distinctly raised horseshoe, and it is
+  // mandated equipment whose shape the 2026 rules did not change.
   loft([
-    { x: -0.02, ring: ring(0.190, 0.058, 0.556, 3.0) },
-    { x: 0.14, ring: ring(0.196, 0.066, 0.560, 3.0) },
-    { x: 0.28, ring: ring(0.176, 0.058, 0.552, 3.0) },
+    { x: 0.00, ring: ring(0.148, 0.038, 0.636, 3.0) },
+    { x: 0.14, ring: ring(0.156, 0.044, 0.640, 3.0) },
+    { x: 0.28, ring: ring(0.136, 0.036, 0.632, 3.0) },
   ], dark, 'halo');
 
   // Sidepod inlet: a real opening set into the leading face, with a lip.
@@ -614,11 +617,17 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     car.add(foot);
   }
 
-  /* ---------------- cockpit and halo ---------------- */
+  /* ---------------- cockpit and halo ----------------
+     The opening has to sit ON the top surface of the survival cell. It
+     was twelve centimetres down inside it, so the cockpit rendered as a
+     blank patch of bodywork with a helmet floating out of it — the one
+     part of the car every photograph shows clearly, and this model was
+     not drawing it at all. */
   loft([
-    { x: -0.40, ring: ring(0.175, 0.048, 0.500, 3.0) },
-    { x: -0.20, ring: ring(0.212, 0.054, 0.520, 3.2) },
-    { x: 0.02, ring: ring(0.208, 0.054, 0.526, 3.2) },
+    { x: -0.44, ring: ring(0.118, 0.030, 0.612, 3.0) },
+    { x: -0.26, ring: ring(0.154, 0.034, 0.622, 3.2) },
+    { x: -0.06, ring: ring(0.160, 0.034, 0.626, 3.2) },
+    { x: 0.08, ring: ring(0.148, 0.032, 0.622, 3.2) },
   ], dark, 'halo', { capFront: false, capBack: false });
   // Driver helmet, which is what gives the cockpit its scale.
   const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.115, 20, 16), alloy);
@@ -702,17 +711,17 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // the eye reads, so a pair of small boxes was never going to do.
   for (const side of [1, -1]) {
     strut(
-      new THREE.Vector3(-0.10, 0.556, side * 0.215),
-      new THREE.Vector3(-0.30, 0.600, side * 0.410),
+      new THREE.Vector3(-0.10, 0.602, side * 0.215),
+      new THREE.Vector3(-0.30, 0.642, side * 0.410),
       0.070, 0.024, body, 'halo',
     );
     const shell = new THREE.Mesh(new THREE.BoxGeometry(0.062, 0.070, 0.036), body);
-    shell.position.set(-0.318, 0.604, side * 0.428);
+    shell.position.set(-0.318, 0.646, side * 0.428);
     shell.rotation.y = side * 0.22;
     shell.userData.part = 'halo';
     car.add(shell);
     const glass = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.058, 0.028), dark);
-    glass.position.set(-0.288, 0.604, side * 0.432);
+    glass.position.set(-0.288, 0.646, side * 0.432);
     glass.rotation.y = side * 0.22;
     glass.userData.part = 'halo';
     car.add(glass);
