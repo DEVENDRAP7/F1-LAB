@@ -362,6 +362,14 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     // Radiator exit louvre along the pod shoulder.
     plate([[0, 0], [0.72, 0], [0.72, 0.030], [0, 0.038]], 0.012, dark, 'sidepod',
       0.30, 0.398, side * 0.520);
+    // In-wash wake-control board ahead of the inlet, angled to turn the
+    // front tyre's wake inward — 2026's published shift from the previous
+    // cars' outwash aim.
+    const board = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.10, 0.012), carbon);
+    board.position.set(-0.86, 0.31, side * 0.470);
+    board.rotation.y = side * -0.32;
+    board.userData.part = 'sidepod';
+    car.add(board);
   }
 
   // Rear crash structure and gearbox fairing, so the tail is a car and not
@@ -438,8 +446,10 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   }
 
   /* ---------------- rear wing ----------------
-     Three elements, no beam wing under them, hung from a swan-neck rather
-     than propped from below. */
+     Three elements, no beam wing under them, hung from a double mount
+     attached to the underside — the published 2026 change from 2022-2025's
+     single, curved swan-neck bracket, which built the DRS actuator into
+     the bend of the mount itself. */
   const RW_SPAN = 1.02;
   car.add(wingElement({
     chord: 0.30, thickness: 0.028, span: RW_SPAN, drop: 0.045, curve: -0.014,
@@ -460,14 +470,25 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     plate([[0, 0.02], [0.30, 0], [0.66, 0.04], [0.68, 0.24], [0.52, 0.35],
       [0.12, 0.35], [0, 0.18]], 0.020, carbon, 'rearWing', 1.94, 0.69, side * (RW_SPAN / 2));
   }
-  // Swan-neck supports, curving up from the crash structure to the main plane.
+  // Double mount: a pair of straighter struts per side rising to the
+  // underside of the main plane, rather than one curved bracket — the
+  // published 2026 change moved the DRS actuator off the mount itself,
+  // so the mount no longer has to be shaped around it.
   for (const side of [1, -1]) {
-    const neck = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.028, 8, 18, Math.PI / 1.7), carbon);
-    neck.rotation.y = Math.PI / 2;
-    neck.rotation.z = -0.6;
-    neck.position.set(2.04, 0.64, side * 0.150);
-    neck.userData.part = 'rearWing';
-    car.add(neck);
+    for (const dz of [-0.05, 0.05]) {
+      const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.019, 0.026, 0.21, 8), carbon);
+      strut.rotation.x = 0.16;
+      strut.rotation.z = side * -0.08;
+      strut.position.set(2.00, 0.715, side * 0.150 + dz);
+      strut.userData.part = 'rearWing';
+      car.add(strut);
+    }
+    // A small fairing where the struts meet the crash structure, so the
+    // mount reads as attached rather than as two rods stuck in mid-air.
+    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.05, 0.13), carbon);
+    foot.position.set(2.00, 0.615, side * 0.150);
+    foot.userData.part = 'rearWing';
+    car.add(foot);
   }
 
   /* ---------------- cockpit and halo ---------------- */
