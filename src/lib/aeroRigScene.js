@@ -230,33 +230,102 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   }
 
   /** A cambered aerofoil section, leading edge at the origin. */
-  function aerofoil(chord, thickness, trailingDrop = 0) {
-    const s = new THREE.Shape();
-    s.moveTo(0, 0);
-    s.bezierCurveTo(chord * 0.14, thickness, chord * 0.62, thickness * 0.86, chord, -trailingDrop);
-    s.bezierCurveTo(chord * 0.6, -trailingDrop - thickness * 0.22,
-      chord * 0.2, -thickness * 0.22, 0, 0);
-    return s;
+  /** One closed aerofoil outline, as [chordwise, vertical] points.
+   *
+   *  The old section was two bezier curves meeting at a POINT at the
+   *  leading edge. A sharp leading edge is the single thing that makes a
+   *  wing read as a plank: real ones are blunt and round at the front and
+   *  sharp only at the back, and the eye knows the difference even at
+   *  thumbnail size. This is the NACA four-digit thickness distribution,
+   *  which is round at the nose by construction, laid over a cambered
+   *  mean line that finishes `drop` low so the element is an inverted
+   *  wing rather than a symmetric strut.
+   *
+   *  Points are cosine-spaced, so they bunch where the curvature is —
+   *  at the leading edge — instead of being wasted along the flat middle. */
+  function aerofoilPoints(chord, thickness, drop, n = 20) {
+    const upper = [];
+    const lower = [];
+    for (let i = 0; i <= n; i += 1) {
+      const xc = 0.5 - 0.5 * Math.cos(Math.PI * (i / n));
+      // The bracket peaks at 0.1015, so this scale keeps `thickness`
+      // meaning what it did before: maximum half-thickness in metres.
+      const yt = 9.85 * thickness * (0.2969 * Math.sqrt(xc) - 0.1260 * xc
+        - 0.3516 * xc * xc + 0.2843 * xc ** 3 - 0.1036 * xc ** 4);
+      const camber = -drop * xc * xc;
+      upper.push([xc * chord, camber + yt]);
+      lower.push([xc * chord, camber - yt]);
+    }
+    // Drop the shared nose and tail points so the loop closes cleanly.
+    return upper.concat(lower.reverse().slice(1, -1));
   }
 
-  /** An extruded wing element, laid across the span and centred on z. */
+  /** A wing element, lofted across its span rather than extruded.
+   *
+   *  Extruding held one section along the whole span, which is what made
+   *  these read as planks with wing-shaped ends: a real element loses
+   *  chord and thickness toward the tip, sweeps back, and arches up into
+   *  the endplate. Lofting a section per station gives all three, and
+   *  costs a few hundred vertices.
+   *
+   *  taper — tip chord as a fraction of root chord
+   *  sweep — how far the tip's leading edge sits behind the root's
+   *  curve — how far the tip rises above the root
+   *  dip   — how far the middle of the span falls below both
+   *
+   *  `dip` is what makes a front wing a front wing. Seen head-on the real
+   *  thing is a gullwing: highest at the centre where it meets the nose,
+   *  falling away through mid-span, rising again into the endplate. A
+   *  single parabola from centre to tip cannot make that shape — it can
+   *  only arch one way — and an element that arches one way is a bar with
+   *  a bend in it, which is exactly how this used to read. */
   function wingElement(opts) {
-    const { chord, thickness, span, drop = 0, x, y, z = 0, tilt = 0, mat, part, curve = 0 } = opts;
-    const geo = new THREE.ExtrudeGeometry(aerofoil(chord, thickness, drop), {
-      depth: span, bevelEnabled: false, curveSegments: 14,
-    });
-    geo.translate(0, 0, -span / 2);
-    // Spanwise curvature: an F1 wing is not a flat plank, and the arch is
-    // most of what makes one read as a wing from three-quarters on.
-    if (curve) {
-      const p = geo.attributes.position;
-      for (let i = 0; i < p.count; i += 1) {
-        const zz = p.getZ(i);
-        p.setY(i, p.getY(i) + curve * (zz / (span / 2)) ** 2);
-      }
-      p.needsUpdate = true;
-      geo.computeVertexNormals();
+    const {
+      chord, thickness, span, drop = 0, x, y, z = 0, tilt = 0, mat, part,
+      curve = 0, taper = 1, sweep = 0, dip = 0, steps = 22,
+    } = opts;
+    const half = span / 2;
+    const stations = [];
+    for (let s = 0; s <= steps; s += 1) {
+      const zz = -half + (s / steps) * span;
+      const u = Math.abs(zz) / half;
+      const pts = aerofoilPoints(
+        chord * (1 - (1 - taper) * u * u),
+        thickness * (1 - 0.40 * u * u),
+        drop,
+      );
+      const dx = sweep * u * u;
+      // Cubic rise to the tip, minus a half-sine that is zero at both
+      // ends and deepest in the middle: centre high, mid-span low, tip
+      // high again.
+      const dy = curve * u ** 3 - dip * Math.sin(Math.PI * u);
+      stations.push({ zz, pts: pts.map(([px, py]) => [px + dx, py + dy]) });
     }
+
+    const seg = stations[0].pts.length;
+    const position = [];
+    for (const st of stations) for (const [px, py] of st.pts) position.push(px, py, st.zz);
+    const index = [];
+    for (let s = 0; s < stations.length - 1; s += 1) {
+      for (let i = 0; i < seg; i += 1) {
+        const j = (i + 1) % seg;
+        index.push(
+          s * seg + i, (s + 1) * seg + i, s * seg + j,
+          s * seg + j, (s + 1) * seg + i, (s + 1) * seg + j,
+        );
+      }
+    }
+    // Close both tips, or the wing is a tube open at each end.
+    const last = (stations.length - 1) * seg;
+    for (let i = 1; i < seg - 1; i += 1) {
+      index.push(0, i + 1, i);
+      index.push(last, last + i, last + i + 1);
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
+    geo.setIndex(index);
+    geo.computeVertexNormals();
     const mesh = new THREE.Mesh(geo, mat);
     mesh.rotation.z = tilt;
     mesh.position.set(x, y, z);
@@ -426,11 +495,23 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     { x: 2.14, w: 0.034, h: 0.038, cy: 0.414, q: 2.3 },
   ];
   loft(COVER.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, s.q) })), body, 'airbox');
-  // The intake mouth, dark so it reads as an opening rather than as bodywork.
+  // The airbox intake. Two dark rings deep was a painted-on patch, not a
+  // hole: an intake reads as an intake because you can see the duct
+  // narrowing away inside it and a lip standing proud around its mouth.
+  // So this is a throat that tapers back and down toward the engine, and
+  // a raised surround at the front of it.
   loft([
-    { x: 0.16, ring: ring(0.072, 0.064, 0.700, 2.0) },
-    { x: 0.30, ring: ring(0.066, 0.058, 0.704, 2.0) },
+    { x: 0.145, ring: ring(0.078, 0.070, 0.700, 2.0) },
+    { x: 0.230, ring: ring(0.064, 0.058, 0.698, 2.1) },
+    { x: 0.330, ring: ring(0.046, 0.042, 0.690, 2.2) },
+    { x: 0.430, ring: ring(0.028, 0.026, 0.678, 2.3) },
   ], dark, 'airbox', { capFront: false });
+  // The lip around the mouth, which is what catches the light and makes
+  // the opening read from a distance.
+  loft([
+    { x: 0.138, ring: ring(0.090, 0.082, 0.701, 2.0) },
+    { x: 0.168, ring: ring(0.086, 0.078, 0.700, 2.0) },
+  ], body, 'airbox', { capFront: false, capBack: false });
 
   /* ---------------- sidepods ----------------
      Wide at the inlet, undercut hard along the bottom edge, and drawn in
@@ -576,9 +657,29 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
       plate([[0, 0], [0.62, 0], [0.62, 0.17], [0, 0.10]], 0.016, underbody, 'diffuser',
         1.74, 0.10, side * z);
     }
-    // Floor edge fences, along the outer lip.
-    plate([[0, 0], [1.5, 0], [1.5, 0.055], [0, 0.075]], 0.014, underbody, 'floor',
-      -0.55, 0.062, side * 0.742);
+    // Side skirt along the floor's outer lip: the sealing edge that keeps
+    // the low pressure under the floor from being fed by air spilling in
+    // from the side, which is most of what makes ground effect work.
+    //
+    // A flat strip of constant height was standing in for this. The real
+    // edge follows the floor's own plan shape, hangs deepest through the
+    // middle where the venturi throat is, and rolls up at both ends.
+    const SKIRT = [
+      { x: -1.42, z: 0.404, drop: 0.020 },
+      { x: -1.00, z: 0.626, drop: 0.046 },
+      { x: -0.40, z: 0.740, drop: 0.062 },
+      { x: 0.35, z: 0.757, drop: 0.066 },
+      { x: 1.00, z: 0.725, drop: 0.058 },
+      { x: 1.45, z: 0.645, drop: 0.040 },
+      { x: 1.80, z: 0.565, drop: 0.022 },
+    ];
+    loft(SKIRT.map((s) => ({
+      x: s.x,
+      ring: ring(0.011, s.drop, 0.066 - s.drop * 0.45, 5).map(([yy, zz]) => [yy, zz + side * s.z]),
+    })), underbody, 'floor');
+    // The edge wing standing above it, turning the flow that gets past.
+    plate([[0, 0], [1.42, 0], [1.42, 0.040], [0, 0.058]], 0.012, underbody, 'floor',
+      -0.50, 0.070, side * 0.744);
   }
 
   /* ---------------- front wing ----------------
@@ -589,19 +690,41 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
      wingtip and the tyre nearly line up. */
   const FW_SPAN = 1.78;
   car.add(wingElement({
-    chord: 0.36, thickness: 0.032, span: FW_SPAN, drop: 0.055, curve: 0.034,
-    x: -2.68, y: 0.128, tilt: 0.10, mat: body, part: 'frontWing',
+    chord: 0.40, thickness: 0.030, span: FW_SPAN, drop: 0.070,
+    curve: 0.115, dip: 0.062, taper: 0.66, sweep: 0.075,
+    x: -2.70, y: 0.150, tilt: 0.10, mat: body, part: 'frontWing',
   }));
   const frontFlapPivot = new THREE.Group();
-  frontFlapPivot.position.set(-2.40, 0.150, 0);
+  frontFlapPivot.position.set(-2.41, 0.178, 0);
   frontFlapPivot.add(wingElement({
-    chord: 0.26, thickness: 0.024, span: FW_SPAN - 0.04, drop: 0.062, curve: 0.028,
+    chord: 0.27, thickness: 0.021, span: FW_SPAN - 0.05, drop: 0.078,
+    curve: 0.112, dip: 0.060, taper: 0.60, sweep: 0.070,
     x: 0, y: 0, mat: carbon, part: 'frontFlap',
   }));
   car.add(frontFlapPivot);
   for (const side of [1, -1]) {
-    plate([[0.04, 0.02], [0.30, 0], [0.52, 0.06], [0.54, 0.24], [0.36, 0.29],
-      [0.06, 0.17]], 0.020, carbon, 'frontWing', -2.72, 0.10, side * (FW_SPAN / 2));
+    // Endplate, lofted rather than stamped out flat. Close-ups of the
+    // real part show a panel that curls outward as it runs back and
+    // stands taller at its rear corner; a flat polygon extruded sideways
+    // can only ever be a slab hung off the wingtip.
+    const EP = [
+      { x: -2.745, cy: 0.176, h: 0.052, out: 0.000 },
+      { x: -2.640, cy: 0.196, h: 0.084, out: 0.008 },
+      { x: -2.500, cy: 0.222, h: 0.108, out: 0.026 },
+      { x: -2.370, cy: 0.232, h: 0.106, out: 0.052 },
+      { x: -2.270, cy: 0.222, h: 0.082, out: 0.076 },
+    ];
+    loft(EP.map((s) => ({
+      x: s.x,
+      ring: ring(0.010, s.h, s.cy, 5)
+        .map(([yy, zz]) => [yy, zz + side * (FW_SPAN / 2 + s.out)]),
+    })), carbon, 'frontWing');
+    // Footplate rolling outward along the bottom edge.
+    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.013, 0.090), carbon);
+    foot.position.set(-2.56, 0.124, side * (FW_SPAN / 2 + 0.040));
+    foot.rotation.x = side * 0.26;
+    foot.userData.part = 'frontWing';
+    car.add(foot);
     // Nose pylons: the wing hangs off the nose rather than growing out of it.
     const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.20, 0.026), carbon);
     pylon.rotation.z = 0.5;
@@ -617,43 +740,57 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
      the bend of the mount itself. */
   const RW_SPAN = 1.02;
   car.add(wingElement({
-    chord: 0.30, thickness: 0.028, span: RW_SPAN, drop: 0.045, curve: -0.014,
+    chord: 0.32, thickness: 0.026, span: RW_SPAN, drop: 0.055,
+    curve: -0.026, taper: 0.80, sweep: 0.030,
     x: 2.02, y: 0.815, tilt: 0.08, mat: body, part: 'rearWing',
   }));
   const rearFlapPivot = new THREE.Group();
   rearFlapPivot.position.set(2.22, 0.855, 0);
   rearFlapPivot.add(wingElement({
-    chord: 0.22, thickness: 0.022, span: RW_SPAN - 0.03, drop: 0.055, curve: -0.012,
+    chord: 0.23, thickness: 0.020, span: RW_SPAN - 0.04, drop: 0.062,
+    curve: -0.022, taper: 0.78, sweep: 0.026,
     x: 0, y: 0, mat: carbon, part: 'rearFlap',
   }));
   rearFlapPivot.add(wingElement({
-    chord: 0.17, thickness: 0.018, span: RW_SPAN - 0.06, drop: 0.046, curve: -0.010,
+    chord: 0.17, thickness: 0.016, span: RW_SPAN - 0.08, drop: 0.050,
+    curve: -0.018, taper: 0.76, sweep: 0.022,
     x: 0.03, y: 0.115, mat: carbon, part: 'rearFlap',
   }));
   car.add(rearFlapPivot);
   for (const side of [1, -1]) {
-    plate([[0, 0.02], [0.30, 0], [0.66, 0.04], [0.68, 0.24], [0.52, 0.35],
-      [0.12, 0.35], [0, 0.18]], 0.020, carbon, 'rearWing', 1.94, 0.69, side * (RW_SPAN / 2));
+    // Sized to the wing it carries. The old outline ran 18 cm past the
+    // trailing edge and well below the main plane, which is what made it
+    // a slab with a wing somewhere inside it.
+    plate([[0.10, 0.020], [0.30, 0.000], [0.50, 0.028], [0.545, 0.140],
+      [0.525, 0.268], [0.44, 0.322], [0.16, 0.322], [0.06, 0.248],
+      [0.04, 0.108]], 0.018, carbon, 'rearWing',
+    1.94, 0.690, side * (RW_SPAN / 2));
+    // Rain lights down the outer face of each endplate: mandated, and
+    // the same on every car.
+    const strip = new THREE.Mesh(
+      new THREE.BoxGeometry(0.020, 0.170, 0.010),
+      new THREE.MeshStandardMaterial({ color: 0xd83228, emissive: 0x5e1108, roughness: 0.5 }),
+    );
+    strip.position.set(2.02, 0.865, side * (RW_SPAN / 2 + 0.010));
+    strip.userData.part = 'rearWing';
+    car.add(strip);
   }
-  // Double mount: a pair of straighter struts per side rising to the
-  // underside of the main plane, rather than one curved bracket — the
-  // published 2026 change moved the DRS actuator off the mount itself,
-  // so the mount no longer has to be shaped around it.
+  // Double mount: two struts per side reaching the underside of the main
+  // plane, the published 2026 change from a single curved bracket with
+  // the DRS actuator built into its bend.
+  //
+  // They used to be short cylinders floating at mid-height — the crash
+  // structure's top is around y 0.30 and the struts began at 0.61, so a
+  // third of a metre of nothing sat between the mount and the car. These
+  // are aimed from one to the other, so they cannot not meet.
   for (const side of [1, -1]) {
-    for (const dz of [-0.05, 0.05]) {
-      const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.019, 0.026, 0.21, 8), carbon);
-      strut.rotation.x = 0.16;
-      strut.rotation.z = side * -0.08;
-      strut.position.set(2.00, 0.715, side * 0.150 + dz);
-      strut.userData.part = 'rearWing';
-      car.add(strut);
+    for (const dz of [-0.052, 0.052]) {
+      strut(
+        new THREE.Vector3(2.06, 0.318, side * 0.088 + dz * 0.5),
+        new THREE.Vector3(2.03, 0.812, side * 0.150 + dz),
+        0.052, 0.026, carbon, 'rearWing',
+      );
     }
-    // A small fairing where the struts meet the crash structure, so the
-    // mount reads as attached rather than as two rods stuck in mid-air.
-    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.05, 0.13), carbon);
-    foot.position.set(2.00, 0.615, side * 0.150);
-    foot.userData.part = 'rearWing';
-    car.add(foot);
   }
 
   /* ---------------- cockpit and halo ----------------
