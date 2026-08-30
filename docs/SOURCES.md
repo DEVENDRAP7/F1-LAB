@@ -95,6 +95,12 @@ not installed: playwright (npm i --no-save, for the screenshot scripts only)
 `three` renders the Aero Rig's 3D car — lazy-loaded on `/aero-rig` alone, via
 `React.lazy`, so it never lands in the initial bundle any other page pays for.
 
+`eslint.config.js` is core ESLint only, with no React plugin: `no-unused-vars`
+is therefore off for `.jsx`, where a component used only inside JSX reads as
+unused. Adding `eslint-plugin-react` would fix that and is the obvious next
+dependency to consider — it is left out because adding one is a stack change
+this project asks about first.
+
 ## Written here, not sourced
 
 - `docs/SPEC.md` — the project brief

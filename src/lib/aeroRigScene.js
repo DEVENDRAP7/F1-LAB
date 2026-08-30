@@ -135,14 +135,6 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   const car = new THREE.Group();
   scene.add(car);
 
-  function piece(geo, mat, part, x, y, z) {
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(x, y, z);
-    mesh.userData.part = part;
-    car.add(mesh);
-    return mesh;
-  }
-
   // The car is lofted, not stacked.
   //
   // The first build assembled it from boxes and it read as a stack of

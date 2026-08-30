@@ -77,7 +77,10 @@ export function useUrlSelection(defaults = {}) {
         replace: true,
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Keyed on the serialised defaults rather than the object, which is
+    // a fresh literal on every render. exhaustive-deps would want
+    // `defaults` itself and is not installed to be told otherwise — see
+    // eslint.config.js on why the React plugin is absent.
     [defaultsKey, setParams],
   );
 }

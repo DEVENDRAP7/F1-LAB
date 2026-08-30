@@ -23,10 +23,11 @@ export default function AeroRigViewport({ mode, onPick, className }) {
       rig.dispose();
       rigRef.current = null;
     };
-    // Mounted once. onPick is read through a ref (below) so a new
-    // function identity on every render never tears down and rebuilds
-    // the WebGL context.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Mounted once, deliberately: onPick is read through a ref (below)
+    // so a new function identity on every render never tears down and
+    // rebuilds the WebGL context. The exhaustive-deps rule would want
+    // onPick listed here and is not installed to be told otherwise —
+    // see eslint.config.js on why the React plugin is absent.
   }, []);
 
   const onPickRef = useRef(onPick);
