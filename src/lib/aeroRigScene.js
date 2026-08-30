@@ -117,6 +117,19 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   const marker = new THREE.MeshStandardMaterial({
     color: 0xd6dc1e, emissive: 0x3a4000, roughness: 0.44,
   });
+  // Cockpit interior. Fireproof overalls are matt cloth, a helmet is
+  // glossy painted composite, a visor is darker and glossier still —
+  // three different surfaces, and lighting them all as bare metal is
+  // what made the driver read as a chrome ornament.
+  const suit = new THREE.MeshStandardMaterial({
+    color: 0x272d38, roughness: 0.88, metalness: 0.04,
+  });
+  const helmetShell = new THREE.MeshStandardMaterial({
+    color: 0xdde3ec, roughness: 0.20, metalness: 0.08,
+  });
+  const visorMat = new THREE.MeshStandardMaterial({
+    color: 0x0a0d12, roughness: 0.10, metalness: 0.30, side: THREE.DoubleSide,
+  });
 
   const car = new THREE.Group();
   scene.add(car);
@@ -157,6 +170,26 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
       ]);
     }
     return pts;
+  }
+
+  /** A cross-section with the cockpit trough pressed into its top.
+   *
+   *  The survival cell is one closed loft, so there was no hole for a
+   *  driver to sit in: the opening was a dark patch painted on an
+   *  unbroken surface, and anything placed "inside" was sealed in the
+   *  solid. Pushing the top of the section down between the two rim
+   *  edges makes a real trough — the loft stays closed and watertight,
+   *  and what is in the trough is genuinely visible.
+   *
+   *  The rim rolls into the floor over a smoothstep rather than a step,
+   *  or the opening reads as a slot cut with a knife. */
+  function cockpitRing(w, h, cy, q, mouth, floorY, segments) {
+    return ring(w, h, cy, q, segments).map(([y, z]) => {
+      if (y <= floorY) return [y, z];
+      const t = Math.min(1, Math.abs(z) / mouth);
+      const blend = t * t * (3 - 2 * t);
+      return [floorY + (y - floorY) * blend, z];
+    });
   }
 
   /** Skin a set of cross-sections into one closed surface. */
@@ -350,12 +383,20 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   ];
   loft(NOSE.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, s.q) })), body, 'nose');
 
+  // Stations carrying `mouth` and `floor` have the cockpit trough pressed
+  // into them. It opens narrow ahead of the driver, is deepest and widest
+  // at the seat, and closes again before the headrest.
+  const TUB_SEG = 44;
   const TUB = [
     { x: -1.18, w: 0.176, h: 0.140, cy: 0.386, q: 2.9 },
     { x: -1.02, w: 0.224, h: 0.166, cy: 0.394, q: 3.0 },
     { x: -0.84, w: 0.252, h: 0.184, cy: 0.400, q: 3.0 },
     { x: -0.52, w: 0.274, h: 0.212, cy: 0.418, q: 3.1 },
-    { x: -0.18, w: 0.292, h: 0.228, cy: 0.428, q: 3.3 },
+    { x: -0.46, w: 0.278, h: 0.216, cy: 0.420, q: 3.1, mouth: 0.055, floor: 0.566 },
+    { x: -0.34, w: 0.284, h: 0.222, cy: 0.424, q: 3.2, mouth: 0.132, floor: 0.508 },
+    { x: -0.18, w: 0.292, h: 0.228, cy: 0.428, q: 3.3, mouth: 0.162, floor: 0.486 },
+    { x: 0.02, w: 0.294, h: 0.232, cy: 0.430, q: 3.3, mouth: 0.158, floor: 0.490 },
+    { x: 0.12, w: 0.295, h: 0.233, cy: 0.431, q: 3.3, mouth: 0.086, floor: 0.552 },
     { x: 0.16, w: 0.296, h: 0.234, cy: 0.432, q: 3.3 },
     { x: 0.50, w: 0.286, h: 0.232, cy: 0.436, q: 3.2 },
     { x: 0.86, w: 0.252, h: 0.216, cy: 0.430, q: 3.0 },
@@ -365,7 +406,12 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     { x: 1.98, w: 0.076, h: 0.100, cy: 0.362, q: 2.3 },
     { x: 2.20, w: 0.056, h: 0.076, cy: 0.350, q: 2.2 },
   ];
-  loft(TUB.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, s.q) })), body, 'floor');
+  loft(TUB.map((s) => ({
+    x: s.x,
+    ring: s.mouth
+      ? cockpitRing(s.w, s.h, s.cy, s.q, s.mouth, s.floor, TUB_SEG)
+      : ring(s.w, s.h, s.cy, s.q, TUB_SEG),
+  })), body, 'floor');
 
   /* ---------------- engine cover and airbox ----------------
      A separate volume sitting on the tub: the intake mouth behind the
@@ -435,9 +481,9 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // it: on the real car this is a distinctly raised horseshoe, and it is
   // mandated equipment whose shape the 2026 rules did not change.
   loft([
-    { x: 0.00, ring: ring(0.148, 0.038, 0.636, 3.0) },
-    { x: 0.14, ring: ring(0.156, 0.044, 0.640, 3.0) },
-    { x: 0.28, ring: ring(0.136, 0.036, 0.632, 3.0) },
+    { x: 0.14, ring: ring(0.150, 0.052, 0.632, 3.0) },
+    { x: 0.24, ring: ring(0.156, 0.058, 0.636, 3.0) },
+    { x: 0.34, ring: ring(0.134, 0.046, 0.626, 3.0) },
   ], dark, 'halo');
 
   // Sidepod inlet: a real opening set into the leading face, with a lip.
@@ -623,18 +669,85 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
      blank patch of bodywork with a helmet floating out of it — the one
      part of the car every photograph shows clearly, and this model was
      not drawing it at all. */
+  // The seat pan, lining the floor of the trough so the inside of the
+  // cockpit is dark rather than a red-painted dish.
   loft([
-    { x: -0.44, ring: ring(0.118, 0.030, 0.612, 3.0) },
-    { x: -0.26, ring: ring(0.154, 0.034, 0.622, 3.2) },
-    { x: -0.06, ring: ring(0.160, 0.034, 0.626, 3.2) },
-    { x: 0.08, ring: ring(0.148, 0.032, 0.622, 3.2) },
-  ], dark, 'halo', { capFront: false, capBack: false });
-  // Driver helmet, which is what gives the cockpit its scale.
-  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.115, 20, 16), alloy);
+    { x: -0.40, ring: ring(0.108, 0.018, 0.512, 4) },
+    { x: -0.18, ring: ring(0.138, 0.020, 0.498, 4) },
+    { x: 0.02, ring: ring(0.140, 0.020, 0.502, 4) },
+    // Narrower than the trough's mouth where it closes, or the pan
+    // breaks back out through the bodywork as a shard.
+    { x: 0.10, ring: ring(0.074, 0.016, 0.544, 4) },
+  ], suit, 'halo');
+
+  // The driver: reclined, shoulders at about the height of the rim, head
+  // and helmet standing clear of it. Deliberately a mannequin — the
+  // shapes carry scale and tell a reader where a person is, and nothing
+  // more detailed than that would be honest at this level of drawing.
+  loft([
+    { x: -0.20, ring: ring(0.086, 0.052, 0.546, 2.5) },
+    { x: -0.08, ring: ring(0.112, 0.066, 0.556, 2.6) },
+    { x: 0.03, ring: ring(0.132, 0.074, 0.566, 2.6) },
+    { x: 0.08, ring: ring(0.104, 0.060, 0.562, 2.6) },
+  ], suit, 'halo');
+  // Neck and the head restraint collar sitting on the shoulders.
+  const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.062, 0.070, 14), suit);
+  collar.position.set(-0.035, 0.596, 0);
+  collar.userData.part = 'halo';
+  car.add(collar);
+
+  // Helmet, which is what gives the cockpit its scale. Raised so it sits
+  // clear of the rim and level with the halo, as every photograph shows
+  // it — it used to be sunk with only its crown showing.
+  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.115, 22, 18), helmetShell);
   helmet.scale.set(1.18, 1, 0.94);
-  helmet.position.set(-0.06, 0.590, 0);
+  helmet.position.set(-0.06, 0.658, 0);
   helmet.userData.part = 'halo';
   car.add(helmet);
+  // Visor: a band across the front only, not a stripe round the whole
+  // shell. phi = 0 faces -x on three's sphere, which is the car's nose.
+  const visor = new THREE.Mesh(
+    new THREE.SphereGeometry(0.1165, 26, 10,
+      -Math.PI * 0.42, Math.PI * 0.84, Math.PI * 0.34, Math.PI * 0.23),
+    visorMat,
+  );
+  visor.scale.copy(helmet.scale);
+  visor.position.copy(helmet.position);
+  visor.userData.part = 'halo';
+  car.add(visor);
+
+  // Steering wheel: a squared-off rack on a short column, tilted back
+  // into the driver's hands, with a display face on the near side.
+  const wheelRim = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.112, 0.196), dark);
+  wheelRim.position.set(-0.286, 0.594, 0);
+  wheelRim.rotation.z = 0.42;
+  wheelRim.userData.part = 'halo';
+  car.add(wheelRim);
+  const display = new THREE.Mesh(new THREE.BoxGeometry(0.010, 0.052, 0.104), carbon);
+  display.position.set(-0.268, 0.606, 0);
+  display.rotation.z = 0.42;
+  display.userData.part = 'halo';
+  car.add(display);
+  strut(
+    new THREE.Vector3(-0.286, 0.586, 0),
+    new THREE.Vector3(-0.196, 0.540, 0),
+    0.036, 0.036, carbon, 'halo',
+  );
+
+  for (const side of [1, -1]) {
+    // Arms, shoulder to wheel rim.
+    strut(
+      new THREE.Vector3(0.010, 0.578, side * 0.104),
+      new THREE.Vector3(-0.268, 0.606, side * 0.072),
+      0.052, 0.050, suit, 'halo',
+    );
+    // Harness, over each shoulder and down to the lap.
+    strut(
+      new THREE.Vector3(0.098, 0.596, side * 0.062),
+      new THREE.Vector3(-0.104, 0.520, side * 0.048),
+      0.056, 0.011, dark, 'halo',
+    );
+  }
 
   // Halo: one continuous blade from the left rear mount, round the front
   // of the opening, back to the right rear mount — swept as a single part
