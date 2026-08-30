@@ -165,6 +165,26 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     return pts;
   }
 
+  /** A rounded-trapezoid outline: wide across the top, narrow at the
+   *  bottom. Air intakes are this shape, not the oval a plain
+   *  superellipse gives — photographs looking straight into an airbox
+   *  show a broad roof narrowing to a slot at the floor, and that taper
+   *  is most of what makes an opening read as a duct going somewhere. */
+  function mouthRing(topHalfWidth, bottomHalfWidth, halfHeight, centreY,
+    squareness = 2.6, segments = 30) {
+    const pts = [];
+    for (let i = 0; i < segments; i += 1) {
+      const t = (i / segments) * Math.PI * 2;
+      const p = 2 / squareness;
+      const sy = Math.sign(Math.sin(t)) * Math.abs(Math.sin(t)) ** p;
+      const sx = Math.sign(Math.cos(t)) * Math.abs(Math.cos(t)) ** p;
+      const up = (sy + 1) / 2;
+      const w = bottomHalfWidth + (topHalfWidth - bottomHalfWidth) * up;
+      pts.push([centreY + halfHeight * sy, w * sx]);
+    }
+    return pts;
+  }
+
   /** A cross-section with the cockpit trough pressed into its top.
    *
    *  The survival cell is one closed loft, so there was no hole for a
@@ -483,9 +503,16 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // helmet sits clear in front of the intake and the hoop rises behind
   // the headrest. An earlier build had the apex at the same station as
   // the helmet, which put the intake in front of the driver's face.
+  // The roll hoop's front is BLUNT — a near-vertical face with the
+  // intake cut into it — not a cone tapering to a point. That matters
+  // for more than silhouette: the cover is a closed loft, so a duct
+  // modelled inside a pointed nose is sealed in the solid and cannot be
+  // seen at all. It only ever showed because it was oversized and burst
+  // out through the flanks. A blunt face gives the opening somewhere to
+  // actually be.
   const COVER = [
-    { x: 0.06, w: 0.006, h: 0.006, cy: 0.665, q: 2.0 },
-    { x: 0.16, w: 0.098, h: 0.104, cy: 0.694, q: 2.0 },
+    { x: 0.10, w: 0.072, h: 0.098, cy: 0.706, q: 2.2 },
+    { x: 0.20, w: 0.108, h: 0.124, cy: 0.700, q: 2.2 },
     { x: 0.34, w: 0.150, h: 0.152, cy: 0.700, q: 2.1 },
     { x: 0.58, w: 0.170, h: 0.148, cy: 0.676, q: 2.3 },
     { x: 0.86, w: 0.164, h: 0.134, cy: 0.626, q: 2.5 },
@@ -495,23 +522,37 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     { x: 2.14, w: 0.034, h: 0.038, cy: 0.414, q: 2.3 },
   ];
   loft(COVER.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, s.q) })), body, 'airbox');
-  // The airbox intake. Two dark rings deep was a painted-on patch, not a
-  // hole: an intake reads as an intake because you can see the duct
-  // narrowing away inside it and a lip standing proud around its mouth.
-  // So this is a throat that tapers back and down toward the engine, and
-  // a raised surround at the front of it.
+  // The airbox intake.
+  //
+  // Photographs taken straight into a real one show a broad roof
+  // narrowing to a slot at the floor — a rounded triangle, not the oval
+  // that was here — and a deep throat you can see a long way down, with
+  // a carbon lip standing proud all round the mouth. The taper is what
+  // says the duct goes somewhere; the oval said "dimple".
+  // The throat starts a few millimetres proud of that face, so its rim
+  // stands through and reads as a hole rather than hiding behind the
+  // skin, then tapers away down and back toward the engine.
   loft([
-    { x: 0.145, ring: ring(0.078, 0.070, 0.700, 2.0) },
-    { x: 0.230, ring: ring(0.064, 0.058, 0.698, 2.1) },
-    { x: 0.330, ring: ring(0.046, 0.042, 0.690, 2.2) },
-    { x: 0.430, ring: ring(0.028, 0.026, 0.678, 2.3) },
+    { x: 0.094, ring: mouthRing(0.052, 0.020, 0.060, 0.716, 2.4) },
+    { x: 0.200, ring: mouthRing(0.046, 0.018, 0.052, 0.712, 2.4) },
+    { x: 0.340, ring: mouthRing(0.036, 0.014, 0.040, 0.706, 2.4) },
+    { x: 0.480, ring: mouthRing(0.024, 0.010, 0.026, 0.698, 2.4) },
+    { x: 0.580, ring: mouthRing(0.014, 0.006, 0.015, 0.692, 2.4) },
   ], dark, 'airbox', { capFront: false });
   // The lip around the mouth, which is what catches the light and makes
   // the opening read from a distance.
   loft([
-    { x: 0.138, ring: ring(0.090, 0.082, 0.701, 2.0) },
-    { x: 0.168, ring: ring(0.086, 0.078, 0.700, 2.0) },
+    { x: 0.086, ring: mouthRing(0.062, 0.030, 0.070, 0.716, 2.4) },
+    { x: 0.106, ring: mouthRing(0.058, 0.028, 0.066, 0.716, 2.4) },
   ], body, 'airbox', { capFront: false, capBack: false });
+  // A second, smaller duct along the floor of the throat. Every close-up
+  // of the real intake shows one down there, feeding something other
+  // than the engine — which of the car's several cooling circuits is not
+  // published, so it is drawn and not labelled.
+  loft([
+    { x: 0.100, ring: ring(0.022, 0.007, 0.666, 4) },
+    { x: 0.300, ring: ring(0.017, 0.005, 0.662, 4) },
+  ], dark, 'airbox', { capFront: false });
 
   /* ---------------- sidepods ----------------
      Wide at the inlet, undercut hard along the bottom edge, and drawn in
@@ -539,11 +580,6 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
       { x: 0.90, ring: ring(0.030, 0.048, 0.238, 3.2).map(([y, z]) => [y, z + side * 0.390]) },
       { x: 1.40, ring: ring(0.020, 0.034, 0.268, 3.2).map(([y, z]) => [y, z + side * 0.288]) },
     ], dark, 'sidepod');
-    // Inlet, set into the leading face.
-    loft([
-      { x: -0.60, ring: ring(0.064, 0.086, 0.302, 2.6).map(([y, z]) => [y, z + side * 0.512]) },
-      { x: -0.44, ring: ring(0.058, 0.078, 0.304, 2.6).map(([y, z]) => [y, z + side * 0.512]) },
-    ], dark, 'sidepod', { capFront: false });
   }
 
   /* ---------------- details that the eye looks for ----------------
@@ -554,19 +590,33 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // opening. Raised to stand proud of the cell rather than sit inside
   // it: on the real car this is a distinctly raised horseshoe, and it is
   // mandated equipment whose shape the 2026 rules did not change.
+  // Sits a little lower than the airbox throat above and behind it, so
+  // the two meet rather than pass through each other.
   loft([
-    { x: 0.14, ring: ring(0.150, 0.052, 0.632, 3.0) },
-    { x: 0.24, ring: ring(0.156, 0.058, 0.636, 3.0) },
-    { x: 0.34, ring: ring(0.134, 0.046, 0.626, 3.0) },
+    { x: 0.14, ring: ring(0.150, 0.046, 0.612, 3.0) },
+    { x: 0.24, ring: ring(0.156, 0.052, 0.616, 3.0) },
+    { x: 0.34, ring: ring(0.134, 0.042, 0.608, 3.0) },
   ], dark, 'halo');
 
-  // Sidepod inlet: a real opening set into the leading face, with a lip.
+  // Sidepod inlet.
+  //
+  // There were two of these lofted almost on top of each other, a few
+  // millimetres and one station apart — two near-coplanar dark surfaces
+  // fighting for the same pixels, and neither carried the lip the
+  // comment claimed. This is one duct, tapering back into the pod, with
+  // a raised surround, and it uses the same broad-roof-narrow-floor
+  // shape as the airbox because it is the same kind of opening.
   for (const side of [1, -1]) {
     loft([
-      { x: -0.58, ring: ring(0.070, 0.094, 0.302, 2.4).map(([y, z]) => [y, z + side * 0.512]) },
-      { x: -0.50, ring: ring(0.062, 0.084, 0.304, 2.4).map(([y, z]) => [y, z + side * 0.510]) },
-      { x: -0.36, ring: ring(0.044, 0.062, 0.308, 2.4).map(([y, z]) => [y, z + side * 0.508]) },
+      { x: -0.590, ring: mouthRing(0.058, 0.030, 0.088, 0.303, 2.5).map(([y, z]) => [y, z + side * 0.512]) },
+      { x: -0.500, ring: mouthRing(0.050, 0.026, 0.076, 0.305, 2.5).map(([y, z]) => [y, z + side * 0.510]) },
+      { x: -0.390, ring: mouthRing(0.038, 0.020, 0.058, 0.308, 2.5).map(([y, z]) => [y, z + side * 0.507]) },
+      { x: -0.290, ring: mouthRing(0.026, 0.014, 0.040, 0.311, 2.5).map(([y, z]) => [y, z + side * 0.503]) },
     ], dark, 'sidepod', { capFront: false });
+    loft([
+      { x: -0.612, ring: mouthRing(0.070, 0.040, 0.100, 0.303, 2.5).map(([y, z]) => [y, z + side * 0.512]) },
+      { x: -0.582, ring: mouthRing(0.066, 0.037, 0.096, 0.303, 2.5).map(([y, z]) => [y, z + side * 0.512]) },
+    ], body, 'sidepod', { capFront: false, capBack: false });
     // Cooling exit louvres: a bank along the pod shoulder and a second up
     // on the engine cover flank. Every car has to dump its radiator heat
     // somewhere along here, and the vents are the most visible thing on
