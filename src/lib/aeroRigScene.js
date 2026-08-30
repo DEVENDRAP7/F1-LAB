@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { needsResize } from './canvasSize.js';
 
 // The car is lofted, not stacked.
 //
@@ -1059,6 +1060,7 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   }
   function onWheel(e) {
     e.preventDefault();
+    userFramed = true;
     goal.radius = Math.max(2.4, Math.min(15, goal.radius + e.deltaY * 0.006));
   }
   canvas.addEventListener('pointerdown', onPointerDown);
@@ -1083,10 +1085,15 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // what to say about it — that is aeroRigParts.js's job, consumed by the
   // page component, which is handed the raw part key through onPick.
   let selectedPart = null;
+  // Set once the reader zooms by hand, so a later resize does not
+  // silently undo it. Clearing a selection is them asking for the whole
+  // car back, which counts as handing the framing over again.
+  let userFramed = false;
 
   function focusOn(part, point) {
     selectedPart = part;
     if (!part) {
+      userFramed = false;
       goal.radius = fitRadius();
       targetGoal.set(0, 0.44, 0);
       onPick(null);
@@ -1112,12 +1119,19 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   function resize() {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
-    if (canvas.width !== w * renderer.getPixelRatio() || canvas.height !== h * renderer.getPixelRatio()) {
+    // Laid out to nothing yet: dividing by zero here puts NaN in the
+    // projection matrix and the canvas never draws again.
+    if (w === 0 || h === 0) return;
+    // See canvasSize.js: this comparison has to floor, and got it wrong
+    // in a way that disabled zoom at fractional device pixel ratios.
+    if (needsResize(canvas.width, canvas.height, w, h, renderer.getPixelRatio())) {
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      // Only re-frame when the reader has not zoomed somewhere themselves.
-      if (!selectedPart) goal.radius = fitRadius();
+      // Re-frame only if the reader has not framed it themselves. A part
+      // selection is not the only way that happens — zooming by hand
+      // counts too, and rotating a phone used to throw that away.
+      if (!selectedPart && !userFramed) goal.radius = fitRadius();
     }
   }
 
@@ -1147,11 +1161,37 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     renderer.render(scene, camera);
     rafId = requestAnimationFrame(frame);
   }
+
+  // Stop drawing when nobody can see it. The rig sits at the top of a
+  // long page, so a reader who scrolls down to the charts was leaving a
+  // WebGL scene animating at full rate off-screen, and a backgrounded
+  // tab was doing the same — both are pure battery cost for a picture
+  // nobody is looking at.
+  let onScreen = true;
+  function sync() {
+    const shouldRun = onScreen && !document.hidden;
+    if (shouldRun && rafId === null) {
+      rafId = requestAnimationFrame(frame);
+    } else if (!shouldRun && rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  }
+  const onVisibility = () => sync();
+  document.addEventListener('visibilitychange', onVisibility);
+  const seen = new IntersectionObserver((entries) => {
+    onScreen = entries[entries.length - 1].isIntersecting;
+    sync();
+  });
+  seen.observe(canvas);
+
   goal.radius = fitRadius();
   orbit.radius = goal.radius;
   applyOrbit();
   camera.position.copy(camGoal);
   updateFlow(0);
+  // Draw once up front regardless, so the first paint does not wait on
+  // the observer's first callback.
   frame();
 
   return {
@@ -1160,6 +1200,9 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     },
     dispose() {
       cancelAnimationFrame(rafId);
+      rafId = null;
+      seen.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
       canvas.removeEventListener('pointerdown', onPointerDown);
       canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUp);
