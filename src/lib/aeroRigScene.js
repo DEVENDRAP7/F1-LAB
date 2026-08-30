@@ -252,6 +252,23 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     return mesh;
   }
 
+  /** A straight member running from one point to another.
+   *
+   *  Suspension arms are aimed, not axis-aligned, and hand-rotating a
+   *  cylinder to each one's angle is how the old build ended up with
+   *  arms that missed the upright. Giving the geometry its length along
+   *  local +Z and then pointing that at the far end puts both ends
+   *  exactly where they belong, whatever the angle. */
+  function strut(from, to, chord, thick, mat, part) {
+    const dir = new THREE.Vector3().subVectors(to, from);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(chord, thick, dir.length()), mat);
+    mesh.position.copy(from).addScaledVector(dir, 0.5);
+    mesh.lookAt(to);
+    mesh.userData.part = part;
+    car.add(mesh);
+    return mesh;
+  }
+
   /** Sweep an upright oval section along a 3D curve.
    *
    *  Three's own TubeGeometry frames each section with a Frenet normal,
@@ -449,11 +466,22 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     { x: 2.34, ring: ring(0.046, 0.042, 0.270, 2.4) },
   ], carbon, 'diffuser');
   // Rain light, low and central on the crash structure.
-  const rainLight = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.075, 0.055),
-    new THREE.MeshStandardMaterial({ color: 0xff2a1e, emissive: 0x5a0f08, roughness: 0.5 }));
-  rainLight.position.set(2.36, 0.272, 0);
-  rainLight.userData.part = 'diffuser';
-  car.add(rainLight);
+  // The rain light: a dark panel standing on the crash structure with a
+  // ring of LEDs on its back face, which is what photographs from behind
+  // actually show — not the solid red block this used to be. Mandatory
+  // equipment, the same on every car.
+  const lightPanel = new THREE.Mesh(new THREE.BoxGeometry(0.030, 0.132, 0.104), haloMat);
+  lightPanel.position.set(2.352, 0.300, 0);
+  lightPanel.userData.part = 'diffuser';
+  car.add(lightPanel);
+  const lamp = new THREE.Mesh(
+    new THREE.TorusGeometry(0.034, 0.009, 8, 22),
+    new THREE.MeshStandardMaterial({ color: 0xff2a1e, emissive: 0x8c1409, roughness: 0.45 }),
+  );
+  lamp.rotation.y = Math.PI / 2;
+  lamp.position.set(2.370, 0.300, 0);
+  lamp.userData.part = 'diffuser';
+  car.add(lamp);
 
   /* ---------------- floor, edge fences and diffuser ---------------- */
   const FLOOR = [
@@ -644,14 +672,24 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     fin.userData.part = 'camera';
     car.add(fin);
   }
-  // Mirrors, small but the eye misses them.
+  // Mirrors. Close-up photographs show these carried well outboard on a
+  // long swept fairing, not tucked against the cockpit side — the stalk
+  // is a shaped aerodynamic member in its own right and is most of what
+  // the eye reads, so a pair of small boxes was never going to do.
   for (const side of [1, -1]) {
-    const stalk = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.016, 0.10), carbon);
-    stalk.position.set(-0.18, 0.545, side * 0.30);
-    stalk.userData.part = 'halo';
-    car.add(stalk);
-    const glass = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.062, 0.020), dark);
-    glass.position.set(-0.23, 0.555, side * 0.345);
+    strut(
+      new THREE.Vector3(-0.10, 0.556, side * 0.215),
+      new THREE.Vector3(-0.30, 0.600, side * 0.410),
+      0.070, 0.024, body, 'halo',
+    );
+    const shell = new THREE.Mesh(new THREE.BoxGeometry(0.062, 0.070, 0.036), body);
+    shell.position.set(-0.318, 0.604, side * 0.428);
+    shell.rotation.y = side * 0.22;
+    shell.userData.part = 'halo';
+    car.add(shell);
+    const glass = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.058, 0.028), dark);
+    glass.position.set(-0.288, 0.604, side * 0.432);
+    glass.rotation.y = side * 0.22;
     glass.userData.part = 'halo';
     car.add(glass);
   }
@@ -744,29 +782,42 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     car.add(group);
   }
 
-  function wishbone(x, side, y, sweep, len) {
+  // A wishbone is an A-arm: two legs from separated points on the chassis
+  // converging on one point at the upright. Photographs of the real car
+  // head-on show that triangle clearly, and show the legs as flat blades —
+  // chord along the airflow, thin top to bottom — because they are
+  // aerofoils as much as they are structure. The old build drew each arm
+  // as a single round rod, which read as plumbing.
+  function wishbone(x, side, y, spread, innerZ, outerZ) {
     for (const dx of [-1, 1]) {
-      const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.030, 0.021, len, 8), carbon);
-      arm.position.set(x + dx * sweep, y, side * (W_HALF - len / 2 + 0.06));
-      arm.rotation.x = Math.PI / 2;
-      arm.rotation.y = dx * 0.34;
-      arm.userData.part = 'suspension';
-      car.add(arm);
+      strut(
+        new THREE.Vector3(x + dx * spread, y, side * innerZ),
+        new THREE.Vector3(x, y, side * outerZ),
+        0.072, 0.017, carbon, 'suspension',
+      );
     }
   }
 
   for (const [x, rear] of [[X_FRONT, false], [X_REAR, true]]) {
     for (const side of [1, -1]) {
       wheel(x, side, rear);
-      wishbone(x, side, AXLE + 0.10, 0.16, 0.50);
-      wishbone(x, side, AXLE - 0.11, 0.17, 0.52);
-      // Pushrod, running in from the wheel to the chassis.
-      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.021, 0.021, 0.46, 8), carbon);
-      rod.position.set(x + (rear ? -0.10 : 0.10), AXLE + 0.02, side * 0.46);
-      rod.rotation.x = Math.PI / 2.5 * side;
-      rod.rotation.z = 0.3;
-      rod.userData.part = 'suspension';
-      car.add(rod);
+      const outer = rear ? 0.545 : 0.575;
+      wishbone(x, side, AXLE + 0.105, 0.175, 0.128, outer);
+      wishbone(x, side, AXLE - 0.110, 0.185, 0.140, outer);
+      // Track rod at the front, toe link at the rear: one arm, set fore of
+      // the lower wishbone, that turns the wheel or holds its angle.
+      strut(
+        new THREE.Vector3(x + (rear ? 0.24 : -0.24), AXLE - 0.055, side * 0.120),
+        new THREE.Vector3(x + (rear ? 0.10 : -0.10), AXLE - 0.055, side * outer),
+        0.050, 0.015, carbon, 'suspension',
+      );
+      // Pushrod: up and inboard from the bottom of the upright to where
+      // the springs live under the bodywork.
+      strut(
+        new THREE.Vector3(x, AXLE - 0.150, side * (outer - 0.02)),
+        new THREE.Vector3(x + (rear ? -0.20 : 0.20), AXLE + 0.190, side * 0.105),
+        0.042, 0.030, carbon, 'suspension',
+      );
     }
   }
 
