@@ -444,9 +444,33 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
       { x: -0.50, ring: ring(0.062, 0.084, 0.304, 2.4).map(([y, z]) => [y, z + side * 0.510]) },
       { x: -0.36, ring: ring(0.044, 0.062, 0.308, 2.4).map(([y, z]) => [y, z + side * 0.508]) },
     ], dark, 'sidepod', { capFront: false });
-    // Radiator exit louvre along the pod shoulder.
-    plate([[0, 0], [0.72, 0], [0.72, 0.030], [0, 0.038]], 0.012, dark, 'sidepod',
-      0.30, 0.398, side * 0.520);
+    // Cooling exit louvres: a bank along the pod shoulder and a second up
+    // on the engine cover flank. Every car has to dump its radiator heat
+    // somewhere along here, and the vents are the most visible thing on
+    // the upper bodywork — this was one flat painted-looking stripe.
+    //
+    // Drawn as a plain row of slots on purpose. The arrangement teams
+    // actually run is a cooling decision, traded against drag, and
+    // neither side of that trade is published anywhere this project can
+    // reach — so copying any particular one would be inventing detail.
+    for (let i = 0; i < 6; i += 1) {
+      const t = i / 5;
+      const slot = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.010, 0.064), dark);
+      slot.position.set(0.20 + t * 0.62, 0.450 - t * 0.012, side * (0.512 - t * 0.078));
+      slot.rotation.x = side * 0.20;
+      slot.rotation.y = side * 0.10;
+      slot.userData.part = 'sidepod';
+      car.add(slot);
+    }
+    for (let i = 0; i < 7; i += 1) {
+      const t = i / 6;
+      const slot = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.009, 0.034), dark);
+      slot.position.set(0.58 + t * 0.54, 0.772 - t * 0.126, side * (0.124 - t * 0.024));
+      slot.rotation.x = side * 0.80;
+      slot.rotation.z = -0.10;
+      slot.userData.part = 'airbox';
+      car.add(slot);
+    }
     // In-wash wake-control board ahead of the inlet, angled to turn the
     // front tyre's wake inward — 2026's published shift from the previous
     // cars' outwash aim.
