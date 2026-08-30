@@ -421,8 +421,11 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
 
   /* ---------------- front wing ----------------
      Two elements for 2026 on a narrower span, the outboard end swept up
-     into the endplate, and the whole assembly slung under a raised nose. */
-  const FW_SPAN = 1.62;
+     into the endplate, and the whole assembly slung under a raised nose.
+     Endplates sit close to the front tyre's outer face, not well inboard
+     of it — checked against real 2026 car photos front-on, where the
+     wingtip and the tyre nearly line up. */
+  const FW_SPAN = 1.78;
   car.add(wingElement({
     chord: 0.36, thickness: 0.032, span: FW_SPAN, drop: 0.055, curve: 0.034,
     x: -2.68, y: 0.128, tilt: 0.10, mat: body, part: 'frontWing',
@@ -505,24 +508,45 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   car.add(helmet);
 
   // Halo: a hoop around the opening on two rear legs and one central pillar.
-  const haloHoop = new THREE.Mesh(new THREE.TorusGeometry(0.30, 0.026, 10, 30, Math.PI * 1.05), alloy);
+  // Checked against real 2026 car photos side-on: this reads as a thick
+  // structural tube and a wide front pillar, not a thin wireframe hoop —
+  // the tube and pillar radii below are close to double what they were.
+  const haloHoop = new THREE.Mesh(new THREE.TorusGeometry(0.30, 0.046, 12, 30, Math.PI * 1.05), alloy);
   haloHoop.rotation.x = Math.PI / 2;
   haloHoop.rotation.z = -Math.PI * 0.03;
   haloHoop.position.set(-0.10, 0.660, 0);
   haloHoop.userData.part = 'halo';
   car.add(haloHoop);
-  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.034, 0.20, 10), alloy);
+  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.044, 0.054, 0.20, 12), alloy);
+  pillar.scale.set(1.5, 1, 0.85);
   pillar.position.set(-0.42, 0.586, 0);
   pillar.rotation.z = 0.22;
   pillar.userData.part = 'halo';
   car.add(pillar);
   for (const side of [1, -1]) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.028, 0.18, 8), alloy);
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.042, 0.18, 10), alloy);
     leg.position.set(0.19, 0.600, side * 0.235);
     leg.rotation.x = side * 0.2;
     leg.userData.part = 'halo';
     car.add(leg);
   }
+  // Marshal light / GPS tracker box, mandatory FIA-spec equipment on every
+  // car regardless of team, mounted at the halo's front-top edge — visible
+  // on every real 2026 car photo checked, so it earns a place here even
+  // though no source publishes its exact dimensions.
+  const aerial = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.044, 0.052), dark);
+  aerial.position.set(-0.36, 0.708, 0);
+  aerial.rotation.z = 0.12;
+  aerial.userData.part = 'halo';
+  car.add(aerial);
+  const aerialStripe = new THREE.Mesh(
+    new THREE.BoxGeometry(0.10, 0.014, 0.054),
+    new THREE.MeshStandardMaterial({ color: 0xe8d21a, emissive: 0x554400, roughness: 0.5 }),
+  );
+  aerialStripe.position.set(-0.36, 0.728, 0);
+  aerialStripe.rotation.z = 0.12;
+  aerialStripe.userData.part = 'halo';
+  car.add(aerialStripe);
   // Mirrors, small but the eye misses them.
   for (const side of [1, -1]) {
     const stalk = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.016, 0.10), carbon);
