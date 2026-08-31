@@ -5,6 +5,7 @@ import EmptyState from '../components/EmptyState.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
 import EnvelopeChart from '../components/EnvelopeChart.jsx';
 import AeroRigViewport from '../components/AeroRigViewport.jsx';
+import SteeringWheel from '../components/SteeringWheel.jsx';
 import { partInfo, VERDICT_LABEL } from '../lib/aeroRigParts.js';
 import { relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlSelection, useUrlState } from '../lib/urlState.js';
@@ -197,6 +198,20 @@ export default function AeroRig() {
           </div>
           <p className="rig-mode-note">{MODE_COPY[mode].label}</p>
         </div>
+      </section>
+
+      <section className="panel">
+        <div className="panel-head">
+          <h2>The wheel in the driver's hands</h2>
+          <p className="panel-note">
+            Hover or tap any control. Every one of these is a control the real cars carry —
+            several are required by the regulations — but the arrangement is representative
+            rather than copied: no team publishes its own layout, and it changes between
+            teams and between races. The <span className="mono">AERO</span> button is the
+            same Z-to-X switch as the one above the car.
+          </p>
+        </div>
+        <SteeringWheel />
       </section>
 
       <div className="controls-row">
