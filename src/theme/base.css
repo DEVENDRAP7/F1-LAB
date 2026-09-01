@@ -2318,3 +2318,6 @@ tbody tr.is-on {
   .wheel-lcd-row { font-size: 17px; }
   .wheel-gear { font-size: 58px; }
 }
+
+.wheel-bar-bed { fill: #0b1220; stroke: var(--line); stroke-width: 1; }
+.wheel-bar-fill { fill: var(--accent-0); opacity: 0.85; }

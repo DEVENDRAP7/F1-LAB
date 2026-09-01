@@ -23,6 +23,7 @@ export const CONTROL_KIND = {
   button: 'button',
   toggle: 'latching button',
   paddle: 'paddle',
+  rocker: 'thumb rocker',
   display: 'display',
 };
 
@@ -160,6 +161,26 @@ export const BUTTONS = [
     text: 'Acknowledges a call to pit, so the crew knows the driver has heard it and is '
       + 'coming in this lap rather than the next.',
     x: 268, y: 332, r: 24, tone: 'cool',
+  },
+  {
+    id: 'bbal',
+    kind: 'rocker',
+    label: 'BBAL',
+    name: 'Brake balance',
+    text: 'Shifts braking effort between the front and rear axle, a click at a time. It '
+      + 'travels rearward through a race as fuel burns off and the car lightens at the front, '
+      + 'so drivers trim it constantly rather than setting it once.',
+    x: 296, y: 236, w: 48, h: 26, tone: 'cool',
+  },
+  {
+    id: 'diff',
+    kind: 'rocker',
+    label: 'DIFF',
+    name: 'Differential',
+    text: 'How much the rear wheels may turn at different speeds. More lock helps traction '
+      + 'out of a slow corner, less helps the car rotate into a fast one — so it is worked '
+      + 'corner by corner, not set and left.',
+    x: 604, y: 236, w: 48, h: 26, tone: 'cool',
   },
   {
     id: 'marker',

@@ -20,8 +20,14 @@ const RING_IN = 44;
 const RING_OUT = 70;
 
 // Declared once: the sheen is the same outline as the face, laid over it.
-const FACE_PATH = 'M186 96 h528 a30 30 0 0 1 30 30 v206 a26 26 0 0 1 -26 26 h-536 '
-  + 'a26 26 0 0 1 -26 -26 v-206 a30 30 0 0 1 30 -30 z';
+//
+// The top edge is not straight. Real wheels carry the outer top corners
+// up into horns and dip away between them, which is most of what makes
+// the silhouette recognisable — a plain rounded rectangle reads as a
+// tablet with switches on it.
+const FACE_PATH = 'M212 88 L272 88 L318 108 L582 108 L628 88 L718 88 '
+  + 'A26 26 0 0 1 744 114 L744 332 A26 26 0 0 1 718 358 L212 358 '
+  + 'A26 26 0 0 1 186 332 L186 114 A26 26 0 0 1 212 88 Z';
 
 function polar(cx, cy, r, deg) {
   const a = ((deg - 90) * Math.PI) / 180;
@@ -170,6 +176,21 @@ export default function SteeringWheel() {
           ))}
         </g>
 
+        {/* Status columns either side of the screen. Real wheels carry
+            these where a driver can catch them without leaving the road
+            in their peripheral vision. */}
+        {[308, 592].map((x) => (
+          <g key={x}>
+            {[164, 182, 200, 218].map((y, i) => (
+              <circle
+                key={y}
+                className={`wheel-led wheel-led-${i === 0 ? 'a' : i === 3 ? 'c' : 'b'}`}
+                cx={x} cy={y} r="4.2" opacity={i === 3 ? 0.35 : 0.9}
+              />
+            ))}
+          </g>
+        ))}
+
         {/* Display — it reports the switch positions below it */}
         <g className={`wheel-hit${shown === 'fix:display' ? ' is-on' : ''}`}
           {...activate('fix:display', () => {})}
@@ -191,6 +212,13 @@ export default function SteeringWheel() {
           <text className="wheel-lcd-row wheel-right" x="562" y="284">
             {pressed.aero ? 'AERO X' : 'AERO Z'}
           </text>
+          {/* The bar fills with the engine map, so the screen carries a
+              reading you can take in without parsing any text. */}
+          <rect className="wheel-bar-bed" x="338" y="290" width="224" height="7" rx="3.5" />
+          <rect
+            className="wheel-bar-fill" x="338" y="290" rx="3.5" height="7"
+            width={224 * ((positions.engine + 1) / ROTARIES[0].positions.length)}
+          />
         </g>
 
         {/* Buttons */}
@@ -202,8 +230,23 @@ export default function SteeringWheel() {
               className={`wheel-hit${shown === id ? ' is-on' : ''}${on ? ' is-lit' : ''}`}
               {...activate(id, () => press(b.id))}
             >
-              <circle className={`wheel-button tone-${b.tone}`} cx={b.x} cy={b.y} r={b.r} />
-              <circle className="wheel-gloss" cx={b.x} cy={b.y} r={b.r} />
+              {b.kind === 'rocker' ? (
+                <>
+                  <rect
+                    className={`wheel-button tone-${b.tone}`}
+                    x={b.x - b.w / 2} y={b.y - b.h / 2} width={b.w} height={b.h} rx="7"
+                  />
+                  <rect
+                    className="wheel-gloss"
+                    x={b.x - b.w / 2} y={b.y - b.h / 2} width={b.w} height={b.h} rx="7"
+                  />
+                </>
+              ) : (
+                <>
+                  <circle className={`wheel-button tone-${b.tone}`} cx={b.x} cy={b.y} r={b.r} />
+                  <circle className="wheel-gloss" cx={b.x} cy={b.y} r={b.r} />
+                </>
+              )}
               <text className="wheel-btn-label" x={b.x} y={b.y + 5}>{b.label}</text>
             </g>
           );
