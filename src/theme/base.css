@@ -2079,15 +2079,34 @@ tbody tr.is-on {
 }
 
 .wheel-face {
-  fill: url(#wheelFace);
+  fill: url(#carbon);
   stroke: var(--line-strong);
   stroke-width: 2.5;
+  filter: url(#soft);
+}
+
+/* A second pass of the same outline, carrying only light. Keeping the
+   sheen off the fill means the weave underneath stays a weave. */
+.wheel-sheen {
+  fill: url(#sheen);
+  pointer-events: none;
+}
+
+.wheel-gloss {
+  fill: url(#btnGloss);
+  pointer-events: none;
+}
+
+.wheel-screen-glow {
+  fill: url(#screenGlow);
+  pointer-events: none;
 }
 
 .wheel-panel {
-  fill: var(--bg-0);
+  fill: url(#carbon);
   stroke: var(--line-strong);
   stroke-width: 2;
+  filter: url(#soft);
 }
 
 .wheel-grip {
@@ -2150,6 +2169,7 @@ tbody tr.is-on {
   fill: var(--bg-3);
   stroke: var(--line-strong);
   stroke-width: 2;
+  filter: url(#soft);
 }
 
 .wheel-button.tone-go { fill: #17542f; stroke: #2e9c5c; }
@@ -2205,9 +2225,10 @@ tbody tr.is-on {
 }
 
 .wheel-knob {
-  fill: var(--bg-2);
+  fill: url(#knobFace);
   stroke: var(--line-strong);
   stroke-width: 2.5;
+  filter: url(#soft);
 }
 
 .wheel-knob-grip {

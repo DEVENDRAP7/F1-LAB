@@ -19,6 +19,10 @@ import {
 const RING_IN = 44;
 const RING_OUT = 70;
 
+// Declared once: the sheen is the same outline as the face, laid over it.
+const FACE_PATH = 'M186 96 h528 a30 30 0 0 1 30 30 v206 a26 26 0 0 1 -26 26 h-536 '
+  + 'a26 26 0 0 1 -26 -26 v-206 a30 30 0 0 1 30 -30 z';
+
 function polar(cx, cy, r, deg) {
   const a = ((deg - 90) * Math.PI) / 180;
   return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
@@ -82,15 +86,50 @@ export default function SteeringWheel() {
         aria-label="Interactive diagram of a 2026 Formula 1 steering wheel"
       >
         <defs>
-          <linearGradient id="wheelFace" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="var(--bg-3)" />
-            <stop offset="1" stopColor="var(--bg-1)" />
+          {/* Carbon weave. A twill is two sets of diagonals at opposite
+              angles, one catching light and one in shadow — which is why
+              a flat grey fill never reads as carbon however dark it is. */}
+          <pattern id="carbon" width="10" height="10" patternUnits="userSpaceOnUse">
+            <rect width="10" height="10" fill="var(--bg-2)" />
+            <path
+              d="M0 10 L10 0 M-3 3 L3 -3 M7 13 L13 7"
+              stroke="var(--bg-3)" strokeWidth="2.4" opacity="0.55"
+            />
+            <path
+              d="M0 0 L10 10 M-3 7 L3 13 M7 -3 L13 3"
+              stroke="var(--bg-0)" strokeWidth="1.7" opacity="0.5"
+            />
+          </pattern>
+          {/* A sheen across the top third, so the face reads as a surface
+              turned to the light rather than a flat cut-out. */}
+          <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#ffffff" stopOpacity="0.11" />
+            <stop offset="0.45" stopColor="#ffffff" stopOpacity="0.02" />
+            <stop offset="1" stopColor="#000000" stopOpacity="0.16" />
           </linearGradient>
           <linearGradient id="wheelGrip" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="var(--bg-3)" />
             <stop offset="0.5" stopColor="var(--bg-2)" />
             <stop offset="1" stopColor="var(--bg-0)" />
           </linearGradient>
+          {/* Knobs are machined metal: lit from the upper left, falling
+              away to shadow at the lower right. */}
+          <radialGradient id="knobFace" cx="0.34" cy="0.28" r="0.9">
+            <stop offset="0" stopColor="var(--line-strong)" />
+            <stop offset="0.55" stopColor="var(--bg-2)" />
+            <stop offset="1" stopColor="var(--bg-0)" />
+          </radialGradient>
+          <radialGradient id="btnGloss" cx="0.35" cy="0.28" r="0.75">
+            <stop offset="0" stopColor="#ffffff" stopOpacity="0.34" />
+            <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="screenGlow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="var(--accent-0)" stopOpacity="0.10" />
+            <stop offset="1" stopColor="var(--accent-0)" stopOpacity="0" />
+          </linearGradient>
+          <filter id="soft" x="-25%" y="-25%" width="150%" height="150%">
+            <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#000" floodOpacity="0.5" />
+          </filter>
         </defs>
 
         {/* Grips. A thick stroked curve gives the sculpted handle these
@@ -110,14 +149,12 @@ export default function SteeringWheel() {
           </g>
         ))}
 
-        {/* Upper face */}
-        <path
-          className="wheel-face"
-          d="M186 96 h528 a30 30 0 0 1 30 30 v206 a26 26 0 0 1 -26 26 h-536
-             a26 26 0 0 1 -26 -26 v-206 a30 30 0 0 1 30 -30 z"
-        />
+        {/* Upper face, then the same outline again as a light pass */}
+        <path className="wheel-face" d={FACE_PATH} />
+        <path className="wheel-sheen" d={FACE_PATH} />
         {/* Lower rotary panel */}
         <rect className="wheel-panel" x="212" y="366" width="476" height="208" rx="20" />
+        <rect className="wheel-sheen" x="212" y="366" width="476" height="208" rx="20" />
 
         {/* Shift lights */}
         <g className={`wheel-hit${shown === 'fix:leds' ? ' is-on' : ''}`}
@@ -142,6 +179,7 @@ export default function SteeringWheel() {
               line of 20px values collides with them, and a fourth row of
               text fell off the bottom of the screen entirely. */}
           <rect className="wheel-screen-bed" x="322" y="146" width="256" height="154" rx="12" />
+          <rect className="wheel-screen-glow" x="322" y="146" width="256" height="154" rx="12" />
           <text className="wheel-lcd-sm" x="338" y="170">SPD 298</text>
           <text className="wheel-lcd-sm wheel-right" x="562" y="170">1:18.412</text>
           <text className="wheel-gear" x="450" y="226">8</text>
@@ -165,6 +203,7 @@ export default function SteeringWheel() {
               {...activate(id, () => press(b.id))}
             >
               <circle className={`wheel-button tone-${b.tone}`} cx={b.x} cy={b.y} r={b.r} />
+              <circle className="wheel-gloss" cx={b.x} cy={b.y} r={b.r} />
               <text className="wheel-btn-label" x={b.x} y={b.y + 5}>{b.label}</text>
             </g>
           );
@@ -199,6 +238,7 @@ export default function SteeringWheel() {
                   () => setPositions((s) => ({ ...s, [rot.id]: (s[rot.id] + 1) % n })))}
               >
                 <circle className="wheel-knob" cx={rot.cx} cy={rot.cy} r={RING_IN - 5} />
+                <circle className="wheel-gloss" cx={rot.cx} cy={rot.cy} r={RING_IN - 5} />
                 <g transform={`rotate(${sel * step} ${rot.cx} ${rot.cy})`}>
                   <rect
                     className="wheel-knob-grip"
