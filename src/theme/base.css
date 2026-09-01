@@ -2059,10 +2059,11 @@ tbody tr.is-on {
 
 /* ---------- steering wheel ----------
  *
- * A row of small targets with a description beside them. Side by side on
- * a wide screen, stacked on a phone — and the description sits BELOW the
- * wheel when stacked, never over it, for the same reason the rig's
- * readout does: it must not cover the thing it is describing. */
+ * Reads as a real wheel: a sculpted face, grips either side, a lit
+ * screen, and three multi-position rotaries on a lower panel. Side by
+ * side with its description on a wide screen, stacked on a phone — and
+ * stacked puts the description BELOW the wheel, never over it, for the
+ * same reason the rig's readout does. */
 .wheel-layout {
   display: flex;
   flex-wrap: wrap;
@@ -2071,108 +2072,191 @@ tbody tr.is-on {
 }
 
 .wheel-svg {
-  flex: 1 1 22rem;
+  flex: 1 1 26rem;
   min-width: 17rem;
-  max-width: 34rem;
+  max-width: 40rem;
   height: auto;
 }
 
-.wheel-body {
-  fill: var(--bg-2);
+.wheel-face {
+  fill: url(#wheelFace);
+  stroke: var(--line-strong);
+  stroke-width: 2.5;
+}
+
+.wheel-panel {
+  fill: var(--bg-0);
   stroke: var(--line-strong);
   stroke-width: 2;
 }
 
-.wheel-display {
-  fill: #0a1018;
+.wheel-grip {
+  fill: none;
+  stroke: url(#wheelGrip);
+  stroke-width: 62;
+  stroke-linecap: round;
+}
+
+.wheel-grip-inner {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.wheel-screen-bed {
+  fill: #060b12;
   stroke: var(--line-strong);
-  stroke-width: 1.5;
+  stroke-width: 1.6;
 }
 
 .wheel-gear {
   fill: var(--ink-0);
   font-family: var(--font-mono);
-  font-size: 40px;
+  font-size: 62px;
   font-weight: 700;
   text-anchor: middle;
 }
 
-.wheel-readout {
+.wheel-lcd-sm {
+  fill: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+.wheel-lcd-val {
+  fill: var(--ink-0);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.wheel-lcd-row {
   fill: var(--accent-0);
   font-family: var(--font-mono);
   font-size: 15px;
-  text-anchor: middle;
+  letter-spacing: 0.08em;
 }
 
-.wheel-led-bed { fill: #0a1018; stroke: var(--line); stroke-width: 1.2; }
+.wheel-right { text-anchor: end; }
+
 .wheel-led-a { fill: var(--status-good); }
 .wheel-led-b { fill: var(--status-warning); }
 .wheel-led-c { fill: var(--compound-soft); }
 
-.wheel-rotary {
+.wheel-button {
   fill: var(--bg-3);
   stroke: var(--line-strong);
   stroke-width: 2;
 }
 
-.wheel-pointer {
-  stroke: var(--ink-1);
+.wheel-button.tone-go { fill: #17542f; stroke: #2e9c5c; }
+.wheel-button.tone-hot { fill: #5d1a19; stroke: #c0453f; }
+.wheel-button.tone-cool { fill: #14375c; stroke: #3f86cf; }
+.wheel-button.tone-warn { fill: #5c4410; stroke: #c79b2c; }
+.wheel-button.tone-aero { fill: #123f52; stroke: #3aa0c4; }
+
+.wheel-btn-label {
+  fill: var(--ink-0);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* A pressed latching button stays lit, so the wheel holds state you can
+   see rather than only reporting it in prose. */
+.wheel-hit.is-lit .wheel-button {
+  fill: var(--accent-0);
+  stroke: var(--ink-0);
+}
+
+.wheel-wedge {
+  stroke: var(--bg-0);
+  stroke-width: 1.5;
+  opacity: 0.55;
+}
+
+/* Positions are coloured so they can be found at a glance, which is why
+   real wheels colour them too. The ramp is the site's own. */
+.wheel-wedge.tone-0 { fill: #3b6ea8; }
+.wheel-wedge.tone-1 { fill: #2f8686; }
+.wheel-wedge.tone-2 { fill: #4f8a3c; }
+.wheel-wedge.tone-3 { fill: #a8862f; }
+.wheel-wedge.tone-4 { fill: #b4632c; }
+.wheel-wedge.tone-5 { fill: #a24270; }
+
+.wheel-wedge.is-sel {
+  opacity: 1;
+  stroke: var(--ink-0);
   stroke-width: 2.5;
-  stroke-linecap: round;
 }
 
-.wheel-button {
-  fill: var(--bg-3);
+.wheel-pos {
+  fill: var(--ink-0);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.wheel-knob {
+  fill: var(--bg-2);
   stroke: var(--line-strong);
-  stroke-width: 1.6;
+  stroke-width: 2.5;
 }
 
-.wheel-paddle { fill: var(--bg-1); stroke: var(--line); stroke-width: 1.4; }
+.wheel-knob-grip {
+  fill: var(--ink-1);
+  pointer-events: none;
+}
+
+.wheel-paddle { fill: var(--bg-1); stroke: var(--line); stroke-width: 1.6; }
 
 .wheel-tag {
   fill: var(--ink-1);
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 13px;
+  letter-spacing: 0.1em;
   text-anchor: middle;
+  pointer-events: none;
 }
 
-.wheel-tag-sm { font-size: 9.5px; }
-
-/* The whole control is one hit target, so a 9px label never has to be
+/* The whole control is one hit target, so a 10px label never has to be
    hit precisely. */
 .wheel-hit { cursor: pointer; }
 .wheel-hit:focus { outline: none; }
 
-.wheel-hit:hover .wheel-rotary,
 .wheel-hit:hover .wheel-button,
+.wheel-hit:hover .wheel-knob,
 .wheel-hit:hover .wheel-paddle,
-.wheel-hit.is-on .wheel-rotary,
+.wheel-hit:hover .wheel-screen-bed,
 .wheel-hit.is-on .wheel-button,
+.wheel-hit.is-on .wheel-knob,
 .wheel-hit.is-on .wheel-paddle,
-.wheel-hit.is-on .wheel-display,
-.wheel-hit.is-on .wheel-led-bed {
-  fill: var(--accent-glow);
-  stroke: var(--accent-0);
-}
+.wheel-hit.is-on .wheel-screen-bed { stroke: var(--accent-0); stroke-width: 3; }
 
-/* Focus has to be visible on its own, not only via the fill change,
-   or keyboard users cannot tell where they are. */
-.wheel-hit:focus-visible .wheel-rotary,
+.wheel-hit:hover .wheel-wedge,
+.wheel-hit.is-on .wheel-wedge { opacity: 1; stroke: var(--accent-0); }
+
+/* Focus needs its own mark, not only the hover fill, or a keyboard user
+   cannot tell where they are. */
 .wheel-hit:focus-visible .wheel-button,
+.wheel-hit:focus-visible .wheel-knob,
+.wheel-hit:focus-visible .wheel-wedge,
 .wheel-hit:focus-visible .wheel-paddle,
-.wheel-hit:focus-visible .wheel-display,
-.wheel-hit:focus-visible .wheel-led-bed {
-  stroke: var(--accent-0);
-  stroke-width: 3;
+.wheel-hit:focus-visible .wheel-screen-bed {
+  stroke: var(--ink-0);
+  stroke-width: 3.5;
 }
-
-.wheel-hit:hover .wheel-tag,
-.wheel-hit.is-on .wheel-tag { fill: var(--ink-0); }
 
 .wheel-readout-panel {
-  flex: 1 1 16rem;
-  min-width: 14rem;
+  flex: 1 1 15rem;
+  min-width: 13rem;
   border-left: 2px solid var(--accent-0);
   padding-left: 0.9rem;
 }
