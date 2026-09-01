@@ -510,11 +510,16 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // seen at all. It only ever showed because it was oversized and burst
   // out through the flanks. A blunt face gives the opening somewhere to
   // actually be.
+  // The hoop arches ABOVE the helmet, not merely behind it. It topped
+  // out three centimetres over the top of the driver's head, which put
+  // the intake at head height looking like a bulge behind him; a roll
+  // structure has to stand clear over the helmet, and the intake with
+  // it. Apex is now ~0.90 against a helmet crown at 0.775.
   const COVER = [
-    { x: 0.10, w: 0.072, h: 0.098, cy: 0.706, q: 2.2 },
-    { x: 0.20, w: 0.108, h: 0.124, cy: 0.700, q: 2.2 },
-    { x: 0.34, w: 0.150, h: 0.152, cy: 0.700, q: 2.1 },
-    { x: 0.58, w: 0.170, h: 0.148, cy: 0.676, q: 2.3 },
+    { x: 0.10, w: 0.088, h: 0.142, cy: 0.766, q: 2.2 },
+    { x: 0.22, w: 0.116, h: 0.156, cy: 0.754, q: 2.2 },
+    { x: 0.38, w: 0.150, h: 0.158, cy: 0.716, q: 2.1 },
+    { x: 0.60, w: 0.170, h: 0.146, cy: 0.678, q: 2.3 },
     { x: 0.86, w: 0.164, h: 0.134, cy: 0.626, q: 2.5 },
     { x: 1.14, w: 0.136, h: 0.112, cy: 0.566, q: 2.6 },
     { x: 1.46, w: 0.098, h: 0.086, cy: 0.506, q: 2.5 },
@@ -529,29 +534,39 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // that was here — and a deep throat you can see a long way down, with
   // a carbon lip standing proud all round the mouth. The taper is what
   // says the duct goes somewhere; the oval said "dimple".
-  // The throat starts a few millimetres proud of that face, so its rim
-  // stands through and reads as a hole rather than hiding behind the
-  // skin, then tapers away down and back toward the engine.
+  // The throat now stands a full 3 cm proud of that face and sits above
+  // the helmet crown, in the blackest material on the car. A few
+  // millimetres of dark rim flush against red bodywork was technically
+  // an opening and read as a smudge — an air intake has to look like a
+  // hole you could put your arm down.
   loft([
-    { x: 0.094, ring: mouthRing(0.052, 0.020, 0.060, 0.716, 2.4) },
-    { x: 0.200, ring: mouthRing(0.046, 0.018, 0.052, 0.712, 2.4) },
-    { x: 0.340, ring: mouthRing(0.036, 0.014, 0.040, 0.706, 2.4) },
-    { x: 0.480, ring: mouthRing(0.024, 0.010, 0.026, 0.698, 2.4) },
-    { x: 0.580, ring: mouthRing(0.014, 0.006, 0.015, 0.692, 2.4) },
-  ], dark, 'airbox', { capFront: false });
+    { x: 0.066, ring: mouthRing(0.068, 0.027, 0.064, 0.818, 2.4) },
+    { x: 0.160, ring: mouthRing(0.060, 0.024, 0.056, 0.810, 2.4) },
+    { x: 0.300, ring: mouthRing(0.044, 0.017, 0.040, 0.786, 2.4) },
+    { x: 0.460, ring: mouthRing(0.023, 0.009, 0.024, 0.740, 2.4) },
+    { x: 0.600, ring: mouthRing(0.013, 0.005, 0.014, 0.700, 2.4) },
+  ], underbody, 'airbox', { capFront: false });
   // The lip around the mouth, which is what catches the light and makes
   // the opening read from a distance.
   loft([
-    { x: 0.086, ring: mouthRing(0.062, 0.030, 0.070, 0.716, 2.4) },
-    { x: 0.106, ring: mouthRing(0.058, 0.028, 0.066, 0.716, 2.4) },
+    { x: 0.048, ring: mouthRing(0.082, 0.040, 0.078, 0.818, 2.4) },
+    { x: 0.082, ring: mouthRing(0.077, 0.037, 0.073, 0.818, 2.4) },
   ], body, 'airbox', { capFront: false, capBack: false });
+  // Side cooling inlets in the flanks of the hoop — more real holes,
+  // and the reason the structure is as wide as it is.
+  for (const side of [1, -1]) {
+    loft([
+      { x: 0.150, ring: ring(0.010, 0.032, 0.766, 3).map(([y, z]) => [y, z + side * 0.096]) },
+      { x: 0.300, ring: ring(0.008, 0.026, 0.754, 3).map(([y, z]) => [y, z + side * 0.122]) },
+    ], underbody, 'airbox', { capFront: false });
+  }
   // A second, smaller duct along the floor of the throat. Every close-up
   // of the real intake shows one down there, feeding something other
   // than the engine — which of the car's several cooling circuits is not
   // published, so it is drawn and not labelled.
   loft([
-    { x: 0.100, ring: ring(0.022, 0.007, 0.666, 4) },
-    { x: 0.300, ring: ring(0.017, 0.005, 0.662, 4) },
+    { x: 0.072, ring: ring(0.026, 0.008, 0.766, 4) },
+    { x: 0.280, ring: ring(0.015, 0.005, 0.744, 4) },
   ], dark, 'airbox', { capFront: false });
 
   /* ---------------- sidepods ----------------
@@ -969,31 +984,31 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // not across it. A first pass had it as a lateral bar, which no
   // photograph of the real thing supports.
   const podFoot = new THREE.Mesh(new THREE.BoxGeometry(0.186, 0.040, 0.078), haloMat);
-  podFoot.position.set(0.330, 0.858, 0);
+  podFoot.position.set(0.340, 0.896, 0);
   podFoot.userData.part = 'camera';
   car.add(podFoot);
 
   const pod = new THREE.Mesh(new THREE.CylinderGeometry(0.030, 0.030, 0.172, 18), marker);
   pod.rotation.z = Math.PI / 2;
-  pod.position.set(0.300, 0.906, 0);
+  pod.position.set(0.310, 0.944, 0);
   pod.userData.part = 'camera';
   car.add(pod);
 
   const podNose = new THREE.Mesh(new THREE.SphereGeometry(0.030, 18, 12), marker);
-  podNose.position.set(0.214, 0.906, 0);
+  podNose.position.set(0.224, 0.944, 0);
   podNose.userData.part = 'camera';
   car.add(podNose);
 
   const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.014, 14), dark);
   lens.rotation.z = Math.PI / 2;
-  lens.position.set(0.191, 0.906, 0);
+  lens.position.set(0.201, 0.944, 0);
   lens.userData.part = 'camera';
   car.add(lens);
 
   // Three aerial stubs standing on the base plate behind the housing.
   for (const z of [-0.030, 0, 0.030]) {
     const fin = new THREE.Mesh(new THREE.BoxGeometry(0.013, 0.054, 0.012), haloMat);
-    fin.position.set(0.408, 0.900, z);
+    fin.position.set(0.418, 0.938, z);
     fin.rotation.z = -0.10;
     fin.userData.part = 'camera';
     car.add(fin);
