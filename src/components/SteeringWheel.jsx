@@ -137,16 +137,20 @@ export default function SteeringWheel() {
         <g className={`wheel-hit${shown === 'fix:display' ? ' is-on' : ''}`}
           {...activate('fix:display', () => {})}
         >
-          <rect className="wheel-screen-bed" x="322" y="148" width="256" height="176" rx="12" />
-          <text className="wheel-lcd-sm" x="340" y="176">SPEED</text>
-          <text className="wheel-lcd-val" x="340" y="204">298</text>
-          <text className="wheel-gear" x="450" y="228">8</text>
-          <text className="wheel-lcd-sm wheel-right" x="560" y="176">LAP</text>
-          <text className="wheel-lcd-val wheel-right" x="560" y="204">1:18.412</text>
-          <text className="wheel-lcd-row" x="340" y="262">{`ENG  ${readout.engine}`}</text>
-          <text className="wheel-lcd-row" x="340" y="284">{`STR  ${readout.strategy}`}</text>
-          <text className="wheel-lcd-row" x="340" y="306">{`ENB  ${readout.braking}`}</text>
-          <text className="wheel-lcd-sm wheel-right" x="560" y="306">
+          {/* Laid out in three bands — a small top line, the gear on its
+              own, then the modes — because a 52px digit centred across a
+              line of 20px values collides with them, and a fourth row of
+              text fell off the bottom of the screen entirely. */}
+          <rect className="wheel-screen-bed" x="322" y="146" width="256" height="154" rx="12" />
+          <text className="wheel-lcd-sm" x="338" y="170">SPD 298</text>
+          <text className="wheel-lcd-sm wheel-right" x="562" y="170">1:18.412</text>
+          <text className="wheel-gear" x="450" y="226">8</text>
+          <text className="wheel-lcd-row" x="338" y="258">{`ENG ${readout.engine}`}</text>
+          <text className="wheel-lcd-row wheel-right" x="562" y="258">
+            {`STR ${readout.strategy}`}
+          </text>
+          <text className="wheel-lcd-row" x="338" y="284">{`ENB ${readout.braking}`}</text>
+          <text className="wheel-lcd-row wheel-right" x="562" y="284">
             {pressed.aero ? 'AERO X' : 'AERO Z'}
           </text>
         </g>

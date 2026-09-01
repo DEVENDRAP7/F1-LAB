@@ -2093,7 +2093,7 @@ tbody tr.is-on {
 .wheel-grip {
   fill: none;
   stroke: url(#wheelGrip);
-  stroke-width: 62;
+  stroke-width: 70;
   stroke-linecap: round;
 }
 
@@ -2114,13 +2114,13 @@ tbody tr.is-on {
 .wheel-gear {
   fill: var(--ink-0);
   font-family: var(--font-mono);
-  font-size: 62px;
+  font-size: 52px;
   font-weight: 700;
   text-anchor: middle;
 }
 
 .wheel-lcd-sm {
-  fill: var(--ink-2);
+  fill: var(--ink-1);
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.1em;
@@ -2281,4 +2281,19 @@ tbody tr.is-on {
   font-size: 0.86rem;
   line-height: 1.55;
   color: var(--ink-1);
+}
+
+/* The wheel keeps its aspect and shrinks to fit a phone, which takes a
+   10px position label down to about 4 real pixels. SVG type scales with
+   the viewBox, so the fix is to draw it larger in user units at narrow
+   widths rather than to shrink the wheel's information. Sizes are held
+   under the arc length of the narrowest wedge so a four-letter label
+   still fits inside its own segment. */
+@media (max-width: 640px) {
+  .wheel-pos { font-size: 15px; }
+  .wheel-tag { font-size: 19px; }
+  .wheel-btn-label { font-size: 18px; }
+  .wheel-lcd-sm { font-size: 15px; }
+  .wheel-lcd-row { font-size: 17px; }
+  .wheel-gear { font-size: 58px; }
 }

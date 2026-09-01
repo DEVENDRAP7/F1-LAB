@@ -105,7 +105,7 @@ export const BUTTONS = [
     text: 'Flattens both wings for the straight and loads them again for the corner — the '
       + '2026 change that replaced DRS. The same switch as the Z and X buttons above the car '
       + 'on this page.',
-    x: 372, y: 330, r: 26, tone: 'aero',
+    x: 372, y: 332, r: 26, tone: 'aero',
   },
   {
     id: 'override',
@@ -114,7 +114,7 @@ export const BUTTONS = [
     name: 'Override',
     text: 'A burst of extra electrical deployment for a driver trying to pass. It replaces '
       + 'DRS as the overtaking tool, and unlike DRS it can be used anywhere on the lap.',
-    x: 528, y: 330, r: 26, tone: 'hot',
+    x: 528, y: 332, r: 26, tone: 'hot',
   },
   {
     id: 'neutral',
@@ -123,7 +123,7 @@ export const BUTTONS = [
     name: 'Neutral',
     text: 'Selects neutral without the clutch — needed at a pit stop and after a stoppage, '
       + 'and required to be reachable by a driver still strapped in.',
-    x: 318, y: 214, r: 30, tone: 'go',
+    x: 270, y: 186, r: 28, tone: 'go',
   },
   {
     id: 'limiter',
@@ -132,7 +132,7 @@ export const BUTTONS = [
     name: 'Pit lane speed limiter',
     text: 'Holds the car at the pit lane limit so the driver can brake, stop and leave '
       + 'without watching a speed readout. Required equipment, and forgetting it is a penalty.',
-    x: 582, y: 214, r: 30, tone: 'hot',
+    x: 630, y: 186, r: 28, tone: 'hot',
   },
   {
     id: 'radio',
@@ -141,7 +141,7 @@ export const BUTTONS = [
     name: 'Radio',
     text: 'Push to talk to the pit wall. It is held down while speaking, which is why radio '
       + 'clips so often begin mid-sentence.',
-    x: 228, y: 196, r: 22, tone: 'hot',
+    x: 216, y: 254, r: 21, tone: 'hot',
   },
   {
     id: 'drink',
@@ -150,7 +150,7 @@ export const BUTTONS = [
     name: 'Drink',
     text: 'One pull from the drinks bottle. Ordinary, until you consider that a race is two '
       + 'hours in a fireproof suit in a cockpit that can pass 50°C.',
-    x: 672, y: 196, r: 22, tone: 'cool',
+    x: 684, y: 254, r: 21, tone: 'cool',
   },
   {
     id: 'box',
@@ -159,7 +159,7 @@ export const BUTTONS = [
     name: 'Box confirm',
     text: 'Acknowledges a call to pit, so the crew knows the driver has heard it and is '
       + 'coming in this lap rather than the next.',
-    x: 268, y: 330, r: 24, tone: 'cool',
+    x: 268, y: 332, r: 24, tone: 'cool',
   },
   {
     id: 'marker',
@@ -168,7 +168,7 @@ export const BUTTONS = [
     name: 'Marker',
     text: 'Drops a marker into the telemetry at the moment the driver presses it, so the '
       + 'engineers can find the corner they were complaining about without hunting for it.',
-    x: 632, y: 330, r: 24, tone: 'warn',
+    x: 632, y: 332, r: 24, tone: 'warn',
   },
 ];
 
