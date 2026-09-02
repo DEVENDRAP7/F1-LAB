@@ -233,6 +233,17 @@ export function manualRpm(from, t) {
   return { rpm: REV_LIMIT + (REST_RPM - REV_LIMIT) * u, done: false };
 }
 
+/** Which colour band a lamp sits in: green, then amber, then red.
+ *
+ *  Proportional rather than a hardcoded index, so the ramp survives the
+ *  strip being drawn with a different number of lamps. */
+export function lampTone(index, count) {
+  const t = (index + 0.5) / count;
+  if (t < 5 / 13) return 'a';
+  if (t < 9 / 13) return 'b';
+  return 'c';
+}
+
 /** How many of `count` lamps are lit at these revs. */
 export function litLamps(rpm, count, limit = REV_LIMIT, from = LIGHTS_FROM) {
   const frac = Math.max(0, Math.min(1, rpm / limit));
@@ -271,7 +282,9 @@ export const FIXTURES = [
     text: 'A strip that fills across as the engine approaches its limit, so an upshift can be '
       + 'timed without looking away from the corner. It is read by where the colour changes '
       + 'rather than by counting lamps, and at the limiter the whole strip turns blue and '
-      + 'flashes. Shift up with the right paddle and watch it fill again.',
+      + 'flashes. It follows revs, which is to say it follows what the throttle is doing: '
+      + 'green through amber to red across the strip, red at the right-hand end nearest the '
+      + 'limit. Shift up with the right paddle and watch it empty and fill again.',
   },
   {
     id: 'status',

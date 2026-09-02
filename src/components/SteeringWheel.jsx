@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BUTTONS, CONTROL_KIND, FIXTURES, IDLE_RPM, REV_LIMIT, ROTARIES,
   RPM_AFTER_DOWNSHIFT, RPM_AFTER_UPSHIFT, STATUS_LAMPS,
-  atRevLimit, describe, initialPositions, litLamps, manualRpm,
+  atRevLimit, describe, initialPositions, lampTone, litLamps, manualRpm,
 } from '../lib/steeringWheel.js';
 import { DEMOS, stateAt } from '../lib/wheelDemo.js';
 import EngineAudio, { VOICES } from '../lib/engineAudio.js';
@@ -371,7 +371,7 @@ export default function SteeringWheel({ mode, onMode }) {
             {Array.from({ length: LED_N }, (_, i) => (
               <circle
                 key={i}
-                className={`wheel-led wheel-led-${i < 5 ? 'a' : i < 9 ? 'b' : 'c'}`
+                className={`wheel-led wheel-led-${lampTone(i, LED_N)}`
                   + `${i < lit ? ' is-lit' : ''}`}
                 cx={SCREEN_X + 16 + i * 17} cy="125" r="5.4"
               />

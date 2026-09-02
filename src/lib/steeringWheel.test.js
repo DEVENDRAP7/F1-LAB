@@ -3,7 +3,7 @@ import {
   BUTTONS, CONTROL_KIND, FIXTURES, IDLE_RPM, LIGHTS_FROM, REV_LIMIT, ROTARIES,
   LIMITER_HOLD_S, LIMITER_SETTLE_S, REST_RPM, RPM_PER_SECOND,
   RPM_AFTER_DOWNSHIFT, RPM_AFTER_UPSHIFT, STATUS_LAMPS, WHEEL_DEFAULT,
-  atRevLimit, describe, initialPositions, litLamps, manualRpm,
+  atRevLimit, describe, initialPositions, lampTone, litLamps, manualRpm,
 } from './steeringWheel.js';
 
 const everyControl = [...BUTTONS, ...FIXTURES, ...ROTARIES];
@@ -165,5 +165,30 @@ suite('the manual rev model', () => {
     const from = RPM_AFTER_UPSHIFT;
     const rampS = (REV_LIMIT - from) / RPM_PER_SECOND;
     expect(atRevLimit(manualRpm(from, rampS + 1).rpm)).toBe(true);
+  });
+});
+
+suite('the lamp colour ramp', () => {
+  it('runs green, then amber, then red, left to right', () => {
+    const tones = Array.from({ length: 13 }, (_, i) => lampTone(i, 13));
+    expect(tones[0]).toBe('a');
+    expect(tones[12]).toBe('c');
+    // Monotonic: it never goes back down the ramp.
+    const order = { a: 0, b: 1, c: 2 };
+    for (let i = 1; i < tones.length; i += 1) {
+      expect(order[tones[i]], `${i}`).toBeGreaterThanOrEqual(order[tones[i - 1]]);
+    }
+  });
+
+  it('puts red at the right-hand end whatever the lamp count', () => {
+    // Proportional, not a hardcoded index — the strip has been redrawn
+    // at eleven and thirteen lamps already.
+    for (const n of [9, 11, 13, 15, 20]) {
+      expect(lampTone(0, n), `${n}`).toBe('a');
+      expect(lampTone(n - 1, n), `${n}`).toBe('c');
+      const reds = Array.from({ length: n }, (_, i) => lampTone(i, n))
+        .filter((t) => t === 'c').length;
+      expect(reds, `${n} reds`).toBeGreaterThanOrEqual(2);
+    }
   });
 });

@@ -2225,20 +2225,32 @@ tbody tr.is-on {
 /* A shift strip runs green, then amber, then red — it is read by where
    the colour changes, not by counting lamps.
  *
- * An UNLIT lamp is a dark lens, not an absent one. Painting all thirteen
- * permanently in their colours was the bug: a strip that is fully lit at
- * every moment carries no information at all, which is the opposite of
- * what the part is for. */
+ * An UNLIT lamp is a dark lens OF ITS OWN COLOUR, not a grey disc.
+ *
+ * Two bugs, one after the other. First all thirteen were painted
+ * permanently bright: a strip fully lit at every moment carries no
+ * information at all, which is the opposite of what the part is for.
+ * Then every unlit lamp was made neutral grey, which fixed that and
+ * broke something else — the red end only lights above 88% of the rev
+ * range, so for almost all of the time the strip did not LOOK like it
+ * had a red end. A real lens is coloured whether or not anything is
+ * behind it, so the colour is always the lamp's own and lighting it is
+ * a change of opacity. The green-amber-red ramp reads across the whole
+ * strip from the moment the page loads. */
 .wheel-led {
-  fill: #161c26;
-  stroke: #0a0e15;
+  fill: currentColor;
+  /* 0.38, not 0.28: at the lower value the unlit reds read as brown
+     against the near-black bed, which is most of the way back to the
+     complaint this is fixing. */
+  opacity: 0.38;
+  stroke: #05080d;
   stroke-width: 1;
 }
 
 /* `color` rather than `fill`, so one rule can light the lamp and throw
    its own glow without repeating the value. */
 .wheel-led.is-lit {
-  fill: currentColor;
+  opacity: 1;
   filter: drop-shadow(0 0 4px currentColor);
 }
 
