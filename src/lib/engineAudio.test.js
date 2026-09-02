@@ -99,13 +99,40 @@ describe('voice character', () => {
     expect(loudest(VOICES.v8).ratio).toBe(2);
   });
 
-  it('lets the firing rate itself dominate the W16', () => {
-    // This is the fix for the first cut sounding like an electric
-    // motor. Its loudest term was at 0.5 — half the firing frequency —
-    // which buries the pulse you actually hear as combustion under a
-    // sub-octave drone, and a clean drone under a lowpass is a synth
-    // bass patch.
-    expect(loudest(VOICES.w16).ratio).toBe(1);
+  it('keeps the firing rate audible on the W16 without making it dominant', () => {
+    // Two corrections live in this one assertion.
+    //
+    // The first cut sounded electric, and I read that as "the sub-octave
+    // is too strong" and moved the energy up to the firing rate. That
+    // was the wrong diagnosis: what made it a synth was SMOOTHNESS — a
+    // static filter over a sparse clean spectrum — and moving the
+    // energy up took the weight out with the drone, which is the
+    // opposite complaint.
+    //
+    // Roughness now comes from the swept cutoff, the inharmonic order
+    // and the noise, so the weight is allowed back down low. The
+    // requirement is not that the firing rate dominates, only that it
+    // stays loud enough to hear as combustion under the drone.
+    const w16 = VOICES.w16;
+    const fire = w16.partials.find((p) => p.ratio === 1).gain;
+    expect(loudest(w16).ratio).toBeLessThan(1);
+    expect(fire / loudest(w16).gain).toBeGreaterThanOrEqual(0.6);
+  });
+
+  it('gives the W16 weight below 200 Hz, which partials alone cannot', () => {
+    // At this engine's revs the quarter-order is the only partial down
+    // in the region a big engine is felt in, so the shelf does the rest.
+    expect(VOICES.w16.shelf.gain).toBeGreaterThan(6);
+    expect(VOICES.w16.shelf.hz).toBeLessThanOrEqual(200);
+    expect(Math.min(...VOICES.w16.partials.map((p) => p.ratio))).toBeLessThanOrEqual(0.25);
+  });
+
+  it('keeps the W16 the darkest voice', () => {
+    // It is a low-revving sixteen; if its filter ever opens further
+    // than a racing engine's, something has gone wrong again.
+    expect(VOICES.w16.ceiling).toBeLessThan(VOICES.v6.ceiling);
+    expect(VOICES.w16.ceiling).toBeLessThan(VOICES.v8.ceiling);
+    expect(VOICES.w16.noiseHz[0]).toBeLessThan(VOICES.v6.noiseHz[0]);
   });
 
   it('gives the W16 inharmonic content, because a chord is not an engine', () => {

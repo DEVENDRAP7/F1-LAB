@@ -128,22 +128,37 @@ export const VOICES = {
     cylinders: 16,
     idle: 900,
     redline: 6700,
-    ceiling: 5200,
-    trim: 0.78,
-    // Resonant, so the swept cutoff below is something you can hear.
-    q: 3.2,
-    // Half the firing frequency: one sweep per crank cycle, deep.
-    growl: { ratio: 0.5, depth: 900 },
+    // Back down from 5200. The last pass fixed this voice sounding
+    // electric and then overshot into pitchy, and the ceiling was most
+    // of it — 5.2 kHz let through harmonics a sixteen-cylinder engine
+    // has no business being heard through.
+    ceiling: 3200,
+    trim: 0.7,
+    q: 2.6,
+    growl: { ratio: 0.5, depth: 700 },
+    // Big turbos are low, breathy noise, not hiss. This band was
+    // centred near 1.7 kHz at speed, which is a hiss.
     noise: 0.16,
-    noiseHz: [500, 0.22],
+    noiseHz: [280, 0.1],
+    // A low shelf under the whole voice. Partials alone could not do
+    // this: the weight of a big engine is energy below 200 Hz, and at
+    // this engine's revs the quarter-order is the only term down there.
+    shelf: { hz: 190, gain: 10 },
+    // The correction to the correction. What made this sound electric
+    // was SMOOTHNESS — a static filter over a sparse, clean spectrum —
+    // not the low fundamental, and moving the energy up to the firing
+    // rate to fix it took the weight out with the drone. The roughness
+    // now comes from the swept cutoff, the 1.5 order and the noise, so
+    // the energy can go back down where a W16's actually is: the
+    // half-order dominates again, with a quarter-order under it, and
+    // the firing rate stays loud enough to still hear as combustion.
     partials: [
-      { ratio: 0.5, gain: 0.55, type: 'sawtooth', detune: -14 },
-      { ratio: 1, gain: 1, type: 'sawtooth', detune: 0 },
-      { ratio: 1.5, gain: 0.3, type: 'sawtooth', detune: 11 },
-      { ratio: 2, gain: 0.72, type: 'sawtooth', detune: -7 },
-      { ratio: 3, gain: 0.44, type: 'square', detune: 13 },
-      { ratio: 4, gain: 0.3, type: 'sawtooth', detune: -18 },
-      { ratio: 6, gain: 0.16, type: 'sawtooth', detune: 9 },
+      { ratio: 0.25, gain: 0.55, type: 'sawtooth', detune: -19 },
+      { ratio: 0.5, gain: 1, type: 'sawtooth', detune: -14 },
+      { ratio: 1, gain: 0.8, type: 'sawtooth', detune: 0 },
+      { ratio: 1.5, gain: 0.24, type: 'sawtooth', detune: 11 },
+      { ratio: 2, gain: 0.4, type: 'sawtooth', detune: -7 },
+      { ratio: 3, gain: 0.16, type: 'square', detune: 13 },
     ],
   },
   // The 2006-2013 Formula 1 engine: 2.4 litres, eight cylinders, and
@@ -243,7 +258,11 @@ export default class EngineAudio {
     filter.type = 'lowpass';
     filter.frequency.value = 600;
     filter.Q.value = voice.q ?? 0.9;
-    filter.connect(master);
+    const shelf = ctx.createBiquadFilter();
+    shelf.type = 'lowshelf';
+    shelf.frequency.value = voice.shelf?.hz ?? 150;
+    shelf.gain.value = voice.shelf?.gain ?? 0;
+    filter.connect(shelf).connect(master);
 
     // The chug. An oscillator locked to the firing rate (or half of it)
     // sweeping the cutoff, which is what a static filter over a steady
