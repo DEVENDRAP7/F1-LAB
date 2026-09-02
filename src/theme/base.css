@@ -2223,10 +2223,46 @@ tbody tr.is-on {
 .wheel-right { text-anchor: end; }
 
 /* A shift strip runs green, then amber, then red — it is read by where
-   the colour changes, not by counting lamps. */
-.wheel-led-a { fill: #35d07f; }
-.wheel-led-b { fill: #f2b134; }
-.wheel-led-c { fill: #ec4b3f; }
+   the colour changes, not by counting lamps.
+ *
+ * An UNLIT lamp is a dark lens, not an absent one. Painting all thirteen
+ * permanently in their colours was the bug: a strip that is fully lit at
+ * every moment carries no information at all, which is the opposite of
+ * what the part is for. */
+.wheel-led {
+  fill: #161c26;
+  stroke: #0a0e15;
+  stroke-width: 1;
+}
+
+/* `color` rather than `fill`, so one rule can light the lamp and throw
+   its own glow without repeating the value. */
+.wheel-led.is-lit {
+  fill: currentColor;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.wheel-led-a { color: #35d07f; }
+.wheel-led-b { color: #f2b134; }
+.wheel-led-c { color: #ec4b3f; }
+.wheel-led-d { color: #46b6ff; }
+
+/* At the limiter the whole strip goes blue and flashes, which is what a
+   real one does and what makes it readable without looking at it. CSS,
+   not a frame loop: the revs stop climbing at the limit, so the loop
+   that fills the strip has already ended by the time this starts. */
+.wheel-leds.at-limit .wheel-led.is-lit {
+  color: #5cc2ff;
+  animation: wheel-shift-flash 0.11s steps(1) infinite alternate;
+}
+
+@keyframes wheel-shift-flash {
+  to { opacity: 0.12; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheel-leds.at-limit .wheel-led.is-lit { animation: none; }
+}
 
 .wheel-button {
   fill: var(--wh-3);

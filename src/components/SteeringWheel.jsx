@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  BUTTONS, CONTROL_KIND, FIXTURES, ROTARIES,
-  describe, initialPositions,
+  BUTTONS, CONTROL_KIND, FIXTURES, IDLE_RPM, REV_LIMIT, ROTARIES,
+  RPM_AFTER_DOWNSHIFT, RPM_AFTER_UPSHIFT, STATUS_LAMPS,
+  atRevLimit, describe, initialPositions, litLamps, manualRpm,
 } from '../lib/steeringWheel.js';
 import { DEMOS, stateAt } from '../lib/wheelDemo.js';
 import EngineAudio, { VOICES } from '../lib/engineAudio.js';
@@ -99,6 +100,11 @@ export default function SteeringWheel({ mode, onMode }) {
   const [caption, setCaption] = useState(null);
   const [sound, setSound] = useState(true);
   const [voice, setVoice] = useState('v6');
+  const [rpm, setRpm] = useState(RPM_AFTER_UPSHIFT);
+  // Where the next rev ramp starts from. A ref, not state, because the
+  // ramp effect reads it once when it starts and must not restart when
+  // it changes.
+  const rpmFrom = useRef(RPM_AFTER_UPSHIFT);
   const audio = useRef(null);
 
   const shown = pinned ?? hovered;
@@ -112,6 +118,14 @@ export default function SteeringWheel({ mode, onMode }) {
     };
     return { engine: at('engine'), strategy: at('strategy'), braking: at('braking') };
   }, [positions]);
+
+  const lit = litLamps(rpm, LED_N);
+  const lampOn = {
+    limiter: !!pressed.limiter,
+    override: !!pressed.override,
+    aero: !!pressed.aero,
+    neutral: gear === 0,
+  };
 
   const target = (id) => ({
     tabIndex: 0,
@@ -135,11 +149,21 @@ export default function SteeringWheel({ mode, onMode }) {
 
   const shift = (step) => setGear((g) => {
     const next = Math.min(TOP_GEAR, Math.max(1, g + step));
+    if (next === g) return g;
     setSpeed(GEAR_KPH[next]);
+    // Revs drop on an upshift and rise on a downshift. It is the whole
+    // shape of a shift, and it is what makes the strip empty and fill.
+    rpmFrom.current = step > 0 ? RPM_AFTER_UPSHIFT : RPM_AFTER_DOWNSHIFT;
+    setRpm(rpmFrom.current);
     return next;
   });
 
-  const selectNeutral = () => { setGear(0); setSpeed(0); };
+  const selectNeutral = () => {
+    setGear(0);
+    setSpeed(0);
+    rpmFrom.current = IDLE_RPM;
+    setRpm(IDLE_RPM);
+  };
 
   const stopDemo = useCallback(() => {
     setDemo(null);
@@ -162,6 +186,8 @@ export default function SteeringWheel({ mode, onMode }) {
       const s = stateAt(script, t);
       setGear(s.gear);
       setSpeed(Math.round(s.speed));
+      setRpm(s.rpm);
+      rpmFrom.current = s.rpm;
       setCaption(s.caption);
       setPositions((p) => (p.strategy === s.strategy && p.engine === s.engine
         ? p : { ...p, strategy: s.strategy, engine: s.engine }));
@@ -195,6 +221,29 @@ export default function SteeringWheel({ mode, onMode }) {
 
   // Leaving the page with an engine still running would be unforgivable.
   useEffect(() => () => audio.current?.stop(), []);
+
+  // Outside a demo the car is taken to be accelerating in the selected
+  // gear, so the revs climb and the strip fills — a shift strip that
+  // never moves is not a shift strip, it is thirteen painted circles.
+  //
+  // The loop is BOUNDED: it ends the moment the revs reach the limiter,
+  // about two seconds after a shift, and the flashing at the limit is a
+  // CSS animation rather than a frame loop. A permanent requestAnimation
+  // Frame for an ornament is not worth anybody's battery.
+  useEffect(() => {
+    if (demo) return undefined;
+    if (gear === 0) return undefined;
+    const from = rpmFrom.current;
+    const started = performance.now();
+    let raf = 0;
+    const tick = (now) => {
+      const { rpm: next, done } = manualRpm(from, (now - started) / 1000);
+      setRpm(next);
+      if (!done) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [demo, gear]);
 
   // The page has its own Z/X switch above the car. If someone uses it,
   // the wheel's AERO button has to follow, or the two disagree about
@@ -318,26 +367,36 @@ export default function SteeringWheel({ mode, onMode }) {
           {...activate('fix:leds', () => {})}
         >
           <rect className="wheel-screen-bed" x={SCREEN_X} y="112" width={SCREEN_W} height="26" rx="10" />
-          {Array.from({ length: LED_N }, (_, i) => (
-            <circle
-              key={i}
-              className={`wheel-led wheel-led-${i < 5 ? 'a' : i < 9 ? 'b' : 'c'}`}
-              cx={SCREEN_X + 16 + i * 17} cy="125" r="5.4"
-            />
-          ))}
+          <g className={`wheel-leds${atRevLimit(rpm) ? ' at-limit' : ''}`}>
+            {Array.from({ length: LED_N }, (_, i) => (
+              <circle
+                key={i}
+                className={`wheel-led wheel-led-${i < 5 ? 'a' : i < 9 ? 'b' : 'c'}`
+                  + `${i < lit ? ' is-lit' : ''}`}
+                cx={SCREEN_X + 16 + i * 17} cy="125" r="5.4"
+              />
+            ))}
+          </g>
         </g>
 
         {/* Status columns either side of the screen, in the one strip of
             face left between the button columns and the display. Real
             wheels carry these where a driver can catch them without
-            leaving the road in their peripheral vision. */}
+            leaving the road in their peripheral vision — which is also
+            why there are two of them and they say the same thing.
+            Each lamp reports a state you can actually put this wheel
+            into, rather than standing for something a team's telemetry
+            might show, which would be an invention dressed as a fact. */}
         {[315, 585].map((x) => (
-          <g key={x}>
-            {[180, 206, 232, 258].map((y, i) => (
+          <g key={x}
+            className={`wheel-hit${shown === 'fix:status' ? ' is-on' : ''}`}
+            {...activate('fix:status', () => {})}
+          >
+            {STATUS_LAMPS.map((lamp, i) => (
               <circle
-                key={y}
-                className={`wheel-led wheel-led-${i === 0 ? 'a' : i === 3 ? 'c' : 'b'}`}
-                cx={x} cy={y} r="4.2" opacity={i === 3 ? 0.35 : 0.9}
+                key={lamp.id}
+                className={`wheel-led wheel-led-${lamp.tone}${lampOn[lamp.id] ? ' is-lit' : ''}`}
+                cx={x} cy={180 + i * 26} r="4.6"
               />
             ))}
           </g>

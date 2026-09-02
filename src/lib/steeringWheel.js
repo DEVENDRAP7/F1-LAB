@@ -193,6 +193,69 @@ export const BUTTONS = [
   },
 ];
 
+// ── the shift strip ──────────────────────────────────────────────────
+// A shift strip is read by WHERE the colour changes, not by counting
+// lamps, and it only means anything if it moves. The lamps here used to
+// be painted on: thirteen circles, permanently green-amber-red, telling
+// you nothing at any moment. They fill with revs now.
+//
+// Real strips stay dark for most of the rev range and only start
+// filling near the top, because a light that is on all the time is not
+// a signal. 0.62 is a representative point to start; no team publishes
+// where theirs begins, or its shift points.
+export const REV_LIMIT = 15000;
+export const LIGHTS_FROM = 0.62;
+export const IDLE_RPM = 4200;
+export const RPM_AFTER_UPSHIFT = 10300;
+export const RPM_AFTER_DOWNSHIFT = 12200;
+/** How fast the revs climb in gear, when a demo is not driving them. */
+export const RPM_PER_SECOND = 2100;
+/** How long the revs sit on the limiter before the driver lifts. */
+export const LIMITER_HOLD_S = 2.4;
+export const LIMITER_SETTLE_S = 0.8;
+/** Where they settle: strip nearly full, and not flashing. */
+export const REST_RPM = REV_LIMIT * 0.965;
+
+/** The manual rev model: climb, sit on the limiter, then lift.
+ *
+ *  The lift is not decoration. Without it the ramp ends AT the limiter
+ *  and stays there, so a page left open sits with thirteen lamps
+ *  flashing blue for ever — which is both wrong (nobody holds a car on
+ *  the limiter) and a permanent animation on a page that is mostly
+ *  charts. `done` is what lets the frame loop stop. */
+export function manualRpm(from, t) {
+  const rampS = Math.max(0, (REV_LIMIT - from) / RPM_PER_SECOND);
+  if (t < rampS) return { rpm: from + t * RPM_PER_SECOND, done: false };
+  const held = t - rampS;
+  if (held < LIMITER_HOLD_S) return { rpm: REV_LIMIT, done: false };
+  const u = (held - LIMITER_HOLD_S) / LIMITER_SETTLE_S;
+  if (u >= 1) return { rpm: REST_RPM, done: true };
+  return { rpm: REV_LIMIT + (REST_RPM - REV_LIMIT) * u, done: false };
+}
+
+/** How many of `count` lamps are lit at these revs. */
+export function litLamps(rpm, count, limit = REV_LIMIT, from = LIGHTS_FROM) {
+  const frac = Math.max(0, Math.min(1, rpm / limit));
+  if (frac <= from) return 0;
+  return Math.min(count, Math.ceil(((frac - from) / (1 - from)) * count));
+}
+
+/** At the limiter, where the whole strip flashes for an upshift. */
+export function atRevLimit(rpm, limit = REV_LIMIT) {
+  return rpm >= limit * 0.985;
+}
+
+// The four indicator lamps either side of the screen. Each one reports
+// a state of THIS wheel that you can actually put it into, rather than
+// standing for something a real team's telemetry might show — which
+// would be an invention dressed as a fact.
+export const STATUS_LAMPS = [
+  { id: 'limiter', tone: 'c', text: 'pit lane limiter armed' },
+  { id: 'override', tone: 'a', text: 'override deploying' },
+  { id: 'aero', tone: 'd', text: 'X-mode, wings flattened' },
+  { id: 'neutral', tone: 'b', text: 'neutral selected' },
+];
+
 export const FIXTURES = [
   {
     id: 'display',
@@ -206,7 +269,17 @@ export const FIXTURES = [
     kind: 'display',
     name: 'Shift lights',
     text: 'A strip that fills across as the engine approaches its limit, so an upshift can be '
-      + 'timed without looking away from the corner.',
+      + 'timed without looking away from the corner. It is read by where the colour changes '
+      + 'rather than by counting lamps, and at the limiter the whole strip turns blue and '
+      + 'flashes. Shift up with the right paddle and watch it fill again.',
+  },
+  {
+    id: 'status',
+    kind: 'display',
+    name: 'Status lamps',
+    text: 'Four indicators either side of the screen, repeated so one is always in the '
+      + 'driver’s eyeline whichever way the wheel is turned: pit limiter, override, '
+      + 'X-mode, and neutral. Each lights when you put this wheel into that state.',
   },
   {
     id: 'shift',
