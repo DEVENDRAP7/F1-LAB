@@ -63,8 +63,10 @@ export const PARTS = {
   },
   rearWing: {
     name: 'Rear wing',
-    text: 'Three elements for 2026, and the beam wing is gone. It trims the balance the '
-      + 'floor sets, and it is what most obviously costs top speed.',
+    text: 'Two elements for 2026, and the beam wing is gone. It trims the balance the '
+      + 'floor sets, and it is what most obviously costs top speed. The endplate carries '
+      + 'the slots and louvres that let pressure bleed across it, and an outward gurney '
+      + 'along its trailing edge.',
     verdict: ['s', 'geometry from the published regulations'],
   },
   rearFlap: {

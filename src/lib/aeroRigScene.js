@@ -355,9 +355,17 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
 
   /** A vertical plate: outline in the fore-aft plane, thin across the car.
       Endplates, floor fences and diffuser strakes are all this shape. */
-  function plate(points, thickness, mat, part, x, y, z) {
+  function plate(points, thickness, mat, part, x, y, z, holes) {
     const shape = new THREE.Shape();
     points.forEach(([a, b], i) => (i ? shape.lineTo(a, b) : shape.moveTo(a, b)));
+    // Holes are real openings, not dark paint: ExtrudeGeometry walls
+    // each one, so a slot in an endplate has a thickness you can see
+    // into. Endplate louvres and slots are the reason this exists.
+    for (const hole of holes ?? []) {
+      const path = new THREE.Path();
+      hole.forEach(([a, b], i) => (i ? path.lineTo(a, b) : path.moveTo(a, b)));
+      shape.holes.push(path);
+    }
     const geo = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
     geo.translate(0, 0, -thickness / 2);
     const mesh = new THREE.Mesh(geo, mat);
@@ -899,10 +907,43 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     // the flap's trailing edge now reaches 2.50, so it ran out from
     // under its own wing. The top edge is longer and flatter than the
     // last cut too, which is the profile the reference draws.
+    //
+    // The CAD reference names the features on this panel, and it was a
+    // blank sheet of carbon: an ENDPLATE CUTOUT at the top rear, a run
+    // of LOUVRES along the top, a LEADING EDGE SLOT and a REAR SLOT.
+    // They are what stops an endplate reading as a board — every
+    // photograph of the back of a car shows light coming through them.
+    //
+    // The cutout is a bite out of the top-rear corner, taken out of the
+    // outline rather than punched through it, because that is what a
+    // cutout is.
+    //
+    // Every slot below is placed against the outline, not by eye. The
+    // leading edge stops at y 0.245 because above that the front edge
+    // has swept back past x 0.11 and a slot at 0.085 would be cut in
+    // fresh air; the louvres stop at y 0.328 because the top edge is
+    // between 0.334 and 0.344 across their span.
+    const EP_LOUVRES = Array.from({ length: 4 }, (_, i) => {
+      const x0 = 0.235 + i * 0.060;
+      return [[x0, 0.298], [x0 + 0.045, 0.306], [x0 + 0.045, 0.328], [x0, 0.320]];
+    });
     plate([[0.10, 0.086], [0.28, 0.074], [0.44, 0.086], [0.52, 0.128],
-      [0.575, 0.196], [0.585, 0.286], [0.55, 0.334], [0.30, 0.344],
-      [0.14, 0.326], [0.072, 0.244], [0.060, 0.150]], 0.018, carbon, 'rearWing',
-    1.94, 0.690, side * (RW_SPAN / 2));
+      [0.575, 0.196], [0.585, 0.284], [0.556, 0.298], [0.548, 0.330],
+      [0.30, 0.344], [0.14, 0.326], [0.072, 0.244], [0.060, 0.150]],
+    0.018, carbon, 'rearWing', 1.94, 0.690, side * (RW_SPAN / 2), [
+      // Leading edge slot, parallel to the front edge.
+      [[0.086, 0.168], [0.104, 0.172], [0.112, 0.243], [0.094, 0.245]],
+      // Rear slot, parallel to the back edge.
+      [[0.548, 0.192], [0.564, 0.196], [0.570, 0.286], [0.552, 0.288]],
+      ...EP_LOUVRES,
+    ]);
+    // The outward gurney: a lip standing off the outer face along the
+    // trailing edge. It is 12 mm of panel extruded 30 mm ACROSS the
+    // car rather than along it — a gurney works by standing square to
+    // the surface it sits on, so drawn in the plane of the endplate it
+    // would be nothing at all.
+    plate([[0.575, 0.196], [0.585, 0.284], [0.571, 0.286], [0.561, 0.198]],
+      0.030, carbon, 'rearWing', 1.94, 0.690, side * (RW_SPAN / 2 + 0.024));
     // The top edge rolls outward. It is the feature that identifies an
     // endplate at a glance in any photograph of the back of a car, and
     // a flat-topped panel does not read as one however well it is
@@ -919,14 +960,32 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     roll.rotation.x = side * 0.40;
     // Rain lights down the outer face of each endplate: mandated, and
     // the same on every car.
+    //
+    // This one was at x 2.02, which is the endplate's LEADING edge — a
+    // rain light pointing up the road, with the whole panel between it
+    // and the car behind. It is a light meant to be seen from behind,
+    // so it belongs aft. Moved to x 2.44 and shortened, which also
+    // takes it off the leading-edge slot it was sitting on top of; its
+    // span is held between the endplate's lower edge at local y 0.118
+    // and the rear slot starting at 0.192.
     const strip = new THREE.Mesh(
-      new THREE.BoxGeometry(0.020, 0.170, 0.010),
+      new THREE.BoxGeometry(0.020, 0.100, 0.010),
       new THREE.MeshStandardMaterial({ color: 0xd83228, emissive: 0x5e1108, roughness: 0.5 }),
     );
-    strip.position.set(2.02, 0.865, side * (RW_SPAN / 2 + 0.010));
+    strip.position.set(2.44, 0.870, side * (RW_SPAN / 2 + 0.010));
     strip.userData.part = 'rearWing';
     car.add(strip);
   }
+  // The adjuster fairing, which the reference names and puts on the axis
+  // the flap turns about. Something has to drive a movable element, and
+  // on a car that something is faired over; leaving it out made the flap
+  // look as though it pivoted on nothing. One per side, bridging the
+  // main plane's upper surface to the flap above it.
+  for (const side of [1, -1]) {
+    plate([[0, 0], [0.11, 0.006], [0.132, 0.028], [0.10, 0.050], [0.02, 0.044]],
+      0.022, carbon, 'rearWing', 2.17, 0.828, side * 0.22);
+  }
+
   // Double mount: two struts per side reaching the underside of the main
   // plane, the published 2026 change from a single curved bracket with
   // the DRS actuator built into its bend.
