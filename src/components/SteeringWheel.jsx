@@ -15,6 +15,14 @@ import {
 // display follows, because a wheel you can only read is a diagram, and
 // the thing worth understanding here is that one switch changes how the
 // whole car behaves.
+//
+// ── on the draw order ────────────────────────────────────────────────
+// It is not decorative. Paddles first, because they are BEHIND the
+// wheel and the grips have to pass in front of them; then the grips;
+// then the lower panel, which runs up under the face so the two read as
+// one moulding rather than two boards with a gap; then the face; then
+// the pods, which are raised off the face and were previously drawn
+// underneath it, where they were invisible and contributed nothing.
 
 const RING_IN = 44;
 const RING_OUT = 70;
@@ -28,6 +36,23 @@ const RING_OUT = 70;
 const FACE_PATH = 'M212 88 L272 88 L318 108 L582 108 L628 88 L718 88 '
   + 'A26 26 0 0 1 744 114 L744 332 A26 26 0 0 1 718 358 L212 358 '
   + 'A26 26 0 0 1 186 332 L186 114 A26 26 0 0 1 212 88 Z';
+
+// Shift above, clutch below, one of each on both sides — four paddles,
+// two functions, which is what the cars carry. Both tabs of a pair are
+// the same hit target, so hovering either explains the same control.
+const PADDLES = [
+  { id: 'shift', label: 'SHIFT', y: 168, h: 76, spans: [[124, 66], [710, 66]] },
+  { id: 'clutch', label: 'CLUTCH', y: 254, h: 58, spans: [[132, 58], [710, 58]] },
+];
+
+// The screen and the shift strip share a width, and it is narrower than
+// it was: the raised pods have to clear it, and at the old width the
+// left pod covered the display's top corner.
+const SCREEN_X = 336;
+const SCREEN_W = 228;
+const STRIP_X = 352;
+const STRIP_W = 196;
+const LED_N = 11;
 
 function polar(cx, cy, r, deg) {
   const a = ((deg - 90) * Math.PI) / 180;
@@ -94,16 +119,18 @@ export default function SteeringWheel() {
         <defs>
           {/* Carbon weave. A twill is two sets of diagonals at opposite
               angles, one catching light and one in shadow — which is why
-              a flat grey fill never reads as carbon however dark it is. */}
+              a flat grey fill never reads as carbon however dark it is.
+              The colours are the wheel's own, not the page's: in the
+              light theme the site's surface tokens made this white. */}
           <pattern id="carbon" width="10" height="10" patternUnits="userSpaceOnUse">
-            <rect width="10" height="10" fill="var(--bg-2)" />
+            <rect width="10" height="10" fill="var(--wh-2)" />
             <path
               d="M0 10 L10 0 M-3 3 L3 -3 M7 13 L13 7"
-              stroke="var(--bg-3)" strokeWidth="2.4" opacity="0.55"
+              stroke="var(--wh-3)" strokeWidth="2.4" opacity="0.55"
             />
             <path
               d="M0 0 L10 10 M-3 7 L3 13 M7 -3 L13 3"
-              stroke="var(--bg-0)" strokeWidth="1.7" opacity="0.5"
+              stroke="var(--wh-0)" strokeWidth="1.7" opacity="0.5"
             />
           </pattern>
           {/* A sheen across the top third, so the face reads as a surface
@@ -114,74 +141,99 @@ export default function SteeringWheel() {
             <stop offset="1" stopColor="#000000" stopOpacity="0.16" />
           </linearGradient>
           <linearGradient id="wheelGrip" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="var(--bg-3)" />
-            <stop offset="0.5" stopColor="var(--bg-2)" />
-            <stop offset="1" stopColor="var(--bg-0)" />
+            <stop offset="0" stopColor="var(--wh-3)" />
+            <stop offset="0.5" stopColor="var(--wh-2)" />
+            <stop offset="1" stopColor="var(--wh-0)" />
           </linearGradient>
           {/* Knobs are machined metal: lit from the upper left, falling
               away to shadow at the lower right. */}
           <radialGradient id="knobFace" cx="0.34" cy="0.28" r="0.9">
-            <stop offset="0" stopColor="var(--line-strong)" />
-            <stop offset="0.55" stopColor="var(--bg-2)" />
-            <stop offset="1" stopColor="var(--bg-0)" />
+            <stop offset="0" stopColor="var(--wh-edge)" />
+            <stop offset="0.55" stopColor="var(--wh-2)" />
+            <stop offset="1" stopColor="var(--wh-0)" />
           </radialGradient>
           <radialGradient id="btnGloss" cx="0.35" cy="0.28" r="0.75">
             <stop offset="0" stopColor="#ffffff" stopOpacity="0.34" />
             <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="screenGlow" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="var(--accent-0)" stopOpacity="0.10" />
-            <stop offset="1" stopColor="var(--accent-0)" stopOpacity="0" />
+            <stop offset="0" stopColor="var(--wh-lcd)" stopOpacity="0.10" />
+            <stop offset="1" stopColor="var(--wh-lcd)" stopOpacity="0" />
           </linearGradient>
           <filter id="soft" x="-25%" y="-25%" width="150%" height="150%">
             <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#000" floodOpacity="0.5" />
           </filter>
         </defs>
 
-        {/* Grips. A thick stroked curve gives the sculpted handle these
-            have, without a hand-written outline for every millimetre. */}
-        <path className="wheel-grip" d="M232 348 C 150 392 132 470 176 566" />
-        <path className="wheel-grip" d="M668 348 C 750 392 768 470 724 566" />
-        <path className="wheel-grip-inner" d="M244 366 C 182 402 170 464 202 540" />
-        <path className="wheel-grip-inner" d="M656 366 C 718 402 730 464 698 540" />
-
-        {/* Paddles, ghosted behind the wheel because that is where they sit. */}
-        {[['clutch', 150], ['shift', 750]].map(([id, x]) => (
-          <g key={id} className={`wheel-hit${shown === `fix:${id}` ? ' is-on' : ''}`}
-            {...activate(`fix:${id}`, () => {})}
+        {/* Paddles. Behind everything, tucked under the outer edges. */}
+        {PADDLES.map((p) => (
+          <g key={p.id}
+            className={`wheel-hit${shown === `fix:${p.id}` ? ' is-on' : ''}`}
+            {...activate(`fix:${p.id}`, () => {})}
           >
-            <rect className="wheel-paddle" x={x - 74} y="556" width="148" height="34" rx="12" />
-            <text className="wheel-tag" x={x} y={578}>{id === 'shift' ? 'SHIFT' : 'CLUTCH'}</text>
+            {p.spans.map(([x, w]) => (
+              <g key={x}>
+                <rect className="wheel-paddle" x={x} y={p.y} width={w} height={p.h} rx="14" />
+                {/* Nudged outward onto the exposed half of the tab. Centred,
+                    the label sat exactly on the face edge that overlaps it
+                    and half of every word disappeared behind the wheel. */}
+                <text
+                  className="wheel-tag wheel-tag-sm"
+                  x={x + w / 2 + (x < 450 ? -12 : 12)} y={p.y + p.h / 2 + 4}
+                  transform={`rotate(-90 ${x + w / 2 + (x < 450 ? -12 : 12)} ${p.y + p.h / 2})`}
+                >
+                  {p.label}
+                </text>
+              </g>
+            ))}
           </g>
         ))}
+
+        {/* Grips. These are the wheel's dominant feature — big sculpted
+            hooks sweeping down and outward, then tucking back in under
+            the panel. Drawn thin, they read as a bracket around a
+            tablet; drawn without the hook, as two hanging legs. */}
+        <path className="wheel-grip" d="M272 316 C 176 344 122 424 128 508 C 132 548 164 570 204 572" />
+        <path className="wheel-grip" d="M628 316 C 724 344 778 424 772 508 C 768 548 736 570 696 572" />
+        <path className="wheel-grip-hollow" d="M292 348 C 214 378 164 442 170 506 C 174 542 196 558 226 560" />
+        <path className="wheel-grip-hollow" d="M608 348 C 686 378 736 442 730 506 C 726 542 704 558 674 560" />
+
+        {/* Lower panel, running up under the face. */}
+        <rect className="wheel-panel" x="212" y="330" width="476" height="246" rx="20" />
+        <rect className="wheel-sheen" x="212" y="330" width="476" height="246" rx="20" />
 
         {/* Upper face, then the same outline again as a light pass */}
         <path className="wheel-face" d={FACE_PATH} />
         <path className="wheel-sheen" d={FACE_PATH} />
-        {/* Lower rotary panel */}
-        <rect className="wheel-panel" x="212" y="366" width="476" height="208" rx="20" />
-        <rect className="wheel-sheen" x="212" y="366" width="476" height="208" rx="20" />
+
+        {/* Raised pods at the top corners, which is where the outer
+            buttons actually sit — the face is not one flat plane. */}
+        <rect className="wheel-pod" x="200" y="112" width="130" height="88" rx="44"
+          transform="rotate(-6 265 156)" />
+        <rect className="wheel-pod" x="570" y="112" width="130" height="88" rx="44"
+          transform="rotate(6 635 156)" />
 
         {/* Shift lights */}
         <g className={`wheel-hit${shown === 'fix:leds' ? ' is-on' : ''}`}
           {...activate('fix:leds', () => {})}
         >
-          <rect className="wheel-screen-bed" x="330" y="112" width="240" height="26" rx="10" />
-          {Array.from({ length: 13 }, (_, i) => (
+          <rect className="wheel-screen-bed" x={STRIP_X} y="112" width={STRIP_W} height="26" rx="10" />
+          {Array.from({ length: LED_N }, (_, i) => (
             <circle
               key={i}
-              className={`wheel-led wheel-led-${i < 5 ? 'a' : i < 9 ? 'b' : 'c'}`}
-              cx={344 + i * 18} cy="125" r="5.2"
+              className={`wheel-led wheel-led-${i < 4 ? 'a' : i < 8 ? 'b' : 'c'}`}
+              cx={365 + i * 17} cy="125" r="5.2"
             />
           ))}
         </g>
 
-        {/* Status columns either side of the screen. Real wheels carry
-            these where a driver can catch them without leaving the road
-            in their peripheral vision. */}
-        {[308, 592].map((x) => (
+        {/* Status columns either side of the screen, in the one strip of
+            face left between the button columns and the display. Real
+            wheels carry these where a driver can catch them without
+            leaving the road in their peripheral vision. */}
+        {[315, 585].map((x) => (
           <g key={x}>
-            {[164, 182, 200, 218].map((y, i) => (
+            {[180, 206, 232, 258].map((y, i) => (
               <circle
                 key={y}
                 className={`wheel-led wheel-led-${i === 0 ? 'a' : i === 3 ? 'c' : 'b'}`}
@@ -199,25 +251,25 @@ export default function SteeringWheel() {
               own, then the modes — because a 52px digit centred across a
               line of 20px values collides with them, and a fourth row of
               text fell off the bottom of the screen entirely. */}
-          <rect className="wheel-screen-bed" x="322" y="146" width="256" height="154" rx="12" />
-          <rect className="wheel-screen-glow" x="322" y="146" width="256" height="154" rx="12" />
-          <text className="wheel-lcd-sm" x="338" y="170">SPD 298</text>
-          <text className="wheel-lcd-sm wheel-right" x="562" y="170">1:18.412</text>
+          <rect className="wheel-screen-bed" x={SCREEN_X} y="146" width={SCREEN_W} height="154" rx="12" />
+          <rect className="wheel-screen-glow" x={SCREEN_X} y="146" width={SCREEN_W} height="154" rx="12" />
+          <text className="wheel-lcd-sm" x="352" y="170">SPD 298</text>
+          <text className="wheel-lcd-sm wheel-right" x="548" y="170">1:18.412</text>
           <text className="wheel-gear" x="450" y="226">8</text>
-          <text className="wheel-lcd-row" x="338" y="258">{`ENG ${readout.engine}`}</text>
-          <text className="wheel-lcd-row wheel-right" x="562" y="258">
+          <text className="wheel-lcd-row" x="352" y="258">{`ENG ${readout.engine}`}</text>
+          <text className="wheel-lcd-row wheel-right" x="548" y="258">
             {`STR ${readout.strategy}`}
           </text>
-          <text className="wheel-lcd-row" x="338" y="284">{`ENB ${readout.braking}`}</text>
-          <text className="wheel-lcd-row wheel-right" x="562" y="284">
+          <text className="wheel-lcd-row" x="352" y="284">{`ENB ${readout.braking}`}</text>
+          <text className="wheel-lcd-row wheel-right" x="548" y="284">
             {pressed.aero ? 'AERO X' : 'AERO Z'}
           </text>
           {/* The bar fills with the engine map, so the screen carries a
               reading you can take in without parsing any text. */}
-          <rect className="wheel-bar-bed" x="338" y="290" width="224" height="7" rx="3.5" />
+          <rect className="wheel-bar-bed" x={STRIP_X} y="290" width={STRIP_W} height="7" rx="3.5" />
           <rect
-            className="wheel-bar-fill" x="338" y="290" rx="3.5" height="7"
-            width={224 * ((positions.engine + 1) / ROTARIES[0].positions.length)}
+            className="wheel-bar-fill" x={STRIP_X} y="290" rx="3.5" height="7"
+            width={STRIP_W * ((positions.engine + 1) / ROTARIES[0].positions.length)}
           />
         </g>
 
@@ -236,6 +288,15 @@ export default function SteeringWheel() {
                     className={`wheel-button tone-${b.tone}`}
                     x={b.x - b.w / 2} y={b.y - b.h / 2} width={b.w} height={b.h} rx="7"
                   />
+                  {/* Ribs: these are thumbed blind at speed, so the real
+                      ones are deeply serrated to be found by feel. */}
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <line
+                      key={i} className="wheel-rib"
+                      x1={b.x - b.w / 2 + 4} x2={b.x + b.w / 2 - 4}
+                      y1={b.y - b.h / 2 + 9 + i * 9} y2={b.y - b.h / 2 + 9 + i * 9}
+                    />
+                  ))}
                   <rect
                     className="wheel-gloss"
                     x={b.x - b.w / 2} y={b.y - b.h / 2} width={b.w} height={b.h} rx="7"
@@ -247,7 +308,12 @@ export default function SteeringWheel() {
                   <circle className="wheel-gloss" cx={b.x} cy={b.y} r={b.r} />
                 </>
               )}
-              <text className="wheel-btn-label" x={b.x} y={b.y + 5}>{b.label}</text>
+              <text
+                className={`wheel-btn-label${b.kind === 'rocker' ? ' wheel-tag-sm' : ''}`}
+                x={b.x} y={b.kind === 'rocker' ? b.y + b.h / 2 + 16 : b.y + 5}
+              >
+                {b.label}
+              </text>
             </g>
           );
         })}

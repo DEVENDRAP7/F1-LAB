@@ -2071,7 +2071,30 @@ tbody tr.is-on {
   align-items: flex-start;
 }
 
+/* The wheel does NOT follow the site's theme, and this is the whole
+   reason the block below names no --bg or --ink token.
+ *
+ * It was drawn in them, and in the dark theme it looked right, so it
+ * shipped. Rendered in the light theme it was a white plastic toy:
+ * --bg-2 is #f5f7fb there, so the carbon weave came out near-white,
+ * and the gear digit — --ink-0, #0d1117 — went invisible against a
+ * screen bed hardcoded to #060b12.
+ *
+ * A steering wheel is not a UI surface that should restyle itself with
+ * the page around it. It is an object, and the object is black carbon
+ * with white lettering under both themes, so it carries its own fixed
+ * palette. Everything drawn as part of the wheel takes its colour from
+ * here; only the prose panel beside it uses the site's tokens. */
 .wheel-svg {
+  --wh-0: #05070b;      /* seams, and the shadow inside a hollow */
+  --wh-1: #10141c;      /* carbon, turned away from the light */
+  --wh-2: #1a202b;      /* carbon, facing it */
+  --wh-3: #262e3c;      /* a raised pod, catching more of it */
+  --wh-edge: #414c60;   /* a machined edge */
+  --wh-ink: #eef2f8;
+  --wh-dim: #9fa9bb;
+  --wh-lcd: #46b6ff;
+
   flex: 1 1 26rem;
   min-width: 17rem;
   max-width: 40rem;
@@ -2080,7 +2103,7 @@ tbody tr.is-on {
 
 .wheel-face {
   fill: url(#carbon);
-  stroke: var(--line-strong);
+  stroke: var(--wh-edge);
   stroke-width: 2.5;
   filter: url(#soft);
 }
@@ -2102,9 +2125,11 @@ tbody tr.is-on {
   pointer-events: none;
 }
 
+/* Drawn before the face and running up under it, so the two read as one
+   moulding rather than as two boards with a gap between them. */
 .wheel-panel {
   fill: url(#carbon);
-  stroke: var(--line-strong);
+  stroke: var(--wh-edge);
   stroke-width: 2;
   filter: url(#soft);
 }
@@ -2112,26 +2137,43 @@ tbody tr.is-on {
 .wheel-grip {
   fill: none;
   stroke: url(#wheelGrip);
-  stroke-width: 70;
+  stroke-width: 82;
   stroke-linecap: round;
+  filter: url(#soft);
 }
 
-.wheel-grip-inner {
+/* The thumb hollow scooped out of the inner face of each grip. */
+.wheel-grip-hollow {
   fill: none;
-  stroke: var(--line);
-  stroke-width: 2;
+  stroke: var(--wh-0);
+  stroke-width: 26;
   stroke-linecap: round;
-  opacity: 0.7;
+  opacity: 0.5;
+}
+
+/* A pod is raised off the face, so it has to be visibly lighter than
+   the carbon around it — at one step off it read as nothing at all. */
+.wheel-pod {
+  fill: #333d4e;
+  stroke: var(--wh-edge);
+  stroke-width: 2.5;
+  filter: url(#soft);
+}
+
+.wheel-rib {
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 2.4;
+  pointer-events: none;
 }
 
 .wheel-screen-bed {
   fill: #060b12;
-  stroke: var(--line-strong);
+  stroke: var(--wh-edge);
   stroke-width: 1.6;
 }
 
 .wheel-gear {
-  fill: var(--ink-0);
+  fill: var(--wh-ink);
   font-family: var(--font-mono);
   font-size: 52px;
   font-weight: 700;
@@ -2139,21 +2181,14 @@ tbody tr.is-on {
 }
 
 .wheel-lcd-sm {
-  fill: var(--ink-1);
+  fill: var(--wh-dim);
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.1em;
 }
 
-.wheel-lcd-val {
-  fill: var(--ink-0);
-  font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 600;
-}
-
 .wheel-lcd-row {
-  fill: var(--accent-0);
+  fill: var(--wh-lcd);
   font-family: var(--font-mono);
   font-size: 15px;
   letter-spacing: 0.08em;
@@ -2161,13 +2196,15 @@ tbody tr.is-on {
 
 .wheel-right { text-anchor: end; }
 
-.wheel-led-a { fill: var(--status-good); }
-.wheel-led-b { fill: var(--status-warning); }
-.wheel-led-c { fill: var(--compound-soft); }
+/* A shift strip runs green, then amber, then red — it is read by where
+   the colour changes, not by counting lamps. */
+.wheel-led-a { fill: #35d07f; }
+.wheel-led-b { fill: #f2b134; }
+.wheel-led-c { fill: #ec4b3f; }
 
 .wheel-button {
-  fill: var(--bg-3);
-  stroke: var(--line-strong);
+  fill: var(--wh-3);
+  stroke: var(--wh-edge);
   stroke-width: 2;
   filter: url(#soft);
 }
@@ -2179,7 +2216,7 @@ tbody tr.is-on {
 .wheel-button.tone-aero { fill: #123f52; stroke: #3aa0c4; }
 
 .wheel-btn-label {
-  fill: var(--ink-0);
+  fill: var(--wh-ink);
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
@@ -2190,33 +2227,35 @@ tbody tr.is-on {
 /* A pressed latching button stays lit, so the wheel holds state you can
    see rather than only reporting it in prose. */
 .wheel-hit.is-lit .wheel-button {
-  fill: var(--accent-0);
-  stroke: var(--ink-0);
+  fill: var(--wh-lcd);
+  stroke: var(--wh-ink);
 }
 
 .wheel-wedge {
-  stroke: var(--bg-0);
+  stroke: var(--wh-0);
   stroke-width: 1.5;
-  opacity: 0.55;
+  opacity: 0.8;
 }
 
 /* Positions are coloured so they can be found at a glance, which is why
-   real wheels colour them too. The ramp is the site's own. */
-.wheel-wedge.tone-0 { fill: #3b6ea8; }
-.wheel-wedge.tone-1 { fill: #2f8686; }
-.wheel-wedge.tone-2 { fill: #4f8a3c; }
-.wheel-wedge.tone-3 { fill: #a8862f; }
-.wheel-wedge.tone-4 { fill: #b4632c; }
-.wheel-wedge.tone-5 { fill: #a24270; }
+   real wheels colour them too. Anodised rather than saturated: at full
+   chroma on a black face, twenty-eight wedges stopped reading as a
+   switch collar and started reading as a board game. */
+.wheel-wedge.tone-0 { fill: #24486e; }
+.wheel-wedge.tone-1 { fill: #1f5a5a; }
+.wheel-wedge.tone-2 { fill: #35602a; }
+.wheel-wedge.tone-3 { fill: #6b5820; }
+.wheel-wedge.tone-4 { fill: #74421e; }
+.wheel-wedge.tone-5 { fill: #6b2c4a; }
 
 .wheel-wedge.is-sel {
   opacity: 1;
-  stroke: var(--ink-0);
+  stroke: var(--wh-ink);
   stroke-width: 2.5;
 }
 
 .wheel-pos {
-  fill: var(--ink-0);
+  fill: var(--wh-ink);
   font-family: var(--font-mono);
   font-size: 10.5px;
   font-weight: 600;
@@ -2226,26 +2265,28 @@ tbody tr.is-on {
 
 .wheel-knob {
   fill: url(#knobFace);
-  stroke: var(--line-strong);
+  stroke: var(--wh-edge);
   stroke-width: 2.5;
   filter: url(#soft);
 }
 
 .wheel-knob-grip {
-  fill: var(--ink-1);
+  fill: var(--wh-dim);
   pointer-events: none;
 }
 
-.wheel-paddle { fill: var(--bg-1); stroke: var(--line); stroke-width: 1.6; }
+.wheel-paddle { fill: var(--wh-1); stroke: var(--wh-edge); stroke-width: 1.6; }
 
 .wheel-tag {
-  fill: var(--ink-1);
+  fill: var(--wh-dim);
   font-family: var(--font-mono);
   font-size: 13px;
   letter-spacing: 0.1em;
   text-anchor: middle;
   pointer-events: none;
 }
+
+.wheel-tag-sm { font-size: 11px; }
 
 /* The whole control is one hit target, so a 10px label never has to be
    hit precisely. */
@@ -2259,10 +2300,10 @@ tbody tr.is-on {
 .wheel-hit.is-on .wheel-button,
 .wheel-hit.is-on .wheel-knob,
 .wheel-hit.is-on .wheel-paddle,
-.wheel-hit.is-on .wheel-screen-bed { stroke: var(--accent-0); stroke-width: 3; }
+.wheel-hit.is-on .wheel-screen-bed { stroke: var(--wh-lcd); stroke-width: 3; }
 
 .wheel-hit:hover .wheel-wedge,
-.wheel-hit.is-on .wheel-wedge { opacity: 1; stroke: var(--accent-0); }
+.wheel-hit.is-on .wheel-wedge { opacity: 1; stroke: var(--wh-lcd); }
 
 /* Focus needs its own mark, not only the hover fill, or a keyboard user
    cannot tell where they are. */
@@ -2271,7 +2312,7 @@ tbody tr.is-on {
 .wheel-hit:focus-visible .wheel-wedge,
 .wheel-hit:focus-visible .wheel-paddle,
 .wheel-hit:focus-visible .wheel-screen-bed {
-  stroke: var(--ink-0);
+  stroke: var(--wh-ink);
   stroke-width: 3.5;
 }
 
@@ -2311,13 +2352,17 @@ tbody tr.is-on {
    under the arc length of the narrowest wedge so a four-letter label
    still fits inside its own segment. */
 @media (max-width: 640px) {
-  .wheel-pos { font-size: 15px; }
+  /* 13px, not 15: a four-letter label at 15 measures about 40 user
+     units against the 44.8 of arc an eight-position wedge gives it, and
+     with the wedge stroke either side it bled into its neighbours. */
+  .wheel-pos { font-size: 13px; }
   .wheel-tag { font-size: 19px; }
+  .wheel-tag-sm { font-size: 15px; }
   .wheel-btn-label { font-size: 18px; }
   .wheel-lcd-sm { font-size: 15px; }
   .wheel-lcd-row { font-size: 17px; }
   .wheel-gear { font-size: 58px; }
 }
 
-.wheel-bar-bed { fill: #0b1220; stroke: var(--line); stroke-width: 1; }
-.wheel-bar-fill { fill: var(--accent-0); opacity: 0.85; }
+.wheel-bar-bed { fill: #0b1220; stroke: var(--wh-edge); stroke-width: 1; }
+.wheel-bar-fill { fill: var(--wh-lcd); opacity: 0.85; }
