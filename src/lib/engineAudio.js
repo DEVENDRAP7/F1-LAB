@@ -82,12 +82,17 @@ export const VOICES = {
     // Was 6200, which rolled off the harmonics that make this engine
     // sound like this engine: at 12 600 rpm the sixth order is 3.8 kHz
     // and it was being filtered away.
-    ceiling: 9600,
+    // 7.4 kHz, not 9.6: the top orders were being heard on their own,
+    // with nothing under them, which is most of what "electric" means.
+    ceiling: 7400,
     trim: 1.0,
     q: 1.1,
     growl: { ratio: 1, depth: 260 },
     noise: 0.06,
-    noiseHz: [2200, 0.2],
+    // Was centred near 4.7 kHz at speed. That is not a turbo, that is a
+    // hiss sitting on top of the note.
+    noiseHz: [1200, 0.12],
+    shelf: { hz: 175, gain: 7 },
     // Pitch is not only frequency. What you hear as the pitch of a
     // complex note is the partial carrying the most energy, and the
     // strongest term here used to be the fundamental with a heavy
@@ -97,12 +102,13 @@ export const VOICES = {
     // is the difference between a growl and a scream, and a Formula 1
     // V6 screams.
     partials: [
-      { ratio: 0.5, gain: 0.18, type: 'sawtooth', detune: -6 },
-      { ratio: 1, gain: 0.62, type: 'sawtooth', detune: 0 },
+      { ratio: 0.25, gain: 0.34, type: 'sawtooth', detune: -16 },
+      { ratio: 0.5, gain: 0.5, type: 'sawtooth', detune: -6 },
+      { ratio: 1, gain: 0.7, type: 'sawtooth', detune: 0 },
       { ratio: 2, gain: 1, type: 'sawtooth', detune: 7 },
-      { ratio: 3, gain: 0.62, type: 'sawtooth', detune: -11 },
-      { ratio: 4, gain: 0.34, type: 'square', detune: 9 },
-      { ratio: 6, gain: 0.18, type: 'sawtooth', detune: -14 },
+      { ratio: 3, gain: 0.55, type: 'sawtooth', detune: -11 },
+      { ratio: 4, gain: 0.26, type: 'square', detune: 9 },
+      { ratio: 6, gain: 0.12, type: 'sawtooth', detune: -14 },
     ],
   },
   // The first cut of this sounded like an electric motor, and the reason
@@ -175,19 +181,63 @@ export const VOICES = {
     cylinders: 8,
     idle: 5000,
     redline: 18000,
-    ceiling: 12000,
+    // This one measured with NOTHING below 250 Hz and a centroid above
+    // 5 kHz — the top of the note and none of the bottom. It is a
+    // high-revving engine and it should be the brightest of the four,
+    // but brightest is not the same as weightless. Ceiling down from
+    // 12 kHz, and a quarter- and half-order under it to stand on.
+    ceiling: 8200,
     trim: 0.95,
-    q: 0.8,
-    growl: { ratio: 1, depth: 180 },
-    noise: 0.03,
-    noiseHz: [2600, 0.16],
+    q: 0.9,
+    growl: { ratio: 1, depth: 200 },
+    noise: 0.05,
+    noiseHz: [1500, 0.1],
+    shelf: { hz: 165, gain: 9 },
     partials: [
-      { ratio: 0.5, gain: 0.1, type: 'sawtooth', detune: -5 },
-      { ratio: 1, gain: 0.5, type: 'sawtooth', detune: 0 },
+      { ratio: 0.25, gain: 0.34, type: 'sawtooth', detune: -15 },
+      { ratio: 0.5, gain: 0.58, type: 'sawtooth', detune: -5 },
+      { ratio: 1, gain: 0.66, type: 'sawtooth', detune: 0 },
       { ratio: 2, gain: 1, type: 'sawtooth', detune: 6 },
-      { ratio: 3, gain: 0.7, type: 'sawtooth', detune: -9 },
-      { ratio: 4, gain: 0.46, type: 'square', detune: 11 },
-      { ratio: 6, gain: 0.26, type: 'sawtooth', detune: -13 },
+      { ratio: 3, gain: 0.6, type: 'sawtooth', detune: -9 },
+      { ratio: 4, gain: 0.34, type: 'square', detune: 11 },
+      { ratio: 6, gain: 0.16, type: 'sawtooth', detune: -13 },
+    ],
+  },
+  // A cross-plane road-car V8, and the reason it is a separate voice
+  // rather than a tweak to the one above is a real difference between
+  // the engines, not a preference.
+  //
+  // A Formula 1 V8 is FLAT-PLANE: each bank fires evenly, 180 degrees
+  // apart, and an even pulse train is a clean harmonic series — smooth,
+  // and high. A road V8 is CROSS-PLANE: the banks fire unevenly, so
+  // each one puts out a lumpy pulse train whose energy lands on half
+  // and three-quarter orders that a flat-plane engine simply does not
+  // produce. That unevenness IS the burble. It cannot be dialled into
+  // the F1 V8 without making that voice a lie about the engine.
+  v8road: {
+    id: 'v8road',
+    name: 'V8 road car',
+    note: 'NOT a Formula 1 engine. A cross-plane road V8: the banks fire unevenly, '
+      + 'which puts energy on half and three-quarter orders a flat-plane racing V8 '
+      + 'never makes — that lumpiness is the burble you are hearing.',
+    cylinders: 8,
+    idle: 700,
+    redline: 7000,
+    ceiling: 2600,
+    trim: 0.72,
+    q: 2.4,
+    growl: { ratio: 0.5, depth: 820 },
+    noise: 0.12,
+    noiseHz: [220, 0.09],
+    shelf: { hz: 210, gain: 12 },
+    partials: [
+      { ratio: 0.25, gain: 0.5, type: 'sawtooth', detune: -21 },
+      { ratio: 0.5, gain: 1, type: 'sawtooth', detune: -13 },
+      { ratio: 0.75, gain: 0.3, type: 'sawtooth', detune: 15 },
+      { ratio: 1, gain: 0.72, type: 'sawtooth', detune: 0 },
+      { ratio: 1.5, gain: 0.34, type: 'sawtooth', detune: 9 },
+      { ratio: 2, gain: 0.4, type: 'sawtooth', detune: -8 },
+      { ratio: 3, gain: 0.14, type: 'square', detune: 12 },
     ],
   },
 };

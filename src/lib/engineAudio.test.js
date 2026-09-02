@@ -127,12 +127,46 @@ describe('voice character', () => {
     expect(Math.min(...VOICES.w16.partials.map((p) => p.ratio))).toBeLessThanOrEqual(0.25);
   });
 
-  it('keeps the W16 the darkest voice', () => {
-    // It is a low-revving sixteen; if its filter ever opens further
-    // than a racing engine's, something has gone wrong again.
-    expect(VOICES.w16.ceiling).toBeLessThan(VOICES.v6.ceiling);
-    expect(VOICES.w16.ceiling).toBeLessThan(VOICES.v8.ceiling);
-    expect(VOICES.w16.noiseHz[0]).toBeLessThan(VOICES.v6.noiseHz[0]);
+  it('keeps the road engines darker than the racing ones', () => {
+    // They are low-revving; if either filter ever opens further than a
+    // racing engine's, something has gone wrong again.
+    for (const road of [VOICES.w16, VOICES.v8road]) {
+      expect(road.ceiling, road.id).toBeLessThan(VOICES.v6.ceiling);
+      expect(road.ceiling, road.id).toBeLessThan(VOICES.v8.ceiling);
+      expect(road.noiseHz[0], road.id).toBeLessThan(VOICES.v6.noiseHz[0]);
+    }
+  });
+
+  it('gives EVERY voice weight below 200 Hz', () => {
+    // This is the defect that produced "why is each sound high pitched".
+    // Measured off the real graph, the V6 and the V8 both had exactly
+    // zero energy under 250 Hz: their lowest partial was the half-order,
+    // which at these revs is already above the region an engine is felt
+    // in. Nothing could be rebalanced because there was nothing there.
+    // So every voice now carries a sub-fundamental partial and a low
+    // shelf, and neither is optional.
+    for (const voice of Object.values(VOICES)) {
+      const lowest = Math.min(...voice.partials.map((p) => p.ratio));
+      expect(lowest, `${voice.id} lowest partial`).toBeLessThanOrEqual(0.25);
+      expect(voice.shelf?.gain, `${voice.id} shelf`).toBeGreaterThan(0);
+      expect(voice.shelf.hz, `${voice.id} shelf`).toBeLessThanOrEqual(220);
+    }
+  });
+
+  it('burbles on the cross-plane V8 and not on the flat-plane one', () => {
+    // A road V8's banks fire unevenly, which lands energy on half and
+    // three-quarter orders. A Formula 1 V8 fires evenly and makes a
+    // clean harmonic series — no fractional orders at all. Putting them
+    // on the racing voice would be a lie about the engine, so the test
+    // holds both halves of the distinction.
+    // Above the fundamental and not a whole order: 0.75 and 1.5. The
+    // 0.25 sub-bass every voice now carries is NOT this — it is weight,
+    // and counting it made this test claim the racing V8 burbles.
+    const fractional = (v) => v.partials
+      .filter((p) => p.ratio > 0.5 && p.ratio % 1 !== 0).length;
+    expect(fractional(VOICES.v8road)).toBeGreaterThan(0);
+    expect(fractional(VOICES.v8)).toBe(0);
+    expect(VOICES.v8road.redline).toBeLessThan(VOICES.v8.redline / 2);
   });
 
   it('gives the W16 inharmonic content, because a chord is not an engine', () => {

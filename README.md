@@ -115,13 +115,17 @@ load time rather than written into the copy.
   the site derives anything from them. The engine note is **synthesised in
   the browser** from an oscillator stack (`src/lib/engineAudio.js`) — a real
   recording would be somebody else's copyright and would cost more on its
-  own than this site's entire initial-load budget. Three voices are offered:
-  the 2026 V6, the naturally aspirated V8 that ran to 2013, and a W16 that is
-  clearly labelled as *not* a Formula 1 engine. Swapping cylinder count alone
-  would not make them sound different — sixteen cylinders at 6 700 rpm fire
-  at nearly the same rate as six at 15 000 — so each voice carries its own
-  rev range, its own partials, its own filter, and a cutoff swept at its own
-  firing rate, which is what you are actually hearing.
+  own than this site's entire initial-load budget. Four voices are offered:
+  the 2026 V6, the naturally aspirated V8 that ran to 2013, and — both
+  clearly labelled as *not* Formula 1 engines — a W16 and a cross-plane road
+  V8. Swapping cylinder count alone would not make them sound different
+  (sixteen cylinders at 6 700 rpm fire at nearly the same rate as six at
+  15 000), so each voice carries its own rev range, partials, filter, low
+  shelf, and a cutoff swept at its own firing rate. The two V8s are separate
+  voices for a real reason rather than a preference: a racing V8 is
+  flat-plane and fires evenly, giving a clean harmonic series, while a road
+  V8 is cross-plane and fires unevenly, which puts energy on the half and
+  three-quarter orders that are heard as the burble.
 - **Sprint Weekends** — the second race of a sprint weekend, which the
   rest of the site does not show: the same drivers, cars and circuit,
   racing twice from two different grids inside a day. Places changed
