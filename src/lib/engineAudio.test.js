@@ -30,8 +30,13 @@ describe('cutoffHz', () => {
     }
   });
 
-  it('is capped, so the top end cannot turn into a whistle', () => {
-    expect(cutoffHz(15000, 1)).toBeLessThanOrEqual(6200);
+  it('is capped by the voice, so the top end cannot turn into a whistle', () => {
+    for (const voice of Object.values(VOICES)) {
+      // The floor that keeps the filter above the fundamental can lift
+      // it past the ceiling; short of that, the ceiling holds.
+      const capped = Math.max(firingHz(voice.redline, voice.cylinders) * 1.6, voice.ceiling);
+      expect(cutoffHz(voice.redline, 1, voice), voice.id).toBeLessThanOrEqual(capped);
+    }
   });
 });
 
@@ -80,5 +85,50 @@ describe('voices', () => {
 
   it('says out loud that the W16 is not a Formula 1 engine', () => {
     expect(VOICES.w16.note).toMatch(/not a formula 1 engine/i);
+  });
+});
+
+describe('the V6 voice', () => {
+  const v6 = VOICES.v6;
+  const loudest = (v) => v.partials.reduce((a, p) => (p.gain > a.gain ? p : a));
+
+  it('is loudest at its second harmonic, so the note reads an octave up', () => {
+    // Perceived pitch follows the strongest partial. With the loudest
+    // term at the fundamental and a heavy half-order under it, this
+    // engine read as a growl; a Formula 1 V6 does not growl.
+    expect(loudest(v6).ratio).toBe(2);
+    expect(loudest(VOICES.w16).ratio).toBeLessThan(1);
+  });
+
+  it('carries harmonics the W16 does not', () => {
+    const top = (v) => Math.max(...v.partials.map((p) => p.ratio));
+    expect(top(v6)).toBeGreaterThan(top(VOICES.w16));
+  });
+
+  it('opens the filter far enough to pass its own top order', () => {
+    // A partial above the cutoff is a partial you cannot hear, so the
+    // extra harmonics above would have been wasted.
+    const top = Math.max(...v6.partials.map((p) => p.ratio));
+    for (const rpm of [9000, 11000, 12600]) {
+      expect(cutoffHz(rpm, 1, v6), `${rpm} rpm`)
+        .toBeGreaterThan(firingHz(rpm, v6.cylinders) * top * 0.9);
+    }
+  });
+
+  it('is the louder of the two voices', () => {
+    expect(v6.trim).toBeGreaterThan(VOICES.w16.trim);
+  });
+});
+
+describe('level', () => {
+  it('cannot drive the graph into clipping, even with every partial in phase', () => {
+    // The worst case is every detuned oscillator lining up. A limiter
+    // catches what gets past this, but the arithmetic should not need
+    // it: oscillator gains are scaled by 0.18 in the graph.
+    for (const voice of Object.values(VOICES)) {
+      const sum = voice.partials.reduce((a, p) => a + p.gain, 0) * 0.18 + voice.noise;
+      const peak = sum * engineGain(voice.redline, 1, voice) * voice.trim;
+      expect(peak, voice.id).toBeLessThan(1);
+    }
   });
 });

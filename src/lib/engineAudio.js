@@ -38,7 +38,12 @@ export function firingHz(rpm, cylinders = 6) {
  *  Clamped at the top so a high-rev, full-throttle sample cannot run
  *  into the region where the harmonics turn into a whistle. */
 export function cutoffHz(rpm, throttle, voice = DEFAULT_VOICE) {
-  const open = 420 + rpm * 0.16 + throttle * 2600;
+  // Steeper with revs and wider with throttle than it was, because the
+  // V6's sixth order at 12 600 rpm is 3.8 kHz and the old slope left the
+  // cutoff at 5.0 kHz — audible, but with the top of the note shelved.
+  // The W16 is untouched by this: its own 3 kHz ceiling clamps first at
+  // every point in its range.
+  const open = 420 + rpm * 0.28 + throttle * 3200;
   // Never below the fundamental it is meant to be shaping: a low-revving
   // voice has a low ceiling, and on the W16 a flat 3 000 Hz cap would
   // have closed under its own firing frequency at the top end.
@@ -74,14 +79,28 @@ export const VOICES = {
     cylinders: 6,
     idle: 4000,
     redline: 15000,
-    ceiling: 6200,
-    noise: 0.05,
-    noiseHz: [1400, 0.14],
+    // Was 6200, which rolled off the harmonics that make this engine
+    // sound like this engine: at 12 600 rpm the sixth order is 3.8 kHz
+    // and it was being filtered away.
+    ceiling: 9600,
+    trim: 0.44,
+    noise: 0.06,
+    noiseHz: [2200, 0.2],
+    // Pitch is not only frequency. What you hear as the pitch of a
+    // complex note is the partial carrying the most energy, and the
+    // strongest term here used to be the fundamental with a heavy
+    // half-order under it — which is a heavy, low reading of a V6.
+    // The second harmonic is the loudest term now, so the perceived
+    // pitch sits an octave up, and the half-order is nearly gone. That
+    // is the difference between a growl and a scream, and a Formula 1
+    // V6 screams.
     partials: [
-      { ratio: 0.5, gain: 0.55, type: 'sawtooth', detune: -6 },
-      { ratio: 1, gain: 1, type: 'sawtooth', detune: 0 },
-      { ratio: 2, gain: 0.42, type: 'square', detune: 7 },
-      { ratio: 3, gain: 0.2, type: 'sawtooth', detune: -11 },
+      { ratio: 0.5, gain: 0.18, type: 'sawtooth', detune: -6 },
+      { ratio: 1, gain: 0.62, type: 'sawtooth', detune: 0 },
+      { ratio: 2, gain: 1, type: 'sawtooth', detune: 7 },
+      { ratio: 3, gain: 0.62, type: 'sawtooth', detune: -11 },
+      { ratio: 4, gain: 0.34, type: 'square', detune: 9 },
+      { ratio: 6, gain: 0.18, type: 'sawtooth', detune: -14 },
     ],
   },
   w16: {
@@ -93,6 +112,7 @@ export const VOICES = {
     idle: 900,
     redline: 6700,
     ceiling: 3000,
+    trim: 0.24,
     noise: 0.1,
     noiseHz: [700, 0.16],
     partials: [
@@ -149,9 +169,19 @@ export default class EngineAudio {
     const Ctx = window.AudioContext ?? window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
+    // Six detuned sawtooths can line up in phase, and turning the level
+    // up without catching those peaks is how a synthesised engine turns
+    // into a buzz. The limiter is what makes the louder trim safe.
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -8;
+    limiter.knee.value = 6;
+    limiter.ratio.value = 12;
+    limiter.attack.value = 0.003;
+    limiter.release.value = 0.25;
+    limiter.connect(ctx.destination);
     const master = ctx.createGain();
     master.gain.value = 0;
-    master.connect(ctx.destination);
+    master.connect(limiter);
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
@@ -213,7 +243,9 @@ export default class EngineAudio {
     filter.frequency.setTargetAtTime(cutoffHz(own, throttle, this.voice), now, 0.05);
     const [base, slope] = this.voice.noiseHz;
     band.frequency.setTargetAtTime(base + own * slope, now, 0.06);
-    master.gain.setTargetAtTime(engineGain(own, throttle, this.voice) * 0.22, now, 0.05);
+    master.gain.setTargetAtTime(
+      engineGain(own, throttle, this.voice) * this.voice.trim, now, 0.05,
+    );
   }
 
   /** Fade out and tear the graph down. */
