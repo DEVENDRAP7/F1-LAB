@@ -760,23 +760,49 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   }
 
   /* ---------------- front wing ----------------
-     Two elements for 2026 on a narrower span, the outboard end swept up
-     into the endplate, and the whole assembly slung under a raised nose.
-     Endplates sit close to the front tyre's outer face, not well inboard
-     of it — checked against real 2026 car photos front-on, where the
-     wingtip and the tyre nearly line up. */
+     Drawn against a labelled 2026 illustration, which names six parts:
+     a FIXED MAINPLANE, a stack of MOVABLE ACTIVE FLAPS above it, two
+     PYLONS hanging the assembly off the nose, an ENDPLATE, and — under
+     the wing — a FENCE and a STRAKE. Three of those were not here.
+
+     The stack is what makes a front wing read as one. A single flap
+     over a mainplane is two arcs, and head-on that is a thick red bar;
+     the real thing is a run of chords stepping up and back, and the
+     steps are most of what the eye picks up.
+
+     Endplates sit close to the front tyre's outer face, not well
+     inboard of it — checked against real 2026 car photos front-on,
+     where the wingtip and the tyre nearly line up. */
   const FW_SPAN = 1.78;
+  // The fixed element. Its chord comes down from 0.40 to make room for
+  // the second flap without running the assembly past its own endplate.
+  //
+  // Two numbers here were doing most of the damage. `thickness` is a
+  // half-thickness, so 0.030 drew a 60 mm-thick element — three times a
+  // real front wing blade, and head-on that is the fat red tube this
+  // wing kept being called. And `dip` at 0.062 against a `curve` of
+  // 0.115 arched the span so hard it read as a moustache; the reference
+  // shows a mainplane close to flat across the middle with a gentle
+  // rise into the endplate.
   car.add(wingElement({
-    chord: 0.40, thickness: 0.030, span: FW_SPAN, drop: 0.070,
-    curve: 0.115, dip: 0.062, taper: 0.66, sweep: 0.075,
+    chord: 0.36, thickness: 0.018, span: FW_SPAN, drop: 0.070,
+    curve: 0.075, dip: 0.030, taper: 0.66, sweep: 0.075,
     x: -2.70, y: 0.150, tilt: 0.10, mat: body, part: 'frontWing',
   }));
+  // Both flaps hang off one pivot, so the active-aero mode turns the
+  // whole movable stack together — which is what "movable active flaps"
+  // means, and what one flap on its own could not show.
   const frontFlapPivot = new THREE.Group();
-  frontFlapPivot.position.set(-2.41, 0.178, 0);
+  frontFlapPivot.position.set(-2.42, 0.174, 0);
   frontFlapPivot.add(wingElement({
-    chord: 0.27, thickness: 0.021, span: FW_SPAN - 0.05, drop: 0.078,
-    curve: 0.112, dip: 0.060, taper: 0.60, sweep: 0.070,
+    chord: 0.21, thickness: 0.014, span: FW_SPAN - 0.05, drop: 0.078,
+    curve: 0.072, dip: 0.028, taper: 0.60, sweep: 0.070,
     x: 0, y: 0, mat: carbon, part: 'frontFlap',
+  }));
+  frontFlapPivot.add(wingElement({
+    chord: 0.155, thickness: 0.012, span: FW_SPAN - 0.11, drop: 0.072,
+    curve: 0.070, dip: 0.026, taper: 0.56, sweep: 0.062,
+    x: 0.15, y: 0.058, mat: carbon, part: 'frontFlap',
   }));
   car.add(frontFlapPivot);
   for (const side of [1, -1]) {
@@ -784,12 +810,16 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     // real part show a panel that curls outward as it runs back and
     // stands taller at its rear corner; a flat polygon extruded sideways
     // can only ever be a slab hung off the wingtip.
+    // It also has to be long enough to hold the wing. It ran out at
+    // x -2.27 while the flap's trailing edge was at -2.14, so thirteen
+    // centimetres of wing hung out past the back of its own endplate.
     const EP = [
-      { x: -2.745, cy: 0.176, h: 0.052, out: 0.000 },
-      { x: -2.640, cy: 0.196, h: 0.084, out: 0.008 },
-      { x: -2.500, cy: 0.222, h: 0.108, out: 0.026 },
-      { x: -2.370, cy: 0.232, h: 0.106, out: 0.052 },
-      { x: -2.270, cy: 0.222, h: 0.082, out: 0.076 },
+      { x: -2.735, cy: 0.172, h: 0.048, out: 0.000 },
+      { x: -2.640, cy: 0.196, h: 0.082, out: 0.008 },
+      { x: -2.500, cy: 0.222, h: 0.110, out: 0.026 },
+      { x: -2.360, cy: 0.236, h: 0.116, out: 0.048 },
+      { x: -2.230, cy: 0.238, h: 0.108, out: 0.070 },
+      { x: -2.105, cy: 0.226, h: 0.084, out: 0.090 },
     ];
     loft(EP.map((s) => ({
       x: s.x,
@@ -797,41 +827,58 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
         .map(([yy, zz]) => [yy, zz + side * (FW_SPAN / 2 + s.out)]),
     })), carbon, 'frontWing');
     // Footplate rolling outward along the bottom edge.
-    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.013, 0.090), carbon);
-    foot.position.set(-2.56, 0.124, side * (FW_SPAN / 2 + 0.040));
+    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.013, 0.090), carbon);
+    foot.position.set(-2.50, 0.124, side * (FW_SPAN / 2 + 0.040));
     foot.rotation.x = side * 0.26;
     foot.userData.part = 'frontWing';
     car.add(foot);
     // Nose pylons: the wing hangs off the nose rather than growing out of it.
-    const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.20, 0.026), carbon);
+    const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.20, 0.020), carbon);
     pylon.rotation.z = 0.5;
-    pylon.position.set(-2.34, 0.235, side * 0.115);
+    pylon.position.set(-2.36, 0.235, side * 0.115);
     pylon.userData.part = 'frontWing';
     car.add(pylon);
+
+    // The underwing fence and the strake, both named in the reference
+    // and both missing here. They hang below the wing, and WHERE they
+    // can hang is set by the element's own spanwise shape: `dip` takes
+    // the mid-span down to about 29 mm off the road at the trailing
+    // edge, which leaves no room for a fin, while the arch outboard of
+    // it opens up 75 mm. So they sit at 0.56 and 0.72 of half-span —
+    // not because that looks right, but because that is where the wing
+    // is high enough to hang anything from.
+    plate([[0, 0], [0.30, 0], [0.30, -0.040], [0.02, -0.048]],
+      0.010, underbody, 'frontWing', -2.66, 0.105, side * 0.56);
+    plate([[0, 0], [0.36, 0], [0.36, -0.055], [0.02, -0.066]],
+      0.010, underbody, 'frontWing', -2.66, 0.137, side * 0.72);
   }
 
   /* ---------------- rear wing ----------------
-     Three elements, no beam wing under them, hung from a double mount
-     attached to the underside — the published 2026 change from 2022-2025's
-     single, curved swan-neck bracket, which built the DRS actuator into
-     the bend of the mount itself. */
+     TWO elements, not three. The X-mode/Z-mode reference draws the rear
+     wing in section in both states, and in both it is a mainplane and
+     one flap — the third element here was left over from the shape this
+     wing replaced, and it stacked the assembly 12 cm taller than the
+     drawing.
+
+     No beam wing under them, and hung from a double mount attached to
+     the underside — the published 2026 change from 2022-2025's single,
+     curved swan-neck bracket, which built the DRS actuator into the
+     bend of the mount itself. */
   const RW_SPAN = 1.02;
   car.add(wingElement({
     chord: 0.32, thickness: 0.026, span: RW_SPAN, drop: 0.055,
     curve: -0.026, taper: 0.80, sweep: 0.030,
     x: 2.02, y: 0.815, tilt: 0.08, mat: body, part: 'rearWing',
   }));
+  // The one movable element, and it takes over the chord the third
+  // element used to carry: two thin flaps stacked read as a slot, one
+  // deep one reads as a wing.
   const rearFlapPivot = new THREE.Group();
-  rearFlapPivot.position.set(2.22, 0.855, 0);
+  rearFlapPivot.position.set(2.24, 0.868, 0);
   rearFlapPivot.add(wingElement({
-    chord: 0.23, thickness: 0.020, span: RW_SPAN - 0.04, drop: 0.062,
-    curve: -0.022, taper: 0.78, sweep: 0.026,
+    chord: 0.26, thickness: 0.022, span: RW_SPAN - 0.04, drop: 0.068,
+    curve: -0.024, taper: 0.78, sweep: 0.028,
     x: 0, y: 0, mat: carbon, part: 'rearFlap',
-  }));
-  rearFlapPivot.add(wingElement({
-    chord: 0.17, thickness: 0.016, span: RW_SPAN - 0.08, drop: 0.050,
-    curve: -0.018, taper: 0.76, sweep: 0.022,
-    x: 0.03, y: 0.115, mat: carbon, part: 'rearFlap',
   }));
   car.add(rearFlapPivot);
   for (const side of [1, -1]) {
@@ -847,9 +894,14 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     // wings. The outline follows the wing instead: bottom edge level
     // with the main plane, a rounded leading edge sweeping up, and a
     // crest a few centimetres proud of the upper flap.
-    plate([[0.10, 0.090], [0.26, 0.078], [0.46, 0.096], [0.52, 0.150],
-      [0.53, 0.250], [0.50, 0.318], [0.30, 0.336], [0.14, 0.318],
-      [0.075, 0.240], [0.062, 0.150]], 0.018, carbon, 'rearWing',
+    //
+    // Lengthened again with the flap: the panel stopped at x 2.47 and
+    // the flap's trailing edge now reaches 2.50, so it ran out from
+    // under its own wing. The top edge is longer and flatter than the
+    // last cut too, which is the profile the reference draws.
+    plate([[0.10, 0.086], [0.28, 0.074], [0.44, 0.086], [0.52, 0.128],
+      [0.575, 0.196], [0.585, 0.286], [0.55, 0.334], [0.30, 0.344],
+      [0.14, 0.326], [0.072, 0.244], [0.060, 0.150]], 0.018, carbon, 'rearWing',
     1.94, 0.690, side * (RW_SPAN / 2));
     // The top edge rolls outward. It is the feature that identifies an
     // endplate at a glance in any photograph of the back of a car, and
@@ -861,9 +913,9 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
     // base is now 4 cm down inside the endplate and the cant is 23
     // degrees, so what shows is a top edge that turns out — which is
     // the whole of the effect being after.
-    const roll = plate([[0.28, 0.000], [0.50, 0.012], [0.515, 0.050],
-      [0.26, 0.058], [0.13, 0.032]], 0.014, carbon, 'rearWing',
-    1.94, 0.986, side * (RW_SPAN / 2));
+    const roll = plate([[0.28, 0.000], [0.555, 0.014], [0.570, 0.052],
+      [0.26, 0.062], [0.14, 0.034]], 0.014, carbon, 'rearWing',
+    1.94, 0.996, side * (RW_SPAN / 2));
     roll.rotation.x = side * 0.40;
     // Rain lights down the outer face of each endplate: mandated, and
     // the same on every car.
