@@ -88,35 +88,68 @@ describe('voices', () => {
   });
 });
 
-describe('the V6 voice', () => {
-  const v6 = VOICES.v6;
+describe('voice character', () => {
   const loudest = (v) => v.partials.reduce((a, p) => (p.gain > a.gain ? p : a));
 
-  it('is loudest at its second harmonic, so the note reads an octave up', () => {
+  it('puts the racing engines’ energy an octave up, at the second harmonic', () => {
     // Perceived pitch follows the strongest partial. With the loudest
-    // term at the fundamental and a heavy half-order under it, this
-    // engine read as a growl; a Formula 1 V6 does not growl.
-    expect(loudest(v6).ratio).toBe(2);
-    expect(loudest(VOICES.w16).ratio).toBeLessThan(1);
+    // term at the fundamental these read as a growl, and neither a
+    // Formula 1 V6 nor a V8 growls.
+    expect(loudest(VOICES.v6).ratio).toBe(2);
+    expect(loudest(VOICES.v8).ratio).toBe(2);
   });
 
-  it('carries harmonics the W16 does not', () => {
-    const top = (v) => Math.max(...v.partials.map((p) => p.ratio));
-    expect(top(v6)).toBeGreaterThan(top(VOICES.w16));
+  it('lets the firing rate itself dominate the W16', () => {
+    // This is the fix for the first cut sounding like an electric
+    // motor. Its loudest term was at 0.5 — half the firing frequency —
+    // which buries the pulse you actually hear as combustion under a
+    // sub-octave drone, and a clean drone under a lowpass is a synth
+    // bass patch.
+    expect(loudest(VOICES.w16).ratio).toBe(1);
   });
 
-  it('opens the filter far enough to pass its own top order', () => {
-    // A partial above the cutoff is a partial you cannot hear, so the
-    // extra harmonics above would have been wasted.
-    const top = Math.max(...v6.partials.map((p) => p.ratio));
-    for (const rpm of [9000, 11000, 12600]) {
-      expect(cutoffHz(rpm, 1, v6), `${rpm} rpm`)
-        .toBeGreaterThan(firingHz(rpm, v6.cylinders) * top * 0.9);
+  it('gives the W16 inharmonic content, because a chord is not an engine', () => {
+    const inharmonic = (v) => v.partials.some((p) => p.ratio % 1 !== 0 && p.ratio > 1);
+    expect(inharmonic(VOICES.w16)).toBe(true);
+  });
+
+  it('sweeps every voice’s filter at its own firing rate', () => {
+    // A static lowpass over a steady tone is a synthesiser. The chug
+    // comes from the cutoff moving with the power pulses, so no voice
+    // is allowed to have no growl at all.
+    for (const voice of Object.values(VOICES)) {
+      expect(voice.growl?.depth, voice.id).toBeGreaterThan(0);
+      expect(voice.growl.ratio, voice.id).toBeGreaterThan(0);
+    }
+    // The big low-revving engine is the one you feel each pulse from.
+    expect(VOICES.w16.growl.depth).toBeGreaterThan(VOICES.v6.growl.depth);
+    expect(VOICES.w16.growl.depth).toBeGreaterThan(VOICES.v8.growl.depth);
+  });
+
+  it('screams higher on the V8 than on the V6, at the same point in a lap', () => {
+    // Eight cylinders to 18 000 against six to 15 000. This is the
+    // whole reason people remember the V8s as the loud ones, and it has
+    // to survive the rev mapping rather than only being true on paper.
+    for (const demoRpm of [6000, 9000, 12600]) {
+      const v8 = firingHz(voiceRpm(VOICES.v8, demoRpm), VOICES.v8.cylinders);
+      const v6 = firingHz(voiceRpm(VOICES.v6, demoRpm), VOICES.v6.cylinders);
+      expect(v8, `@${demoRpm}`).toBeGreaterThan(v6 * 1.3);
     }
   });
 
-  it('is the louder of the two voices', () => {
-    expect(v6.trim).toBeGreaterThan(VOICES.w16.trim);
+  it('opens each filter far enough to pass its own top order', () => {
+    // A partial above the cutoff is a partial you cannot hear.
+    for (const voice of Object.values(VOICES)) {
+      const top = Math.max(...voice.partials.map((p) => p.ratio));
+      const rpm = voice.redline * 0.85;
+      expect(cutoffHz(rpm, 1, voice), voice.id)
+        .toBeGreaterThan(firingHz(rpm, voice.cylinders) * top * 0.75);
+    }
+  });
+
+  it('is loudest on the racing engines', () => {
+    expect(VOICES.v6.trim).toBeGreaterThan(VOICES.w16.trim);
+    expect(VOICES.v8.trim).toBeGreaterThan(VOICES.w16.trim);
   });
 });
 

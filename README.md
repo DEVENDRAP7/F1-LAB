@@ -115,12 +115,13 @@ load time rather than written into the copy.
   the site derives anything from them. The engine note is **synthesised in
   the browser** from an oscillator stack (`src/lib/engineAudio.js`) — a real
   recording would be somebody else's copyright and would cost more on its
-  own than this site's entire initial-load budget. Two voices are offered:
-  the Formula 1 V6, and a W16 that is clearly labelled as *not* a Formula 1
-  engine — it is there because swapping cylinder count alone would not make
-  the two sound different (sixteen cylinders at 6 700 rpm fire at nearly the
-  same rate as six at 15 000), so the voices differ in rev range and in
-  where their energy sits, which is what you are actually hearing.
+  own than this site's entire initial-load budget. Three voices are offered:
+  the 2026 V6, the naturally aspirated V8 that ran to 2013, and a W16 that is
+  clearly labelled as *not* a Formula 1 engine. Swapping cylinder count alone
+  would not make them sound different — sixteen cylinders at 6 700 rpm fire
+  at nearly the same rate as six at 15 000 — so each voice carries its own
+  rev range, its own partials, its own filter, and a cutoff swept at its own
+  firing rate, which is what you are actually hearing.
 - **Sprint Weekends** — the second race of a sprint weekend, which the
   rest of the site does not show: the same drivers, cars and circuit,
   racing twice from two different grids inside a day. Places changed

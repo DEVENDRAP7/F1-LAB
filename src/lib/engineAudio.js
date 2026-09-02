@@ -83,7 +83,9 @@ export const VOICES = {
     // sound like this engine: at 12 600 rpm the sixth order is 3.8 kHz
     // and it was being filtered away.
     ceiling: 9600,
-    trim: 0.44,
+    trim: 1.0,
+    q: 1.1,
+    growl: { ratio: 1, depth: 260 },
     noise: 0.06,
     noiseHz: [2200, 0.2],
     // Pitch is not only frequency. What you hear as the pitch of a
@@ -103,6 +105,21 @@ export const VOICES = {
       { ratio: 6, gain: 0.18, type: 'sawtooth', detune: -14 },
     ],
   },
+  // The first cut of this sounded like an electric motor, and the reason
+  // is worth keeping written down. Its loudest partial was at 0.5 — HALF
+  // the firing frequency — as a clean sawtooth under a 3 kHz lowpass.
+  // That is a synth bass patch, near enough exactly. A combustion engine
+  // is a series of discrete bangs, and three things were missing:
+  //
+  //  - the firing rate itself has to dominate. It is the pulse you hear;
+  //    burying it under a sub-octave drone removes the combustion.
+  //  - the spectrum has to be dense and slightly INHARMONIC. Four clean
+  //    integer partials is a chord, not an engine, so there is a 1.5
+  //    order in here now and much wider detune spread.
+  //  - the filter has to move with the pulses. A static lowpass over a
+  //    steady tone is what a synthesiser sounds like; sweeping the
+  //    cutoff at the crank-cycle rate is the chug of an engine, and it
+  //    throws sidebands that no amount of extra partials would give.
   w16: {
     id: 'w16',
     name: 'W16 quad-turbo',
@@ -111,15 +128,51 @@ export const VOICES = {
     cylinders: 16,
     idle: 900,
     redline: 6700,
-    ceiling: 3000,
-    trim: 0.24,
-    noise: 0.1,
-    noiseHz: [700, 0.16],
+    ceiling: 5200,
+    trim: 0.78,
+    // Resonant, so the swept cutoff below is something you can hear.
+    q: 3.2,
+    // Half the firing frequency: one sweep per crank cycle, deep.
+    growl: { ratio: 0.5, depth: 900 },
+    noise: 0.16,
+    noiseHz: [500, 0.22],
     partials: [
-      { ratio: 0.25, gain: 0.72, type: 'sawtooth', detune: -9 },
-      { ratio: 0.5, gain: 0.95, type: 'sawtooth', detune: 5 },
-      { ratio: 1, gain: 0.8, type: 'sawtooth', detune: 0 },
-      { ratio: 2, gain: 0.22, type: 'square', detune: -12 },
+      { ratio: 0.5, gain: 0.55, type: 'sawtooth', detune: -14 },
+      { ratio: 1, gain: 1, type: 'sawtooth', detune: 0 },
+      { ratio: 1.5, gain: 0.3, type: 'sawtooth', detune: 11 },
+      { ratio: 2, gain: 0.72, type: 'sawtooth', detune: -7 },
+      { ratio: 3, gain: 0.44, type: 'square', detune: 13 },
+      { ratio: 4, gain: 0.3, type: 'sawtooth', detune: -18 },
+      { ratio: 6, gain: 0.16, type: 'sawtooth', detune: 9 },
+    ],
+  },
+  // The 2006-2013 Formula 1 engine: 2.4 litres, eight cylinders, and
+  // twice the crank speed of a road car's redline. At 18 000 rpm it
+  // fires 1 200 times a second against the 2026 V6's 750, which is the
+  // whole reason people remember these as the ones that screamed.
+  // Naturally aspirated, so there is almost no turbo noise in it — what
+  // little there is here is induction, not boost.
+  v8: {
+    id: 'v8',
+    name: 'V8 (2006-2013)',
+    note: 'The naturally aspirated 2.4-litre V8 that ran until 2013 — eight cylinders '
+      + 'to 18 000 rpm, firing 1 200 times a second where the 2026 V6 manages 750.',
+    cylinders: 8,
+    idle: 5000,
+    redline: 18000,
+    ceiling: 12000,
+    trim: 0.95,
+    q: 0.8,
+    growl: { ratio: 1, depth: 180 },
+    noise: 0.03,
+    noiseHz: [2600, 0.16],
+    partials: [
+      { ratio: 0.5, gain: 0.1, type: 'sawtooth', detune: -5 },
+      { ratio: 1, gain: 0.5, type: 'sawtooth', detune: 0 },
+      { ratio: 2, gain: 1, type: 'sawtooth', detune: 6 },
+      { ratio: 3, gain: 0.7, type: 'sawtooth', detune: -9 },
+      { ratio: 4, gain: 0.46, type: 'square', detune: 11 },
+      { ratio: 6, gain: 0.26, type: 'sawtooth', detune: -13 },
     ],
   },
 };
@@ -173,9 +226,12 @@ export default class EngineAudio {
     // up without catching those peaks is how a synthesised engine turns
     // into a buzz. The limiter is what makes the louder trim safe.
     const limiter = ctx.createDynamicsCompressor();
-    limiter.threshold.value = -8;
-    limiter.knee.value = 6;
-    limiter.ratio.value = 12;
+    // -3 dB, not -8: at -8 the limiter was working most of the time and
+    // a louder trim would have been compressed straight back down to
+    // where it started. It catches peaks now instead of riding the note.
+    limiter.threshold.value = -3;
+    limiter.knee.value = 3;
+    limiter.ratio.value = 20;
     limiter.attack.value = 0.003;
     limiter.release.value = 0.25;
     limiter.connect(ctx.destination);
@@ -186,8 +242,21 @@ export default class EngineAudio {
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 600;
-    filter.Q.value = 0.9;
+    filter.Q.value = voice.q ?? 0.9;
     filter.connect(master);
+
+    // The chug. An oscillator locked to the firing rate (or half of it)
+    // sweeping the cutoff, which is what a static filter over a steady
+    // tone cannot do and what made the first W16 sound like a motor
+    // rather than an engine. Modulating an audible-rate parameter also
+    // throws sidebands, and those are most of the roughness.
+    const growlOsc = ctx.createOscillator();
+    growlOsc.type = 'sawtooth';
+    growlOsc.frequency.value = 120;
+    const growlDepth = ctx.createGain();
+    growlDepth.gain.value = voice.growl?.depth ?? 0;
+    growlOsc.connect(growlDepth).connect(filter.frequency);
+    growlOsc.start();
 
     const oscillators = voice.partials.map((p) => {
       const osc = ctx.createOscillator();
@@ -221,7 +290,7 @@ export default class EngineAudio {
     noise.start();
 
     this.ctx = ctx;
-    this.nodes = { master, filter, oscillators, noise, band, noiseGain };
+    this.nodes = { master, filter, oscillators, noise, band, noiseGain, growlOsc };
   }
 
   /** Point the whole graph at one operating point.
@@ -231,7 +300,7 @@ export default class EngineAudio {
    *  sixty steps a second into a slide. */
   set(rpm, throttle) {
     if (!this.ctx) return;
-    const { master, filter, oscillators, band } = this.nodes;
+    const { master, filter, oscillators, band, growlOsc } = this.nodes;
     const now = this.ctx.currentTime;
     // The sequences are written in Formula 1 revs; a voice that stops at
     // 6 700 gets the same FRACTION of its own sweep.
@@ -241,6 +310,9 @@ export default class EngineAudio {
       osc.frequency.setTargetAtTime(Math.max(18, f0 * ratio), now, 0.035);
     }
     filter.frequency.setTargetAtTime(cutoffHz(own, throttle, this.voice), now, 0.05);
+    growlOsc.frequency.setTargetAtTime(
+      Math.max(8, f0 * (this.voice.growl?.ratio ?? 1)), now, 0.035,
+    );
     const [base, slope] = this.voice.noiseHz;
     band.frequency.setTargetAtTime(base + own * slope, now, 0.06);
     master.gain.setTargetAtTime(
