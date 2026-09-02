@@ -2472,3 +2472,25 @@ tbody tr.is-on {
 }
 
 .wheel-demo-note { color: var(--ink-2); }
+
+.wheel-voice { margin-left: 0.2rem; }
+
+.wheel-voice select {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-1);
+  color: var(--ink-1);
+}
+
+/* The W16 is a road-car engine on a Formula 1 page, so which engine you
+   are listening to is said under the picker rather than left to the
+   name in it. */
+.wheel-voice-note {
+  margin: 0.45rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}

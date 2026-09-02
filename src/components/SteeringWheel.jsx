@@ -4,7 +4,7 @@ import {
   describe, initialPositions,
 } from '../lib/steeringWheel.js';
 import { DEMOS, stateAt } from '../lib/wheelDemo.js';
-import EngineAudio from '../lib/engineAudio.js';
+import EngineAudio, { VOICES } from '../lib/engineAudio.js';
 
 // A 2026 steering wheel you can actually work.
 //
@@ -98,6 +98,7 @@ export default function SteeringWheel({ mode, onMode }) {
   const [demo, setDemo] = useState(null);
   const [caption, setCaption] = useState(null);
   const [sound, setSound] = useState(true);
+  const [voice, setVoice] = useState('v6');
   const audio = useRef(null);
 
   const shown = pinned ?? hovered;
@@ -186,11 +187,11 @@ export default function SteeringWheel({ mode, onMode }) {
   useEffect(() => {
     if (demo && sound) {
       audio.current ??= new EngineAudio();
-      audio.current.start();
+      audio.current.start(VOICES[voice]);
     } else {
       audio.current?.stop();
     }
-  }, [demo, sound]);
+  }, [demo, sound, voice]);
 
   // Leaving the page with an engine still running would be unforgivable.
   useEffect(() => () => audio.current?.stop(), []);
@@ -531,7 +532,19 @@ export default function SteeringWheel({ mode, onMode }) {
             />
             Engine sound
           </label>
+          <label className="wheel-sound wheel-voice">
+            <select
+              aria-label="Engine"
+              value={voice}
+              onChange={(e) => setVoice(e.target.value)}
+            >
+              {Object.values(VOICES).map((v) => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
+            </select>
+          </label>
         </div>
+        <p className="wheel-voice-note">{VOICES[voice].note}</p>
         {caption
           ? <p className="wheel-caption" aria-live="polite">{caption}</p>
           : (

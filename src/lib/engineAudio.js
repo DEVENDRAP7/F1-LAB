@@ -37,24 +37,86 @@ export function firingHz(rpm, cylinders = 6) {
  *  separates an engine under load from one coasting at the same speed.
  *  Clamped at the top so a high-rev, full-throttle sample cannot run
  *  into the region where the harmonics turn into a whistle. */
-export function cutoffHz(rpm, throttle) {
-  return Math.min(6200, 420 + rpm * 0.16 + throttle * 2600);
+export function cutoffHz(rpm, throttle, voice = DEFAULT_VOICE) {
+  const open = 420 + rpm * 0.16 + throttle * 2600;
+  // Never below the fundamental it is meant to be shaping: a low-revving
+  // voice has a low ceiling, and on the W16 a flat 3 000 Hz cap would
+  // have closed under its own firing frequency at the top end.
+  return Math.max(firingHz(rpm, voice.cylinders) * 1.6, Math.min(voice.ceiling, open));
 }
 
 /** How loud, 0..1. Idle is audible; nothing is ever full scale. */
-export function engineGain(rpm, throttle) {
-  return Math.min(0.9, 0.22 + (rpm / 15000) * 0.34 + throttle * 0.3);
+export function engineGain(rpm, throttle, voice = DEFAULT_VOICE) {
+  return Math.min(0.9, 0.22 + (rpm / voice.redline) * 0.34 + throttle * 0.3);
 }
 
-// Partials of the firing frequency, with a gain each. The half-order
-// term is the one that gives the note its weight — without it a V6
-// reads as a wasp rather than as something with a crankshaft in it.
-const PARTIALS = [
-  { ratio: 0.5, gain: 0.55, type: 'sawtooth', detune: -6 },
-  { ratio: 1, gain: 1, type: 'sawtooth', detune: 0 },
-  { ratio: 2, gain: 0.42, type: 'square', detune: 7 },
-  { ratio: 3, gain: 0.2, type: 'sawtooth', detune: -11 },
-];
+// ── voices ───────────────────────────────────────────────────────────
+// Two engines, and the interesting thing is that swapping the cylinder
+// count alone would not make them sound different.
+//
+// A W16 does not rev where a Formula 1 V6 revs — call it 6 700 against
+// 15 000 — and firing frequency is (rpm/60) x (cylinders/2), so sixteen
+// cylinders at a quarter of the crank speed land at very nearly the
+// same pitch. Wire the demos' revs straight through with cylinders: 16
+// and you get an F1 note with the wrong label on it.
+//
+// What actually separates them is the rev range each one is asked to
+// cover, and the TIMBRE: a big low-revving engine carries most of its
+// energy in the low orders — quarter and half of the firing frequency,
+// the rumble you feel — while the F1 unit is thin and bright and its
+// energy is all in the harmonics above f0. So each voice brings its own
+// rev range, its own partials, and its own filter ceiling.
+export const VOICES = {
+  v6: {
+    id: 'v6',
+    name: 'V6 turbo hybrid',
+    note: 'The 2026 Formula 1 layout: 1.6-litre V6, and the revs to match.',
+    cylinders: 6,
+    idle: 4000,
+    redline: 15000,
+    ceiling: 6200,
+    noise: 0.05,
+    noiseHz: [1400, 0.14],
+    partials: [
+      { ratio: 0.5, gain: 0.55, type: 'sawtooth', detune: -6 },
+      { ratio: 1, gain: 1, type: 'sawtooth', detune: 0 },
+      { ratio: 2, gain: 0.42, type: 'square', detune: 7 },
+      { ratio: 3, gain: 0.2, type: 'sawtooth', detune: -11 },
+    ],
+  },
+  w16: {
+    id: 'w16',
+    name: 'W16 quad-turbo',
+    note: 'NOT a Formula 1 engine — a road-car layout, here so you can hear what '
+      + 'sixteen cylinders and a 6 700 rpm limit do to the same rev sweep.',
+    cylinders: 16,
+    idle: 900,
+    redline: 6700,
+    ceiling: 3000,
+    noise: 0.1,
+    noiseHz: [700, 0.16],
+    partials: [
+      { ratio: 0.25, gain: 0.72, type: 'sawtooth', detune: -9 },
+      { ratio: 0.5, gain: 0.95, type: 'sawtooth', detune: 5 },
+      { ratio: 1, gain: 0.8, type: 'sawtooth', detune: 0 },
+      { ratio: 2, gain: 0.22, type: 'square', detune: -12 },
+    ],
+  },
+};
+
+export const DEFAULT_VOICE = VOICES.v6;
+
+/** Put a demo's revs onto an engine's own rev range.
+ *
+ *  The sequences are written in Formula 1 revs because that is the car
+ *  they describe. Playing them on an engine that stops at 6 700 means
+ *  mapping the FRACTION of the sweep, not the number — otherwise a W16
+ *  spends the whole demo three times past its limiter. */
+export function voiceRpm(voice, demoRpm, from = VOICES.v6) {
+  const span = from.redline - from.idle;
+  const u = Math.max(0, Math.min(1, (demoRpm - from.idle) / span));
+  return voice.idle + u * (voice.redline - voice.idle);
+}
 
 /** The engine, wired up in a Web Audio graph.
  *
@@ -65,17 +127,25 @@ export default class EngineAudio {
   constructor() {
     this.ctx = null;
     this.nodes = null;
+    this.voice = DEFAULT_VOICE;
   }
 
   get running() {
     return this.ctx != null;
   }
 
-  start() {
-    if (this.ctx) {
+  /** Build the graph, or rebuild it if the voice has changed.
+   *
+   *  A voice is a different oscillator stack, not a parameter, so
+   *  switching means tearing the old one down. Doing it here rather
+   *  than in the caller keeps "start with this voice" a single call. */
+  start(voice = DEFAULT_VOICE) {
+    if (this.ctx && this.voice.id === voice.id) {
       if (this.ctx.state === 'suspended') this.ctx.resume();
       return;
     }
+    if (this.ctx) this.stop();
+    this.voice = voice;
     const Ctx = window.AudioContext ?? window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
@@ -89,7 +159,7 @@ export default class EngineAudio {
     filter.Q.value = 0.9;
     filter.connect(master);
 
-    const oscillators = PARTIALS.map((p) => {
+    const oscillators = voice.partials.map((p) => {
       const osc = ctx.createOscillator();
       osc.type = p.type;
       osc.detune.value = p.detune;
@@ -113,10 +183,10 @@ export default class EngineAudio {
     noise.loop = true;
     const band = ctx.createBiquadFilter();
     band.type = 'bandpass';
-    band.frequency.value = 2200;
+    band.frequency.value = voice.noiseHz[0] + 800;
     band.Q.value = 7;
     const noiseGain = ctx.createGain();
-    noiseGain.gain.value = 0.05;
+    noiseGain.gain.value = voice.noise;
     noise.connect(band).connect(noiseGain).connect(master);
     noise.start();
 
@@ -133,13 +203,17 @@ export default class EngineAudio {
     if (!this.ctx) return;
     const { master, filter, oscillators, band } = this.nodes;
     const now = this.ctx.currentTime;
-    const f0 = firingHz(rpm);
+    // The sequences are written in Formula 1 revs; a voice that stops at
+    // 6 700 gets the same FRACTION of its own sweep.
+    const own = voiceRpm(this.voice, rpm);
+    const f0 = firingHz(own, this.voice.cylinders);
     for (const { osc, ratio } of oscillators) {
-      osc.frequency.setTargetAtTime(Math.max(20, f0 * ratio), now, 0.035);
+      osc.frequency.setTargetAtTime(Math.max(18, f0 * ratio), now, 0.035);
     }
-    filter.frequency.setTargetAtTime(cutoffHz(rpm, throttle), now, 0.05);
-    band.frequency.setTargetAtTime(1400 + rpm * 0.14, now, 0.06);
-    master.gain.setTargetAtTime(engineGain(rpm, throttle) * 0.22, now, 0.05);
+    filter.frequency.setTargetAtTime(cutoffHz(own, throttle, this.voice), now, 0.05);
+    const [base, slope] = this.voice.noiseHz;
+    band.frequency.setTargetAtTime(base + own * slope, now, 0.06);
+    master.gain.setTargetAtTime(engineGain(own, throttle, this.voice) * 0.22, now, 0.05);
   }
 
   /** Fade out and tear the graph down. */
