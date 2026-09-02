@@ -515,15 +515,27 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // the intake at head height looking like a bulge behind him; a roll
   // structure has to stand clear over the helmet, and the intake with
   // it. Apex is now ~0.90 against a helmet crown at 0.775.
+  // The front face is the intake, and almost nothing else.
+  //
+  // It used to be 28 cm tall against a 13 cm mouth sitting in the top
+  // half of it, which left thirteen centimetres of flat red wall below
+  // the opening. Rendered from the side that is not an airbox: it is a
+  // red box strapped behind the driver with a slot in it. On a real car
+  // the structure necks down hard below the mouth into the headrest —
+  // there is no wall there to see. The first station is now 18 cm tall
+  // and the mouth fills all but a couple of centimetres of rim, so the
+  // hoop reads as a duct standing up out of the bodywork. The volume it
+  // loses is put back further aft, where the cover actually is bulky.
   const COVER = [
-    { x: 0.10, w: 0.088, h: 0.142, cy: 0.766, q: 2.2 },
-    { x: 0.22, w: 0.116, h: 0.156, cy: 0.754, q: 2.2 },
-    { x: 0.38, w: 0.150, h: 0.158, cy: 0.716, q: 2.1 },
-    { x: 0.60, w: 0.170, h: 0.146, cy: 0.678, q: 2.3 },
-    { x: 0.86, w: 0.164, h: 0.134, cy: 0.626, q: 2.5 },
-    { x: 1.14, w: 0.136, h: 0.112, cy: 0.566, q: 2.6 },
-    { x: 1.46, w: 0.098, h: 0.086, cy: 0.506, q: 2.5 },
-    { x: 1.80, w: 0.060, h: 0.058, cy: 0.452, q: 2.4 },
+    { x: 0.08, w: 0.084, h: 0.090, cy: 0.808, q: 2.3 },
+    { x: 0.18, w: 0.100, h: 0.108, cy: 0.792, q: 2.2 },
+    { x: 0.32, w: 0.130, h: 0.136, cy: 0.754, q: 2.1 },
+    { x: 0.50, w: 0.158, h: 0.152, cy: 0.712, q: 2.1 },
+    { x: 0.72, w: 0.168, h: 0.144, cy: 0.664, q: 2.3 },
+    { x: 0.94, w: 0.160, h: 0.130, cy: 0.614, q: 2.5 },
+    { x: 1.22, w: 0.130, h: 0.108, cy: 0.556, q: 2.6 },
+    { x: 1.52, w: 0.094, h: 0.084, cy: 0.500, q: 2.5 },
+    { x: 1.84, w: 0.058, h: 0.056, cy: 0.448, q: 2.4 },
     { x: 2.14, w: 0.034, h: 0.038, cy: 0.414, q: 2.3 },
   ];
   loft(COVER.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, s.q) })), body, 'airbox');
@@ -540,24 +552,24 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // an opening and read as a smudge — an air intake has to look like a
   // hole you could put your arm down.
   loft([
-    { x: 0.066, ring: mouthRing(0.068, 0.027, 0.064, 0.818, 2.4) },
-    { x: 0.160, ring: mouthRing(0.060, 0.024, 0.056, 0.810, 2.4) },
-    { x: 0.300, ring: mouthRing(0.044, 0.017, 0.040, 0.786, 2.4) },
-    { x: 0.460, ring: mouthRing(0.023, 0.009, 0.024, 0.740, 2.4) },
+    { x: 0.045, ring: mouthRing(0.070, 0.030, 0.070, 0.812, 2.4) },
+    { x: 0.150, ring: mouthRing(0.062, 0.026, 0.060, 0.802, 2.4) },
+    { x: 0.300, ring: mouthRing(0.046, 0.018, 0.042, 0.780, 2.4) },
+    { x: 0.460, ring: mouthRing(0.024, 0.010, 0.025, 0.740, 2.4) },
     { x: 0.600, ring: mouthRing(0.013, 0.005, 0.014, 0.700, 2.4) },
   ], underbody, 'airbox', { capFront: false });
   // The lip around the mouth, which is what catches the light and makes
   // the opening read from a distance.
   loft([
-    { x: 0.048, ring: mouthRing(0.082, 0.040, 0.078, 0.818, 2.4) },
-    { x: 0.082, ring: mouthRing(0.077, 0.037, 0.073, 0.818, 2.4) },
+    { x: 0.026, ring: mouthRing(0.084, 0.044, 0.084, 0.812, 2.4) },
+    { x: 0.062, ring: mouthRing(0.079, 0.041, 0.079, 0.812, 2.4) },
   ], body, 'airbox', { capFront: false, capBack: false });
   // Side cooling inlets in the flanks of the hoop — more real holes,
   // and the reason the structure is as wide as it is.
   for (const side of [1, -1]) {
     loft([
-      { x: 0.150, ring: ring(0.010, 0.032, 0.766, 3).map(([y, z]) => [y, z + side * 0.096]) },
-      { x: 0.300, ring: ring(0.008, 0.026, 0.754, 3).map(([y, z]) => [y, z + side * 0.122]) },
+      { x: 0.150, ring: ring(0.010, 0.030, 0.772, 3).map(([y, z]) => [y, z + side * 0.090]) },
+      { x: 0.300, ring: ring(0.008, 0.024, 0.756, 3).map(([y, z]) => [y, z + side * 0.114]) },
     ], underbody, 'airbox', { capFront: false });
   }
   // A second, smaller duct along the floor of the throat. Every close-up
@@ -565,7 +577,7 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // than the engine — which of the car's several cooling circuits is not
   // published, so it is drawn and not labelled.
   loft([
-    { x: 0.072, ring: ring(0.026, 0.008, 0.766, 4) },
+    { x: 0.056, ring: ring(0.026, 0.008, 0.756, 4) },
     { x: 0.280, ring: ring(0.015, 0.005, 0.744, 4) },
   ], dark, 'airbox', { capFront: false });
 
@@ -823,13 +835,36 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   }));
   car.add(rearFlapPivot);
   for (const side of [1, -1]) {
-    // Sized to the wing it carries. The old outline ran 18 cm past the
-    // trailing edge and well below the main plane, which is what made it
-    // a slab with a wing somewhere inside it.
-    plate([[0.10, 0.020], [0.30, 0.000], [0.50, 0.028], [0.545, 0.140],
-      [0.525, 0.268], [0.44, 0.322], [0.16, 0.322], [0.06, 0.248],
-      [0.04, 0.108]], 0.018, carbon, 'rearWing',
+    // Sized to the wing it carries — and it still was not. The previous
+    // outline was cut back at the trailing edge but kept its full depth,
+    // so it hung 12 cm BELOW the main plane's lower surface and stood
+    // 32 cm tall around a wing box 21 cm deep. Rendered from behind, the
+    // two of them were a pair of black boards with a red sliver
+    // somewhere between them.
+    //
+    // A 2026 endplate's lower edge sits at the main plane, not a
+    // hand's width under it; that deep skirt belongs to the 2017-2021
+    // wings. The outline follows the wing instead: bottom edge level
+    // with the main plane, a rounded leading edge sweeping up, and a
+    // crest a few centimetres proud of the upper flap.
+    plate([[0.10, 0.090], [0.26, 0.078], [0.46, 0.096], [0.52, 0.150],
+      [0.53, 0.250], [0.50, 0.318], [0.30, 0.336], [0.14, 0.318],
+      [0.075, 0.240], [0.062, 0.150]], 0.018, carbon, 'rearWing',
     1.94, 0.690, side * (RW_SPAN / 2));
+    // The top edge rolls outward. It is the feature that identifies an
+    // endplate at a glance in any photograph of the back of a car, and
+    // a flat-topped panel does not read as one however well it is
+    // proportioned. Canted 32 degrees, sitting on the crest.
+    // It has to START inside the panel, not on top of it: sat on the
+    // crest and canted 32 degrees, a 7 cm strip swung out into a
+    // free-floating shelf above the wing with daylight under it. Its
+    // base is now 4 cm down inside the endplate and the cant is 23
+    // degrees, so what shows is a top edge that turns out — which is
+    // the whole of the effect being after.
+    const roll = plate([[0.28, 0.000], [0.50, 0.012], [0.515, 0.050],
+      [0.26, 0.058], [0.13, 0.032]], 0.014, carbon, 'rearWing',
+    1.94, 0.986, side * (RW_SPAN / 2));
+    roll.rotation.x = side * 0.40;
     // Rain lights down the outer face of each endplate: mandated, and
     // the same on every car.
     const strip = new THREE.Mesh(
