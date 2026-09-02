@@ -103,6 +103,19 @@ load time rather than written into the copy.
   sustained lateral g, the downforce signature by speed band — are the same
   measured racing-line arithmetic as the Aero Explainer, run once per
   published lap by `scripts/aero_export.mjs`.
+
+  Beside the car is an interactive 2026 steering wheel: the rotaries turn,
+  the neutral button and the shift paddles drive the gear on the display,
+  and two scripted sequences — a race start, and an overtake on active aero
+  and the override — run the wheel and the car together, flattening the
+  wings on the model above as the wheel calls for X-mode. Those sequences
+  are illustrative and say so on the page: nobody publishes a gear ratio
+  set, a shift point, or what a deployment mode is worth, so the speeds and
+  revs are a plausible shape rather than a measurement, and nothing else on
+  the site derives anything from them. The engine note is **synthesised in
+  the browser** from an oscillator stack (`src/lib/engineAudio.js`) — a real
+  recording would be somebody else's copyright and would cost more on its
+  own than this site's entire initial-load budget.
 - **Sprint Weekends** — the second race of a sprint weekend, which the
   rest of the site does not show: the same drivers, cars and circuit,
   racing twice from two different grids inside a day. Places changed

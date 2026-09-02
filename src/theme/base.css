@@ -2394,3 +2394,81 @@ tbody tr.is-on {
 
 .wheel-bar-bed { fill: #0b1220; stroke: var(--wh-edge); stroke-width: 1; }
 .wheel-bar-fill { fill: var(--wh-lcd); opacity: 0.85; }
+
+/* Neutral is the reading a driver checks before letting the clutch out,
+   so it is the one the screen says loudest. */
+.wheel-gear.is-neutral { fill: #35d07f; }
+
+/* ---------- wheel demos ----------
+ *
+ * Full width under the wheel and its description, because a caption
+ * that moves is the part a reader is actually following and it should
+ * not be competing for the column the prose is in. */
+.wheel-demo {
+  flex: 1 1 100%;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+}
+
+.wheel-demo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wheel-demo-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.wheel-demo-button {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 0.34rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-1);
+  color: var(--ink-1);
+  cursor: pointer;
+}
+
+.wheel-demo-button:hover { border-color: var(--accent-0); color: var(--ink-0); }
+
+.wheel-demo-button.is-on {
+  background: var(--accent-0);
+  border-color: var(--accent-0);
+  color: #fff;
+}
+
+.wheel-sound {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  cursor: pointer;
+  margin-left: auto;
+}
+
+/* The running commentary. It is a fixed block rather than one that
+   grows and shrinks with the text, because a caption that reflows on
+   every line change drags the charts below it up and down the page. */
+.wheel-caption,
+.wheel-demo-note {
+  margin: 0.7rem 0 0;
+  min-height: 3.4rem;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.wheel-caption {
+  color: var(--ink-0);
+  border-left: 2px solid var(--accent-0);
+  padding-left: 0.7rem;
+}
+
+.wheel-demo-note { color: var(--ink-2); }

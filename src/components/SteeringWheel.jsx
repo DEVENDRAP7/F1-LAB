@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BUTTONS, CONTROL_KIND, FIXTURES, ROTARIES,
   describe, initialPositions,
 } from '../lib/steeringWheel.js';
+import { DEMOS, stateAt } from '../lib/wheelDemo.js';
+import EngineAudio from '../lib/engineAudio.js';
 
 // A 2026 steering wheel you can actually work.
 //
@@ -45,6 +47,16 @@ const PADDLES = [
   { id: 'clutch', label: 'CLUTCH', y: 254, h: 58, spans: [[132, 58], [710, 58]] },
 ];
 
+// Eighth is the top of the box and first is the bottom of it; neutral is
+// not below first, it is off to one side, which is exactly why a real
+// car needs a separate button for it and why the down paddle stops at 1.
+const TOP_GEAR = 8;
+
+// What the display shows for speed when the wheel is being worked by
+// hand rather than by a demo. Indicative, and the panel says so: no
+// team publishes a ratio set, so there is no true answer to look up.
+const GEAR_KPH = [0, 92, 138, 186, 236, 278, 308, 328, 342];
+
 // The screen and the shift strip share a width, and it is as wide as
 // the face allows. The binding constraints are the inner edge of each
 // button column (the radio button's rim reaches x 324) and the rounded
@@ -76,11 +88,17 @@ function wedge(cx, cy, rIn, rOut, a0, a1) {
     + `L${x2} ${y2} A${rIn} ${rIn} 0 ${big} 0 ${x3} ${y3} Z`;
 }
 
-export default function SteeringWheel() {
+export default function SteeringWheel({ mode, onMode }) {
   const [positions, setPositions] = useState(initialPositions);
   const [pressed, setPressed] = useState({});
   const [pinned, setPinned] = useState(null);
   const [hovered, setHovered] = useState(null);
+  const [gear, setGear] = useState(4);
+  const [speed, setSpeed] = useState(GEAR_KPH[4]);
+  const [demo, setDemo] = useState(null);
+  const [caption, setCaption] = useState(null);
+  const [sound, setSound] = useState(true);
+  const audio = useRef(null);
 
   const shown = pinned ?? hovered;
   const info = describe(shown);
@@ -113,6 +131,76 @@ export default function SteeringWheel() {
   });
 
   const press = (id) => setPressed((p) => ({ ...p, [id]: !p[id] }));
+
+  const shift = (step) => setGear((g) => {
+    const next = Math.min(TOP_GEAR, Math.max(1, g + step));
+    setSpeed(GEAR_KPH[next]);
+    return next;
+  });
+
+  const selectNeutral = () => { setGear(0); setSpeed(0); };
+
+  const stopDemo = useCallback(() => {
+    setDemo(null);
+    setCaption(null);
+    audio.current?.stop();
+  }, []);
+
+  // One animation frame at a time, the demo is sampled and its state
+  // pushed into the wheel — the same state a person sets by hand, so
+  // there is no second code path for "playing" versus "being used".
+  useEffect(() => {
+    if (!demo) return undefined;
+    const script = DEMOS.find((d) => d.id === demo);
+    const started = performance.now();
+    let raf = 0;
+    let done = false;
+
+    const tick = (now) => {
+      const t = (now - started) / 1000;
+      const s = stateAt(script, t);
+      setGear(s.gear);
+      setSpeed(Math.round(s.speed));
+      setCaption(s.caption);
+      setPositions((p) => (p.strategy === s.strategy && p.engine === s.engine
+        ? p : { ...p, strategy: s.strategy, engine: s.engine }));
+      setPressed((p) => (!!p.override === !!s.override && !!p.aero === (s.mode === 'X')
+        ? p : { ...p, override: !!s.override, aero: s.mode === 'X' }));
+      onMode?.(s.mode);
+      audio.current?.set(s.rpm, s.throttle);
+      if (t >= script.duration) {
+        if (!done) { done = true; stopDemo(); }
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [demo, onMode, stopDemo]);
+
+  // Audio lives in its own effect, and `sound` is deliberately NOT a
+  // dependency of the one above: with it there, un-ticking the sound
+  // box tore down the loop and restarted the sequence from zero.
+  // set() is a no-op while the graph is down, so the demo does not care
+  // either way.
+  useEffect(() => {
+    if (demo && sound) {
+      audio.current ??= new EngineAudio();
+      audio.current.start();
+    } else {
+      audio.current?.stop();
+    }
+  }, [demo, sound]);
+
+  // Leaving the page with an engine still running would be unforgivable.
+  useEffect(() => () => audio.current?.stop(), []);
+
+  // The page has its own Z/X switch above the car. If someone uses it,
+  // the wheel's AERO button has to follow, or the two disagree about
+  // the state of the same car.
+  useEffect(() => {
+    setPressed((p) => (!!p.aero === (mode === 'X') ? p : { ...p, aero: mode === 'X' }));
+  }, [mode]);
 
   return (
     <div className="wheel-layout">
@@ -172,28 +260,33 @@ export default function SteeringWheel() {
         </defs>
 
         {/* Paddles. Behind everything, tucked under the outer edges. */}
-        {PADDLES.map((p) => (
-          <g key={p.id}
-            className={`wheel-hit${shown === `fix:${p.id}` ? ' is-on' : ''}`}
-            {...activate(`fix:${p.id}`, () => {})}
-          >
-            {p.spans.map(([x, w]) => (
-              <g key={x}>
-                <rect className="wheel-paddle" x={x} y={p.y} width={w} height={p.h} rx="14" />
-                {/* Nudged outward onto the exposed half of the tab. Centred,
-                    the label sat exactly on the face edge that overlaps it
-                    and half of every word disappeared behind the wheel. */}
-                <text
-                  className="wheel-tag wheel-tag-sm"
-                  x={x + w / 2 + (x < 450 ? -12 : 12)} y={p.y + p.h / 2 + 4}
-                  transform={`rotate(-90 ${x + w / 2 + (x < 450 ? -12 : 12)} ${p.y + p.h / 2})`}
-                >
-                  {p.label}
-                </text>
-              </g>
-            ))}
-          </g>
-        ))}
+        {/* Each tab is its own control now, not two halves of one hit
+            target: the right shift paddle goes up the box and the left
+            one comes down it, which is the whole reason a wheel has two
+            of them. Both still describe the same fixture. */}
+        {PADDLES.flatMap((p) => p.spans.map(([x, w]) => {
+          const up = x > 450;
+          const id = `fix:${p.id}`;
+          const lx = x + w / 2 + (up ? 12 : -12);
+          return (
+            <g key={`${p.id}${x}`}
+              className={`wheel-hit${shown === id ? ' is-on' : ''}`}
+              {...activate(id, p.id === 'shift' ? () => shift(up ? 1 : -1) : () => {})}
+            >
+              <rect className="wheel-paddle" x={x} y={p.y} width={w} height={p.h} rx="14" />
+              {/* Nudged outward onto the exposed half of the tab. Centred,
+                  the label sat exactly on the face edge that overlaps it
+                  and half of every word disappeared behind the wheel. */}
+              <text
+                className="wheel-tag wheel-tag-sm"
+                x={lx} y={p.y + p.h / 2 + 4}
+                transform={`rotate(-90 ${lx} ${p.y + p.h / 2})`}
+              >
+                {p.id === 'shift' ? (up ? 'UP' : 'DOWN') : p.label}
+              </text>
+            </g>
+          );
+        }))}
 
         {/* Grips. These are the wheel's dominant feature — big sculpted
             hooks sweeping down and outward, then tucking back in under
@@ -272,7 +365,7 @@ export default function SteeringWheel() {
             width={SCREEN_W} height={SCREEN_H} rx="12" />
 
           <text className="wheel-lcd-val" x={PAD_L} y="174">
-            <tspan className="wheel-lcd-cap">SPD </tspan>298
+            <tspan className="wheel-lcd-cap">SPD </tspan>{speed}
           </text>
           {/* No caption on the time, and the arithmetic is the reason.
               The band is 208 units wide; at the size a phone needs, a
@@ -280,7 +373,11 @@ export default function SteeringWheel() {
               m:ss.mmm does not need telling what it is. */}
           <text className="wheel-lcd-val wheel-right" x={PAD_R} y="174">1:18.412</text>
 
-          <text className="wheel-gear" x="450" y="250">8</text>
+          {/* Neutral is a letter, not a number, and it is the one
+              reading a driver checks before letting the clutch out. */}
+          <text className={`wheel-gear${gear === 0 ? ' is-neutral' : ''}`} x="450" y="250">
+            {gear === 0 ? 'N' : gear}
+          </text>
 
           {/* A rule under the gear band. Without it the modes read as a
               continuation of one tall column of numbers. */}
@@ -315,7 +412,11 @@ export default function SteeringWheel() {
           return (
             <g key={b.id}
               className={`wheel-hit${shown === id ? ' is-on' : ''}${on ? ' is-lit' : ''}`}
-              {...activate(id, () => press(b.id))}
+              {...activate(id, () => {
+                if (b.id === 'neutral') { selectNeutral(); return; }
+                if (b.id === 'aero') onMode?.(pressed.aero ? 'Z' : 'X');
+                press(b.id);
+              })}
             >
               {b.kind === 'rocker' ? (
                 <>
@@ -406,6 +507,43 @@ export default function SteeringWheel() {
             clear
           </button>
         )}
+      </div>
+
+      <div className="wheel-demo">
+        <div className="wheel-demo-bar">
+          <span className="wheel-demo-label mono">Run a sequence</span>
+          {DEMOS.map((d) => (
+            <button
+              key={d.id}
+              type="button"
+              className={`wheel-demo-button${demo === d.id ? ' is-on' : ''}`}
+              onClick={() => (demo === d.id ? stopDemo() : setDemo(d.id))}
+              title={d.blurb}
+            >
+              {demo === d.id ? `Stop · ${d.name}` : d.name}
+            </button>
+          ))}
+          <label className="wheel-sound">
+            <input
+              type="checkbox"
+              checked={sound}
+              onChange={(e) => setSound(e.target.checked)}
+            />
+            Engine sound
+          </label>
+        </div>
+        {caption
+          ? <p className="wheel-caption" aria-live="polite">{caption}</p>
+          : (
+            <p className="wheel-demo-note">
+              The sequences drive this wheel and the car above it — gears, modes, the
+              override and the wings. The engine is synthesised in the browser from an
+              oscillator stack, not a recording: a real one would be somebody&rsquo;s
+              copyright and would cost more than this whole page&rsquo;s payload budget.
+              Speeds, revs and shift points are illustrative, not measured — no team
+              publishes a ratio set, a shift point or what a deployment mode is worth.
+            </p>
+          )}
       </div>
     </div>
   );

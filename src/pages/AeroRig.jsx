@@ -211,7 +211,7 @@ export default function AeroRig() {
             same Z-to-X switch as the one above the car.
           </p>
         </div>
-        <SteeringWheel />
+        <SteeringWheel mode={mode} onMode={setMode} />
       </section>
 
       <div className="controls-row">
