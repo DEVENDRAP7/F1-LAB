@@ -45,14 +45,20 @@ const PADDLES = [
   { id: 'clutch', label: 'CLUTCH', y: 254, h: 58, spans: [[132, 58], [710, 58]] },
 ];
 
-// The screen and the shift strip share a width, and it is narrower than
-// it was: the raised pods have to clear it, and at the old width the
-// left pod covered the display's top corner.
-const SCREEN_X = 336;
-const SCREEN_W = 228;
-const STRIP_X = 352;
-const STRIP_W = 196;
-const LED_N = 11;
+// The screen and the shift strip share a width, and it is as wide as
+// the face allows. The binding constraints are the inner edge of each
+// button column (the radio button's rim reaches x 324) and the rounded
+// end of each raised pod, whose centre sits at x 286 with a radius of
+// 44 — so a bed corner at x 332 clears it by 3.6 units and one at 330
+// does not. Everything below is measured off those two numbers.
+const SCREEN_X = 332;
+const SCREEN_W = 236;
+const SCREEN_Y = 144;
+const SCREEN_H = 178;
+// Text insets, and the right edge that every right-aligned field ends on.
+const PAD_L = SCREEN_X + 14;
+const PAD_R = SCREEN_X + SCREEN_W - 14;
+const LED_N = 13;
 
 function polar(cx, cy, r, deg) {
   const a = ((deg - 90) * Math.PI) / 180;
@@ -217,12 +223,12 @@ export default function SteeringWheel() {
         <g className={`wheel-hit${shown === 'fix:leds' ? ' is-on' : ''}`}
           {...activate('fix:leds', () => {})}
         >
-          <rect className="wheel-screen-bed" x={STRIP_X} y="112" width={STRIP_W} height="26" rx="10" />
+          <rect className="wheel-screen-bed" x={SCREEN_X} y="112" width={SCREEN_W} height="26" rx="10" />
           {Array.from({ length: LED_N }, (_, i) => (
             <circle
               key={i}
-              className={`wheel-led wheel-led-${i < 4 ? 'a' : i < 8 ? 'b' : 'c'}`}
-              cx={365 + i * 17} cy="125" r="5.2"
+              className={`wheel-led wheel-led-${i < 5 ? 'a' : i < 9 ? 'b' : 'c'}`}
+              cx={SCREEN_X + 16 + i * 17} cy="125" r="5.4"
             />
           ))}
         </g>
@@ -250,26 +256,55 @@ export default function SteeringWheel() {
           {/* Laid out in three bands — a small top line, the gear on its
               own, then the modes — because a 52px digit centred across a
               line of 20px values collides with them, and a fourth row of
-              text fell off the bottom of the screen entirely. */}
-          <rect className="wheel-screen-bed" x={SCREEN_X} y="146" width={SCREEN_W} height="154" rx="12" />
-          <rect className="wheel-screen-glow" x={SCREEN_X} y="146" width={SCREEN_W} height="154" rx="12" />
-          <text className="wheel-lcd-sm" x="352" y="170">SPD 298</text>
-          <text className="wheel-lcd-sm wheel-right" x="548" y="170">1:18.412</text>
-          <text className="wheel-gear" x="450" y="226">8</text>
-          <text className="wheel-lcd-row" x="352" y="258">{`ENG ${readout.engine}`}</text>
-          <text className="wheel-lcd-row wheel-right" x="548" y="258">
-            {`STR ${readout.strategy}`}
+              text fell off the bottom of the screen entirely.
+           *
+           *  Every field is a dim three-letter caption and a bright
+           *  value, which is how a real dash separates what a number is
+           *  from what it says. One flat colour for the whole string
+           *  made the caption compete with the reading. */}
+          <rect className="wheel-screen-bed" x={SCREEN_X} y={SCREEN_Y}
+            width={SCREEN_W} height={SCREEN_H} rx="12" />
+          {/* An inner bezel, inset from the bed: a screen is recessed
+              into its housing and the step is what shows that. */}
+          <rect className="wheel-screen-rim" x={SCREEN_X + 5} y={SCREEN_Y + 5}
+            width={SCREEN_W - 10} height={SCREEN_H - 10} rx="8" />
+          <rect className="wheel-screen-glow" x={SCREEN_X} y={SCREEN_Y}
+            width={SCREEN_W} height={SCREEN_H} rx="12" />
+
+          <text className="wheel-lcd-val" x={PAD_L} y="174">
+            <tspan className="wheel-lcd-cap">SPD </tspan>298
           </text>
-          <text className="wheel-lcd-row" x="352" y="284">{`ENB ${readout.braking}`}</text>
-          <text className="wheel-lcd-row wheel-right" x="548" y="284">
-            {pressed.aero ? 'AERO X' : 'AERO Z'}
+          {/* No caption on the time, and the arithmetic is the reason.
+              The band is 208 units wide; at the size a phone needs, a
+              "LAP " prefix takes the two fields to 217 and they overlap.
+              m:ss.mmm does not need telling what it is. */}
+          <text className="wheel-lcd-val wheel-right" x={PAD_R} y="174">1:18.412</text>
+
+          <text className="wheel-gear" x="450" y="250">8</text>
+
+          {/* A rule under the gear band. Without it the modes read as a
+              continuation of one tall column of numbers. */}
+          <line className="wheel-lcd-rule" x1={PAD_L} x2={PAD_R} y1="262" y2="262" />
+
+          <text className="wheel-lcd-row" x={PAD_L} y="284">
+            <tspan className="wheel-lcd-cap">ENG </tspan>{readout.engine}
+          </text>
+          <text className="wheel-lcd-row wheel-right" x={PAD_R} y="284">
+            <tspan className="wheel-lcd-cap">STR </tspan>{readout.strategy}
+          </text>
+          <text className="wheel-lcd-row" x={PAD_L} y="308">
+            <tspan className="wheel-lcd-cap">ENB </tspan>{readout.braking}
+          </text>
+          <text className="wheel-lcd-row wheel-right" x={PAD_R} y="308">
+            <tspan className="wheel-lcd-cap">AERO </tspan>{pressed.aero ? 'X' : 'Z'}
           </text>
           {/* The bar fills with the engine map, so the screen carries a
               reading you can take in without parsing any text. */}
-          <rect className="wheel-bar-bed" x={STRIP_X} y="290" width={STRIP_W} height="7" rx="3.5" />
+          <rect className="wheel-bar-bed" x={PAD_L} y="311" width={PAD_R - PAD_L}
+            height="8" rx="4" />
           <rect
-            className="wheel-bar-fill" x={STRIP_X} y="290" rx="3.5" height="7"
-            width={STRIP_W * ((positions.engine + 1) / ROTARIES[0].positions.length)}
+            className="wheel-bar-fill" x={PAD_L} y="311" rx="4" height="8"
+            width={(PAD_R - PAD_L) * ((positions.engine + 1) / ROTARIES[0].positions.length)}
           />
         </g>
 

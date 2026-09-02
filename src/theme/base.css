@@ -2095,9 +2095,9 @@ tbody tr.is-on {
   --wh-dim: #9fa9bb;
   --wh-lcd: #46b6ff;
 
-  flex: 1 1 26rem;
+  flex: 1 1 28rem;
   min-width: 17rem;
-  max-width: 40rem;
+  max-width: 46rem;
   height: auto;
 }
 
@@ -2172,26 +2172,52 @@ tbody tr.is-on {
   stroke-width: 1.6;
 }
 
+/* A recessed bezel between the housing and the glass. */
+.wheel-screen-rim {
+  fill: none;
+  stroke: #1d2836;
+  stroke-width: 2;
+  pointer-events: none;
+}
+
 .wheel-gear {
   fill: var(--wh-ink);
   font-family: var(--font-mono);
-  font-size: 52px;
+  font-size: 64px;
   font-weight: 700;
   text-anchor: middle;
 }
 
-.wheel-lcd-sm {
-  fill: var(--wh-dim);
+/* The top band: speed and lap time. It was 12px in the dim ink, which
+   on a wheel that renders about 640px wide is under nine real pixels —
+   present, but not readable, which is not what a dash is for. */
+.wheel-lcd-val {
+  fill: var(--wh-ink);
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.1em;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }
 
 .wheel-lcd-row {
-  fill: var(--wh-lcd);
+  fill: #6ec8ff;
   font-family: var(--font-mono);
-  font-size: 15px;
-  letter-spacing: 0.08em;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+/* Captions sit back so the reading comes forward. One flat colour for
+   "ENG" and "STD" together made the label compete with the value. */
+.wheel-lcd-cap {
+  fill: var(--wh-dim);
+  font-weight: 400;
+}
+
+.wheel-lcd-rule {
+  stroke: #23415e;
+  stroke-width: 1.5;
+  pointer-events: none;
 }
 
 .wheel-right { text-anchor: end; }
@@ -2317,8 +2343,8 @@ tbody tr.is-on {
 }
 
 .wheel-readout-panel {
-  flex: 1 1 15rem;
-  min-width: 13rem;
+  flex: 1 1 13rem;
+  min-width: 12rem;
   border-left: 2px solid var(--accent-0);
   padding-left: 0.9rem;
 }
@@ -2359,9 +2385,11 @@ tbody tr.is-on {
   .wheel-tag { font-size: 19px; }
   .wheel-tag-sm { font-size: 15px; }
   .wheel-btn-label { font-size: 18px; }
-  .wheel-lcd-sm { font-size: 15px; }
-  .wheel-lcd-row { font-size: 17px; }
-  .wheel-gear { font-size: 58px; }
+  /* Both sized to the 208-unit band rather than to taste: fifteen
+     characters of mono plus letter-spacing plus a gap is what fits. */
+  .wheel-lcd-val { font-size: 19px; }
+  .wheel-lcd-row { font-size: 18px; }
+  .wheel-gear { font-size: 70px; }
 }
 
 .wheel-bar-bed { fill: #0b1220; stroke: var(--wh-edge); stroke-width: 1; }
