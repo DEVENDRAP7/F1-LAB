@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEMOS, channelAt, stateAt } from './wheelDemo.js';
+import { atRevLimit, lampTone, litLamps } from './steeringWheel.js';
 
 const byId = (id) => DEMOS.find((d) => d.id === id);
 
@@ -99,5 +100,64 @@ describe('stateAt', () => {
     expect(stateAt(demo, 2).strategy).toBe(0);
     expect(stateAt(demo, 5).strategy).toBe(2);
     expect(stateAt(demo, demo.duration).strategy).toBe(0);
+  });
+});
+
+describe('the shift strip during a demo', () => {
+  const topLampTone = (rpm) => {
+    const n = litLamps(rpm, 13);
+    return n === 0 ? null : lampTone(n - 1, 13);
+  };
+
+  it('runs the strip into the red before every upshift', () => {
+    // The demos used to top out at 12 600 against a 15 000 limit — 84%,
+    // under the 88% where the red band begins — so not one red lamp lit
+    // at any point in either sequence, at exactly the moments the revs
+    // are highest. A driver takes an upshift ON the limiter, and that is
+    // also the only thing that puts this strip into its red.
+    for (const demo of DEMOS) {
+      let red = false;
+      let flashed = false;
+      for (let t = 0; t <= demo.duration; t += 0.05) {
+        const { rpm } = stateAt(demo, t);
+        if (topLampTone(rpm) === 'c') red = true;
+        if (atRevLimit(rpm)) flashed = true;
+      }
+      expect(red, `${demo.id} never shows a red lamp`).toBe(true);
+      expect(flashed, `${demo.id} never reaches the limiter`).toBe(true);
+    }
+  });
+
+  it('empties the strip on every upshift', () => {
+    // Red, flash, drop, fill again. If the revs never came back down
+    // the strip would sit at the top for the whole run and the shift
+    // would not be visible in it at all.
+    for (const demo of DEMOS) {
+      const frames = demo.frames.filter((f) => f.gear !== undefined && f.rpm !== undefined);
+      let upshifts = 0;
+      for (let i = 1; i < frames.length; i += 1) {
+        // Selecting first FROM NEUTRAL is not an upshift: the car is
+        // standing still and the revs rise as the driver picks them up
+        // against the clutch. Only shifts between gears drop them.
+        if (frames[i - 1].gear < 1) continue;
+        if (frames[i].gear <= frames[i - 1].gear) continue;
+        // Only where the two keyframes are the shift ITSELF. A gear
+        // change written across 1.4 seconds is a shift that happens
+        // somewhere in between while the car accelerates, and the revs
+        // either side of it legitimately go up.
+        if (frames[i].t - frames[i - 1].t > 0.5) continue;
+        upshifts += 1;
+        expect(frames[i].rpm, `${demo.id} shift to ${frames[i].gear}`)
+          .toBeLessThan(frames[i - 1].rpm);
+        expect(litLamps(frames[i].rpm, 13), `${demo.id} shift to ${frames[i].gear}`)
+          .toBeLessThan(litLamps(frames[i - 1].rpm, 13));
+      }
+      expect(upshifts, `${demo.id} upshifts`).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps the strip dark on the grid, before the start', () => {
+    // Idling in neutral is not a moment for thirteen lit lamps.
+    expect(litLamps(stateAt(DEMOS[0], 0).rpm, 13)).toBe(0);
   });
 });
