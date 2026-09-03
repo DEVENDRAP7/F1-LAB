@@ -8,7 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "model:sections": "node scripts/model/dump_sections.mjs",
+    "model:build": "node scripts/model/dump_sections.mjs && python3 scripts/model/build_body.py",
+    "model:parity": "node scripts/model/parity_check.mjs",
+    "model:preview": "node scripts/model/preview.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

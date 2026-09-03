@@ -34,3 +34,4 @@ pipeline/.cache/
 # Env
 .env
 .env.local
+scripts/model/.preview.html

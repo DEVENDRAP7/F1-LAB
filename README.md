@@ -182,6 +182,52 @@ turns:
 
 ![Circuit Atlas](docs/screenshots/circuits.png)
 
+### Blender body — a prototype, not yet wired in
+
+`scripts/model/` builds the car's body shell in Blender and exports it as
+glTF. It is a **prototype**: nothing on the site loads it yet, and the
+Three.js scene still draws the car exactly as before.
+
+```
+npm run model:build      # sections -> Blender -> public/models/2026/car-body.glb
+npm run model:parity     # hold the Python port of ring() to the JS original
+npm run model:preview    # render the result from four angles
+```
+
+Blender runs headless as a Python module (`pip install bpy==5.0.1`,
+CPython 3.11 only) — there is no GUI step and nothing is modelled by
+hand, so the geometry stays reviewable as code and rebuildable in CI.
+
+It exists because hand-lofting in Three.js has a ceiling, and three
+things past it are worth having: **subdivision surfaces**, so the tub is
+not fourteen rings with flats between them; **bevels**, because every
+edge on a real car has a radius and a radius is what catches a
+highlight; and **booleans**, for real holes and real joins.
+
+The booleans are the reason it is worth a build step. The section tables
+put the sidepods 5 to 20 cm CLEAR of the tub — the tub is 0.296 m
+half-wide and the pods sit between 0.35 and 0.66 — so in the Three.js
+scene they are three separate closed tubes lying alongside each other,
+and no amount of shading fixes an air gap. In the Blender build they are
+pulled inboard and unioned into the shell, which comes out as one
+watertight surface with the pod growing out of the tub. The union also
+*removes* geometry: 96k triangles became 82k, because the buried
+surfaces are gone.
+
+Both models are built from the same numbers. `src/lib/carSections.js` is
+the single source; the JS scene imports it directly and
+`dump_sections.mjs` writes it out as JSON for Blender, which cannot
+import an ES module. The one thing Blender's Python does duplicate is
+`ring()`, and `npm run model:parity` runs both implementations over 249
+sections and compares every coordinate — a silent drift of a few
+millimetres would put the Blender body out of register with the wings
+and wheels the JS scene still draws around it, and would look like a
+modelling mistake rather than a maths one.
+
+Current output: 1.4 MB, 82k triangles. That is far past the 400 KB
+initial-load budget in `docs/SPEC.md`, which is one of the open
+questions about adopting it.
+
 ## Where the data comes from
 
 Three public sources, none of them official.
