@@ -182,44 +182,133 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
     },
   );
   /* ---------------- streamlines ----------------
-     Drawn, not solved. Evenly spaced ribbons pushed around the silhouette
-     so the shape reads in three dimensions. There is no flow field here and
-     the page says so where it counts. */
+
+     Drawn, not solved. There is no flow field here, no solver and no
+     simulation — these are ribbons pushed around the car's measured
+     silhouette so its shape reads in three dimensions, and the panel
+     beside the viewport says so.
+
+     What changed: they used to be deflected by a fixed ellipse centred
+     on the origin, which meant they bulged as much AHEAD of the car as
+     behind it and passed straight through the bodywork at any angle
+     where you could see it happen. They now follow the car's own
+     silhouette, measured off the model every 200 mm — half-width and
+     height, which is all a displacement needs. */
+
+  // Scene metres: [x, half-width, height]. Profiled from the loaded
+  // model rather than guessed; the peak at x 0.4 is the airbox, the two
+  // shoulders at 0.930 and 0.939 are the front and rear track.
+  const SILHOUETTE = [
+    [-2.60, 0.542, 0.350], [-2.40, 0.900, 0.415], [-2.20, 0.900, 0.467],
+    [-2.00, 0.900, 0.528], [-1.80, 0.930, 0.617], [-1.60, 0.930, 0.714],
+    [-1.40, 0.931, 0.719], [-1.20, 0.930, 0.672], [-1.00, 0.832, 0.662],
+    [-0.80, 0.880, 0.672], [-0.60, 0.881, 0.844], [-0.40, 0.853, 0.884],
+    [-0.20, 0.782, 0.877], [0.00, 0.758, 0.836], [0.20, 0.749, 0.789],
+    [0.40, 0.741, 1.099], [0.60, 0.737, 1.096], [0.80, 0.731, 1.000],
+    [1.00, 0.697, 0.962], [1.20, 0.697, 0.911], [1.40, 0.697, 0.857],
+    [1.60, 0.939, 0.801], [1.80, 0.939, 0.791], [2.00, 0.941, 0.719],
+    [2.20, 0.939, 0.911], [2.40, 0.822, 0.911], [2.60, 0.575, 0.911],
+  ];
+  // One smoothing pass over the heights. The raw profile steps 31 cm in
+  // a single 20 cm station where the airbox begins, and a linear
+  // interpolation through that put a visible corner in every ribbon
+  // passing over the roll hoop. The table is a displacement guide, not a
+  // measurement anything is derived from, so softening it costs nothing.
+  for (let pass = 0; pass < 2; pass += 1) {
+    const heights = SILHOUETTE.map((row) => row[2]);
+    for (let i = 1; i < SILHOUETTE.length - 1; i += 1) {
+      SILHOUETTE[i][2] = heights[i - 1] * 0.25 + heights[i] * 0.5 + heights[i + 1] * 0.25;
+    }
+  }
+
+  const SIL_X0 = SILHOUETTE[0][0];
+  const SIL_STEP = 0.2;
+
+  /** The car's half-width and height at x, zero outside its length. */
+  function silhouetteAt(x) {
+    const f = (x - SIL_X0) / SIL_STEP;
+    if (f <= 0 || f >= SILHOUETTE.length - 1) return [0, 0];
+    const i = Math.floor(f);
+    const t = f - i;
+    const a = SILHOUETTE[i];
+    const b = SILHOUETTE[i + 1];
+    return [a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+
   const flow = new THREE.Group();
   scene.add(flow);
-  const FLOW_LINES = 34;
-  const flowMat = new THREE.LineBasicMaterial({ color: 0x9fb2cc, transparent: true, opacity: 0.16 });
-  const flowMatHot = new THREE.LineBasicMaterial({ color: 0xdce6f4, transparent: true, opacity: 0.34 });
+  const FLOW_LINES = 46;
+  const FLOW_STEPS = 76;
+  const flowMat = new THREE.LineBasicMaterial({ color: 0x9fb2cc, transparent: true, opacity: 0.15 });
+  const flowMatHot = new THREE.LineBasicMaterial({ color: 0xdce6f4, transparent: true, opacity: 0.36 });
   const lines = [];
   for (let i = 0; i < FLOW_LINES; i += 1) {
     const geo = new THREE.BufferGeometry();
-    const pts = new Float32Array(60 * 3);
-    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
-    const line = new THREE.Line(geo, i % 7 === 0 ? flowMatHot : flowMat);
+    geo.setAttribute('position',
+      new THREE.BufferAttribute(new Float32Array(FLOW_STEPS * 3), 3));
+    const line = new THREE.Line(geo, i % 6 === 0 ? flowMatHot : flowMat);
+    const y = 0.04 + Math.random() * 1.25;
     line.userData.seed = Math.random() * 100;
-    line.userData.y = 0.05 + Math.random() * 1.1;
-    line.userData.z = (Math.random() - 0.5) * 2.7;
+    line.userData.y = y;
+    line.userData.z = (Math.random() - 0.5) * 2.9;
+    // A streamline either goes OVER the car or AROUND it, and which one
+    // it does is decided once rather than per frame. Mixing both into
+    // every line was what made the old ribbons wander through the
+    // bodywork instead of past it.
+    line.userData.over = y > 0.55;
     flow.add(line);
     lines.push(line);
   }
 
-  function updateFlow(t) {
+  /** Ease in over the nose and relax through the wake. */
+  function envelope(x) {
+    if (x < -3.0) return 0;
+    if (x < -2.4) return (x + 3.0) / 0.6;
+    if (x < 2.4) return 1;
+    // The wake does not recover: air behind a car stays disturbed, which
+    // is the whole reason the car behind loses downforce.
+    return Math.max(0.55, 1 - (x - 2.4) / 5.2);
+  }
+
+  function updateFlow(t, flat) {
+    // `flat` is 0 in Z-mode and 1 in X-mode, eased by the same lerp the
+    // flaps use, so the flow settles as the wings move rather than
+    // snapping. A flattened wing turns the air far less, and showing
+    // that is the only thing the toggle can honestly say about drag —
+    // the size of the difference here is drawn, not computed.
+    const upwash = 0.42 * (1 - flat * 0.78);
+    const spread = 1 - flat * 0.22;
     for (const line of lines) {
       const arr = line.geometry.attributes.position.array;
-      const { seed, y, z } = line.userData;
-      for (let i = 0; i < 60; i += 1) {
-        const x = -4.6 + (i / 59) * 10.4 + ((t * 2.2 + seed) % 0.35);
-        // Deflection: how far this streamline is pushed aside depends on how
-        // close it passes to the body, which is what makes the silhouette read.
-        const near = Math.max(0, 1 - Math.abs(x) / 2.6);
-        const squeeze = near * Math.max(0, 1 - Math.abs(z) / 1.3);
+      const { seed, y, z, over } = line.userData;
+      const sign = Math.sign(z || 1);
+      for (let i = 0; i < FLOW_STEPS; i += 1) {
+        const x = -4.9 + (i / (FLOW_STEPS - 1)) * 10.9 + ((t * 2.2 + seed) % 0.3);
+        const [half, high] = silhouetteAt(x);
+        const env = envelope(x);
+        let py = y;
+        let pz = z;
+        if (over) {
+          // Pushed up to clear the body, and then up again over the
+          // rear wing, which is where a loaded wing throws its wake.
+          const clear = high + 0.09 - y;
+          if (clear > 0) py = y + clear * env;
+          const wing = Math.max(0, 1 - Math.abs(x - 2.25) / 1.5);
+          py += wing * upwash * env;
+        } else {
+          const clear = half + 0.10 - Math.abs(z);
+          if (clear > 0) pz = z + sign * clear * env * spread;
+          // Air squeezed around the flanks lifts a little too.
+          py = y + Math.max(0, 1 - Math.abs(z) / 1.4) * 0.10 * env;
+        }
         arr[i * 3] = x;
-        arr[i * 3 + 1] = y + squeeze * 0.5 * Math.sin(1.1 + y) + Math.sin(x * 0.8 + seed) * 0.012;
-        arr[i * 3 + 2] = z + squeeze * Math.sign(z || 1) * 0.62;
+        arr[i * 3 + 1] = py + Math.sin(x * 0.8 + seed) * 0.012;
+        arr[i * 3 + 2] = pz;
       }
       line.geometry.attributes.position.needsUpdate = true;
     }
   }
+
   /* ---------------- orbit, picking, mode ---------------- */
 
   let orbit = { theta: 0.72, phi: 1.1, radius: 7, dragging: false, lx: 0, ly: 0 };
@@ -331,7 +420,7 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
   // rear flap thirty-five degrees out of its own bodywork. X-mode is a
   // positive rotation about z, which lifts each trailing edge and so
   // flattens the element.
-  const MODE_ANGLE = { Z: { front: 0, rear: 0 }, X: { front: 0.30, rear: 0.40 } };
+  const MODE_ANGLE = { Z: { front: 0, rear: 0 }, X: { front: 0.26, rear: 0.34 } };
   let flapNow = { front: MODE_ANGLE.Z.front, rear: MODE_ANGLE.Z.rear };
 
   /* ---------------- render loop ---------------- */
@@ -377,7 +466,7 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
     frontFlapPivot.rotation.z = flapNow.front;
     rearFlapPivot.rotation.z = flapNow.rear;
 
-    if (!reduced) updateFlow(t);
+    if (!reduced) updateFlow(t, flapNow.rear / MODE_ANGLE.X.rear);
     renderer.render(scene, camera);
     rafId = requestAnimationFrame(frame);
   }

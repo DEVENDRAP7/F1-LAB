@@ -168,9 +168,12 @@ export default function AeroRig() {
         <div className="panel-head">
           <h2>The car</h2>
           <p className="panel-note">
-            {MODE_COPY[mode].text} Only the flap angle changes between modes — this is not a
-            simulation of the airflow itself, and no lap below is measured in X-mode; the sport
-            does not publish which mode a car was in.
+            {MODE_COPY[mode].text} The flap angle changes, and the ribbons around the car
+            follow it: they are turned hard by a loaded wing and pass much straighter over a
+            flattened one. That is a drawing, not a solution — there is no flow field here, the
+            size of the difference is chosen to read clearly rather than computed, and no lap
+            below is measured in X-mode because the sport does not publish which mode a car
+            was in.
           </p>
         </div>
 

@@ -113,7 +113,15 @@ def part_of(x, y, z):
     # the colour check as a tan panel standing vertically behind the
     # rear wheel.
     if x > 3460 and y > 330:
-        return "rearFlap" if y > 720 else "rearWing"
+        # The FLAP is only the element spanning BETWEEN the endplates.
+        # Taking everything above y 720 put the top of each endplate in
+        # it as well, and rotating that for X-mode tore the endplates in
+        # half: their upper corners swung away with the flap and left a
+        # hole where the wing had been. The rear wing reaches |z| 575 at
+        # its tips, so 470 keeps the endplates out of the moving part.
+        if y > 700 and az < 470:
+            return "rearFlap"
+        return "rearWing"
 
     # Diffuser and rear crash structure: everything low behind the axle.
     if x > 3150 and y < 470:
