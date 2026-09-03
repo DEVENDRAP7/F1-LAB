@@ -420,7 +420,12 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
   // rear flap thirty-five degrees out of its own bodywork. X-mode is a
   // positive rotation about z, which lifts each trailing edge and so
   // flattens the element.
-  const MODE_ANGLE = { Z: { front: 0, rear: 0 }, X: { front: 0.26, rear: 0.34 } };
+  //
+  // The front was held at 0.26 while its flap bucket still contained the
+  // nose cone — any more and the nose visibly tore off. With the flap
+  // properly isolated it can take the same rotation as the rear, which
+  // is what makes the change legible from the side.
+  const MODE_ANGLE = { Z: { front: 0, rear: 0 }, X: { front: 0.36, rear: 0.34 } };
   let flapNow = { front: MODE_ANGLE.Z.front, rear: MODE_ANGLE.Z.rear };
 
   /* ---------------- render loop ---------------- */

@@ -101,10 +101,29 @@ def part_of(x, y, z):
 
     # Front wing assembly, which the donor ends at x -420.
     if x < -420:
-        # The donor does not split the movable elements out, so the flap
-        # is the upper-rear band, inboard of the endplates.
-        if y > 250 and az < 760 and x > -1050:
+        # The movable flap is the UPPER ELEMENT of the stack, and it is
+        # found by height and span together.
+        #
+        # The first rule was "above 250 mm and inboard of the endplates",
+        # which sounds like the upper element and is not: the nose cone
+        # runs the whole length of this region and is far taller than the
+        # wing, so that rule handed the nose's entire underside to the
+        # flap. In X-mode the nose then swung up and out of the car.
+        #
+        # Profiling the region separates them cleanly. Everything wide
+        # (|z| > 320) is wing: 22k vertices at 100-150 mm is the fixed
+        # mainplane, then a GAP at 200-250 mm — the slot — then 13k more
+        # at 250-300 mm, which is the element above the slot. Everything
+        # narrow (|z| < 220) at that height is nose. So the flap is a
+        # band in height AND a span wide enough not to be the nose,
+        # inboard of endplates that reach |z| 913.
+        if 240 <= y <= 360 and 240 < az < 830:
             return "frontFlap"
+        # The nose cone runs the full length of this region on the
+        # centreline, above the wing's elements. Calling it "front wing"
+        # was harmless to look at and wrong to click.
+        if az < 230 and y > 190:
+            return "nose"
         return "frontWing"
 
     # Rear wing assembly. The endplate reaches a long way DOWN, so the
