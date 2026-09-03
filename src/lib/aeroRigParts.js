@@ -16,19 +16,19 @@ export const PARTS = {
     name: 'Front wing',
     text: 'Narrower for 2026, with a two-element movable flap. It sets the air up for '
       + 'everything behind it — a change here is felt at the floor and the rear wing too.',
-    verdict: ['s', 'geometry from the published regulations'],
+    verdict: ['s', 'shape from a third party’s concept model'],
   },
   frontFlap: {
     name: 'Front flap · movable',
     text: 'The element that moves between modes: loaded in Z, flattened in X. Both wings '
-      + 'move in 2026, which is what makes it more than a rebadged DRS.',
-    verdict: ['s', 'motion is schematic; no angle is published'],
+      + 'move in 2026, which is what makes it more than a rebadged DRS. The donor model does not separate the movable elements from the fixed mainplane, so what moves here is the upper-rear band of the wing — close, not exact.',
+    verdict: ['s', 'shape from a concept model; no flap angle is published'],
   },
   nose: {
     name: 'Nose',
     text: 'Structural, and an air splitter. Everything it does aerodynamically happens '
       + 'downstream, which is why nothing here measures it directly.',
-    verdict: ['s', 'geometry from the published regulations'],
+    verdict: ['s', 'shape from a third party’s concept model'],
   },
   floor: {
     name: 'Floor and venturi',
@@ -46,20 +46,20 @@ export const PARTS = {
     name: 'Halo',
     text: 'Mandatory survival structure, sitting in the airbox flow. Everything behind it is '
       + 'shaped around that — a real aerodynamic cost of a safety part.',
-    verdict: ['s', 'geometry from the published regulations'],
+    verdict: ['s', 'shape from a third party’s concept model'],
   },
   camera: {
     name: 'Camera and antenna pod',
     text: 'The onboard camera housing and its aerials, on top of the roll hoop. Every car '
       + 'carries the same equipment in the same place, in one of two assigned colours to tell '
       + 'team-mates apart — one of the few parts here nobody chose for aerodynamic reasons.',
-    verdict: ['s', 'shape from photographs, not from any dimensioned source'],
+    verdict: ['s', 'shape from a concept model, not a dimensioned source'],
   },
   airbox: {
     name: 'Airbox and engine cover',
     text: 'Feeds the power unit and tapers into the rear-wing flow. The 2026 power unit '
       + 'shifts far more of its output to the electrical side, changing what this has to cool.',
-    verdict: ['s', 'geometry from the published regulations'],
+    verdict: ['s', 'shape from a third party’s concept model'],
   },
   rearWing: {
     name: 'Rear wing',
@@ -67,7 +67,7 @@ export const PARTS = {
       + 'floor sets, and it is what most obviously costs top speed. The endplate carries '
       + 'the slots and louvres that let pressure bleed across it, and an outward gurney '
       + 'along its trailing edge.',
-    verdict: ['s', 'geometry from the published regulations'],
+    verdict: ['s', 'shape from a third party’s concept model'],
   },
   rearFlap: {
     name: 'Rear flap · movable',
@@ -91,16 +91,17 @@ export const PARTS = {
   suspension: {
     name: 'Suspension',
     text: 'Aerodynamic as well as mechanical: the arms sit in the flow and are shaped for '
-      + 'it. Ride height is where floor performance is won, and none of it is published.',
+      + 'it. Ride height is where floor performance is won, and none of it is published. Wishbones share their space with the wheels and the bodywork, so this part is only approximately separated from them.',
     verdict: ['r', 'nothing published to measure it with'],
   },
 };
 
 export const WHOLE_CAR = {
   name: 'The whole car',
-  text: 'Click any part to move in on it. A diagram drawn to the 2026 regulations, not a '
-    + 'scan of anyone’s car.',
-  verdict: ['s', 'geometry drawn from published rule descriptions'],
+  text: 'Click any part to move in on it. The shape is an open-licence concept model of a '
+    + '2026 car by a third-party artist, re-cut into these parts — not a scan of anyone’s '
+    + 'real bodywork, and not geometry this project derived itself.',
+  verdict: ['s', 'a third party’s concept model, not a dimensioned source'],
 };
 
 /** The readout entry for a part key, or the whole-car default for null/unknown. */

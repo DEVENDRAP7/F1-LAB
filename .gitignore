@@ -35,3 +35,5 @@ pipeline/.cache/
 .env
 .env.local
 scripts/model/.preview.html
+scripts/model/preview/
+scripts/model/donor/scene.bin

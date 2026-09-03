@@ -9,10 +9,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint .",
-    "model:sections": "node scripts/model/dump_sections.mjs",
-    "model:build": "node scripts/model/dump_sections.mjs && python3 scripts/model/build_body.py",
-    "model:parity": "node scripts/model/parity_check.mjs",
-    "model:preview": "node scripts/model/preview.mjs"
+    "model:build": "python3 scripts/model/segment_car.py",
+    "model:preview": "node scripts/model/preview.mjs",
+    "model:debug": "python3 scripts/model/segment_car.py --debug && node scripts/model/preview.mjs car-debug.glb"
   },
   "dependencies": {
     "react": "^18.3.1",

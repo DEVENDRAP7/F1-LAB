@@ -1,27 +1,24 @@
 import * as THREE from 'three';
-import {
-  COVER, FLOOR, NOSE, POD, POD_Q, TUB, TUB_SEG, cockpitRing, ring,
-} from './carSections.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { needsResize } from './canvasSize.js';
 
-// The car is lofted, not stacked.
+// The car is a loaded model, not lofted geometry.
 //
-// An F1 car is a continuously changing cross-section: a point at the nose
-// tip, wide and tall at the cockpit, pinched into the coke-bottle waist,
-// tapering to the crash structure. So the bodywork is built by lofting a
-// skin over cross-sections defined every few centimetres, and every wing
-// is a real aerofoil profile extruded along its span, rather than a stack
-// of boxes with the right footprint. It is a diagram drawn to the
-// published 2026 dimensions — narrower front wing, three-element rear
-// wing, no beam wing, 18-inch wheels — not a scan of anyone's car, and it
-// carries no team livery, badge or colour scheme.
+// Everything from the nose to the rear wing arrives as one Draco-
+// compressed glTF, already cut into the parts aeroRigParts.js names.
+// This module's job is what surrounds it: the chamber, the lights, the
+// streamlines, the orbit camera, part picking, and the active-aero mode.
 //
-// createAeroRig(canvas, { onPick }) builds the scene, starts its own
-// render loop, and returns { setMode(mode), dispose() }. It knows nothing
-// about what a part is called or what to say about it — see
+// scripts/model/segment_car.py builds that file, and its header records
+// what the segmentation can and cannot recover.
+//
+// createAeroRig(canvas, { onPick, onLoadError }) builds the scene, starts
+// its own render loop, and returns { setMode(mode), dispose() }. It knows
+// nothing about what a part is called or what to say about it — see
 // aeroRigParts.js for that — it only ever hands back the raw part key a
 // click landed on, through onPick.
-export function createAeroRig(canvas, { onPick = () => {} } = {}) {
+export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {} } = {}) {
   let currentMode = 'Z';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -99,1133 +96,91 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   contact.rotation.x = -Math.PI / 2;
   contact.position.set(0.1, 0.004, 0);
   scene.add(contact);
-  /* ---------------- geometry ---------------- */
+  /* ---------------- the car ----------------
 
-  const body = new THREE.MeshStandardMaterial({ color: 0xe0261c, roughness: 0.28, metalness: 0.45 });
-  const dark = new THREE.MeshStandardMaterial({ color: 0x1c2029, roughness: 0.7, metalness: 0.3 });
-  const carbon = new THREE.MeshStandardMaterial({ color: 0x333a48, roughness: 0.52, metalness: 0.55 });
-  const underbody = new THREE.MeshStandardMaterial({
-    color: 0x0e1015, roughness: 0.94, metalness: 0.04, flatShading: true,
-  });
-  const rubber = new THREE.MeshStandardMaterial({ color: 0x24272e, roughness: 0.95, metalness: 0.04 });
-  const alloy = new THREE.MeshStandardMaterial({ color: 0xb9c2d0, roughness: 0.25, metalness: 0.9 });
-  // The halo is a carbon-skinned structure and reads near-black on every
-  // real car, not as bare titanium — but glossy enough to catch a rim
-  // light along its top edge, which is what stops it looking like a line
-  // drawn over the cockpit.
-  const haloMat = new THREE.MeshStandardMaterial({
-    color: 0x15181f, roughness: 0.32, metalness: 0.52,
-  });
-  // The camera pod's identification colour. Mandatory equipment in a
-  // mandated colour, not a livery choice.
-  const marker = new THREE.MeshStandardMaterial({
-    color: 0xd6dc1e, emissive: 0x3a4000, roughness: 0.44,
-  });
-  // Cockpit interior. Fireproof overalls are matt cloth, a helmet is
-  // glossy painted composite, a visor is darker and glossier still —
-  // three different surfaces, and lighting them all as bare metal is
-  // what made the driver read as a chrome ornament.
-  const suit = new THREE.MeshStandardMaterial({
-    color: 0x272d38, roughness: 0.88, metalness: 0.04,
-  });
-  const helmetShell = new THREE.MeshStandardMaterial({
-    color: 0xdde3ec, roughness: 0.20, metalness: 0.08,
-  });
-  const visorMat = new THREE.MeshStandardMaterial({
-    color: 0x0a0d12, roughness: 0.10, metalness: 0.30, side: THREE.DoubleSide,
-  });
+     Loaded, not lofted.
+
+     Every earlier version of this file built the car by hand: forty
+     section tables skinned into lofts, a superellipse ring function, an
+     aerofoil generator, and about a thousand lines of geometry. That is
+     all gone, and it is worth saying why rather than just deleting it.
+
+     Hand-lofting has a ceiling, and this project hit it. The sections
+     put the sidepods five to twenty centimetres CLEAR of the tub, so
+     from a three-quarter angle they read as torpedoes lying beside a
+     spindle; the wings were planks until they were given real aerofoil
+     sections; the airbox needed three separate attempts before it had a
+     hole in it, because a closed loft has no hole and anything modelled
+     inside is sealed invisibly in the solid.
+
+     The car is now a donor model, re-cut into this page's own parts by
+     scripts/model/segment_car.py and loaded here as one compressed glTF.
+     It arrives already divided into the thirteen keys aeroRigParts.js
+     knows about, because the donor's own eleven meshes are vertex-buffer
+     chunks that each span the whole car and would have made every click
+     return the same meaningless fragment.
+
+     What this costs: the model is somebody's interpretation of the 2026
+     regulations rather than geometry this project derived from them, and
+     the page says so plainly instead of claiming otherwise. */
 
   const car = new THREE.Group();
   scene.add(car);
 
-  // The car is lofted, not stacked.
-  //
-  // The first build assembled it from boxes and it read as a stack of
-  // boxes, because that is what it was. An F1 car is a continuously
-  // changing cross-section: a point at the nose tip, wide and tall at the
-  // cockpit, pinched into the coke-bottle waist, tapering to the crash
-  // structure. Nothing made of cuboids has any of that.
-  //
-  // So the bodywork is built by lofting a skin over cross-sections defined
-  // every few centimetres, and every wing is a real aerofoil profile
-  // extruded along its span. It is still a diagram drawn to the published
-  // 2026 dimensions rather than a scan of anyone's car — it is just a
-  // diagram that has the right shape now.
-
-  /** A superelliptical cross-section: round at the nose, squarer at the tub. */
-
-  /** A rounded-trapezoid outline: wide across the top, narrow at the
-   *  bottom. Air intakes are this shape, not the oval a plain
-   *  superellipse gives — photographs looking straight into an airbox
-   *  show a broad roof narrowing to a slot at the floor, and that taper
-   *  is most of what makes an opening read as a duct going somewhere. */
-  function mouthRing(topHalfWidth, bottomHalfWidth, halfHeight, centreY,
-    squareness = 2.6, segments = 30) {
-    const pts = [];
-    for (let i = 0; i < segments; i += 1) {
-      const t = (i / segments) * Math.PI * 2;
-      const p = 2 / squareness;
-      const sy = Math.sign(Math.sin(t)) * Math.abs(Math.sin(t)) ** p;
-      const sx = Math.sign(Math.cos(t)) * Math.abs(Math.cos(t)) ** p;
-      const up = (sy + 1) / 2;
-      const w = bottomHalfWidth + (topHalfWidth - bottomHalfWidth) * up;
-      pts.push([centreY + halfHeight * sy, w * sx]);
-    }
-    return pts;
-  }
-
-  /** A cross-section with the cockpit trough pressed into its top.
-   *
-   *  The survival cell is one closed loft, so there was no hole for a
-   *  driver to sit in: the opening was a dark patch painted on an
-   *  unbroken surface, and anything placed "inside" was sealed in the
-   *  solid. Pushing the top of the section down between the two rim
-   *  edges makes a real trough — the loft stays closed and watertight,
-   *  and what is in the trough is genuinely visible.
-   *
-   *  The rim rolls into the floor over a smoothstep rather than a step,
-   *  or the opening reads as a slot cut with a knife. */
-
-  /** Skin a set of cross-sections into one closed surface. */
-  function loft(stations, material, part, { capFront = true, capBack = true } = {}) {
-    const seg = stations[0].ring.length;
-    const pos = [];
-    const index = [];
-    for (const st of stations) for (const [y, z] of st.ring) pos.push(st.x, y, z);
-
-    for (let s = 0; s < stations.length - 1; s += 1) {
-      for (let i = 0; i < seg; i += 1) {
-        const j = (i + 1) % seg;
-        const a = s * seg + i;
-        const b = s * seg + j;
-        const c = (s + 1) * seg + i;
-        const d = (s + 1) * seg + j;
-        index.push(a, c, b, b, c, d);
-      }
-    }
-    // Fan caps, so the ends are solid rather than open tubes.
-    const cap = (stationIndex, flip) => {
-      const base = pos.length / 3;
-      const st = stations[stationIndex];
-      let cy = 0;
-      let cz = 0;
-      for (const [y, z] of st.ring) { cy += y; cz += z; }
-      pos.push(st.x, cy / seg, cz / seg);
-      for (let i = 0; i < seg; i += 1) {
-        const a = stationIndex * seg + i;
-        const b = stationIndex * seg + ((i + 1) % seg);
-        index.push(flip ? a : b, flip ? b : a, base);
-      }
-    };
-    if (capFront) cap(0, true);
-    if (capBack) cap(stations.length - 1, false);
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    geo.setIndex(index);
-    geo.computeVertexNormals();
-    const mesh = new THREE.Mesh(geo, material);
-    mesh.userData.part = part;
-    car.add(mesh);
-    return mesh;
-  }
-
-  /** A cambered aerofoil section, leading edge at the origin. */
-  /** One closed aerofoil outline, as [chordwise, vertical] points.
-   *
-   *  The old section was two bezier curves meeting at a POINT at the
-   *  leading edge. A sharp leading edge is the single thing that makes a
-   *  wing read as a plank: real ones are blunt and round at the front and
-   *  sharp only at the back, and the eye knows the difference even at
-   *  thumbnail size. This is the NACA four-digit thickness distribution,
-   *  which is round at the nose by construction, laid over a cambered
-   *  mean line that finishes `drop` low so the element is an inverted
-   *  wing rather than a symmetric strut.
-   *
-   *  Points are cosine-spaced, so they bunch where the curvature is —
-   *  at the leading edge — instead of being wasted along the flat middle. */
-  function aerofoilPoints(chord, thickness, drop, n = 20) {
-    const upper = [];
-    const lower = [];
-    for (let i = 0; i <= n; i += 1) {
-      const xc = 0.5 - 0.5 * Math.cos(Math.PI * (i / n));
-      // The bracket peaks at 0.1015, so this scale keeps `thickness`
-      // meaning what it did before: maximum half-thickness in metres.
-      const yt = 9.85 * thickness * (0.2969 * Math.sqrt(xc) - 0.1260 * xc
-        - 0.3516 * xc * xc + 0.2843 * xc ** 3 - 0.1036 * xc ** 4);
-      const camber = -drop * xc * xc;
-      upper.push([xc * chord, camber + yt]);
-      lower.push([xc * chord, camber - yt]);
-    }
-    // Drop the shared nose and tail points so the loop closes cleanly.
-    return upper.concat(lower.reverse().slice(1, -1));
-  }
-
-  /** A wing element, lofted across its span rather than extruded.
-   *
-   *  Extruding held one section along the whole span, which is what made
-   *  these read as planks with wing-shaped ends: a real element loses
-   *  chord and thickness toward the tip, sweeps back, and arches up into
-   *  the endplate. Lofting a section per station gives all three, and
-   *  costs a few hundred vertices.
-   *
-   *  taper — tip chord as a fraction of root chord
-   *  sweep — how far the tip's leading edge sits behind the root's
-   *  curve — how far the tip rises above the root
-   *  dip   — how far the middle of the span falls below both
-   *
-   *  `dip` is what makes a front wing a front wing. Seen head-on the real
-   *  thing is a gullwing: highest at the centre where it meets the nose,
-   *  falling away through mid-span, rising again into the endplate. A
-   *  single parabola from centre to tip cannot make that shape — it can
-   *  only arch one way — and an element that arches one way is a bar with
-   *  a bend in it, which is exactly how this used to read. */
-  function wingElement(opts) {
-    const {
-      chord, thickness, span, drop = 0, x, y, z = 0, tilt = 0, mat, part,
-      curve = 0, taper = 1, sweep = 0, dip = 0, steps = 22,
-    } = opts;
-    const half = span / 2;
-    const stations = [];
-    for (let s = 0; s <= steps; s += 1) {
-      const zz = -half + (s / steps) * span;
-      const u = Math.abs(zz) / half;
-      const pts = aerofoilPoints(
-        chord * (1 - (1 - taper) * u * u),
-        thickness * (1 - 0.40 * u * u),
-        drop,
-      );
-      const dx = sweep * u * u;
-      // Cubic rise to the tip, minus a half-sine that is zero at both
-      // ends and deepest in the middle: centre high, mid-span low, tip
-      // high again.
-      const dy = curve * u ** 3 - dip * Math.sin(Math.PI * u);
-      stations.push({ zz, pts: pts.map(([px, py]) => [px + dx, py + dy]) });
-    }
-
-    const seg = stations[0].pts.length;
-    const position = [];
-    for (const st of stations) for (const [px, py] of st.pts) position.push(px, py, st.zz);
-    const index = [];
-    for (let s = 0; s < stations.length - 1; s += 1) {
-      for (let i = 0; i < seg; i += 1) {
-        const j = (i + 1) % seg;
-        index.push(
-          s * seg + i, (s + 1) * seg + i, s * seg + j,
-          s * seg + j, (s + 1) * seg + i, (s + 1) * seg + j,
-        );
-      }
-    }
-    // Close both tips, or the wing is a tube open at each end.
-    const last = (stations.length - 1) * seg;
-    for (let i = 1; i < seg - 1; i += 1) {
-      index.push(0, i + 1, i);
-      index.push(last, last + i, last + i + 1);
-    }
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
-    geo.setIndex(index);
-    geo.computeVertexNormals();
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.rotation.z = tilt;
-    mesh.position.set(x, y, z);
-    mesh.userData.part = part;
-    return mesh;
-  }
-
-  /** A vertical plate: outline in the fore-aft plane, thin across the car.
-      Endplates, floor fences and diffuser strakes are all this shape. */
-  function plate(points, thickness, mat, part, x, y, z, holes) {
-    const shape = new THREE.Shape();
-    points.forEach(([a, b], i) => (i ? shape.lineTo(a, b) : shape.moveTo(a, b)));
-    // Holes are real openings, not dark paint: ExtrudeGeometry walls
-    // each one, so a slot in an endplate has a thickness you can see
-    // into. Endplate louvres and slots are the reason this exists.
-    for (const hole of holes ?? []) {
-      const path = new THREE.Path();
-      hole.forEach(([a, b], i) => (i ? path.lineTo(a, b) : path.moveTo(a, b)));
-      shape.holes.push(path);
-    }
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
-    geo.translate(0, 0, -thickness / 2);
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(x, y, z);
-    mesh.userData.part = part;
-    car.add(mesh);
-    return mesh;
-  }
-
-  /** A straight member running from one point to another.
-   *
-   *  Suspension arms are aimed, not axis-aligned, and hand-rotating a
-   *  cylinder to each one's angle is how the old build ended up with
-   *  arms that missed the upright. Giving the geometry its length along
-   *  local +Z and then pointing that at the far end puts both ends
-   *  exactly where they belong, whatever the angle. */
-  function strut(from, to, chord, thick, mat, part) {
-    const dir = new THREE.Vector3().subVectors(to, from);
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(chord, thick, dir.length()), mat);
-    mesh.position.copy(from).addScaledVector(dir, 0.5);
-    mesh.lookAt(to);
-    mesh.userData.part = part;
-    car.add(mesh);
-    return mesh;
-  }
-
-  /** Sweep an upright oval section along a 3D curve.
-   *
-   *  Three's own TubeGeometry frames each section with a Frenet normal,
-   *  which rolls over where a curve's curvature reverses — on a loop like
-   *  the halo that puts a visible twist half way along a rail. Building
-   *  the frame from world up instead cannot twist: the section stays
-   *  vertical the whole way round, which is what the real part does. The
-   *  section is narrow across and deep vertically, so the halo comes out
-   *  as the blade it is rather than as a round rod. */
-  function sweep(curve, halfWide, halfTall, mat, part, steps = 108, sides = 12) {
-    const pos = [];
-    const index = [];
-    const up = new THREE.Vector3(0, 1, 0);
-    const across = new THREE.Vector3();
-    const upright = new THREE.Vector3();
-    for (let s = 0; s <= steps; s += 1) {
-      const t = s / steps;
-      const p = curve.getPointAt(t);
-      const tan = curve.getTangentAt(t);
-      across.crossVectors(tan, up).normalize();
-      upright.crossVectors(across, tan).normalize();
-      for (let i = 0; i < sides; i += 1) {
-        const a = (i / sides) * Math.PI * 2;
-        const c = Math.cos(a);
-        const sn = Math.sin(a);
-        pos.push(
-          p.x + across.x * halfWide * c + upright.x * halfTall * sn,
-          p.y + across.y * halfWide * c + upright.y * halfTall * sn,
-          p.z + across.z * halfWide * c + upright.z * halfTall * sn,
-        );
-      }
-    }
-    for (let s = 0; s < steps; s += 1) {
-      for (let i = 0; i < sides; i += 1) {
-        const j = (i + 1) % sides;
-        index.push(
-          s * sides + i, (s + 1) * sides + i, s * sides + j,
-          s * sides + j, (s + 1) * sides + i, (s + 1) * sides + j,
-        );
-      }
-    }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    geo.setIndex(index);
-    geo.computeVertexNormals();
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.userData.part = part;
-    car.add(mesh);
-    return mesh;
-  }
-
-  /* ---------------- dimensions ----------------
-     Metres, from the published 2026 figures: 1.9 m over the wheels, under
-     0.95 m at the rear wing, 18-inch wheels at 0.72 m diameter, a front
-     wing narrower than the car. */
-  const R_TYRE = 0.36;
-  const W_HALF = 0.735;
-  const AXLE = R_TYRE;
-  const X_FRONT = -1.62;
-  const X_REAR = 1.72;
-
-  /* ---------------- monocoque ----------------
-     Every station is a cross-section: a point at the tip, widening through
-     the chassis, at its fullest around the cockpit, then pinched hard into
-     the coke-bottle waist ahead of the rear axle. */
-  // The nose and the chassis are two volumes, not one. A single loft from
-  // tip to tail gave a continuous cigar, and the thing that actually reads
-  // on a real car is the step at the front bulkhead where the slim nose
-  // meets the full-width survival cell. They overlap so the step is a
-  // shoulder rather than a seam.
-  loft(NOSE.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, s.q) })), body, 'nose');
-
-  // Stations carrying `mouth` and `floor` have the cockpit trough pressed
-  // into them. It opens narrow ahead of the driver, is deepest and widest
-  // at the seat, and closes again before the headrest.
-  loft(TUB.map((s) => ({
-    x: s.x,
-    ring: s.mouth
-      ? cockpitRing(s.w, s.h, s.cy, s.q, s.mouth, s.floor, TUB_SEG)
-      : ring(s.w, s.h, s.cy, s.q, TUB_SEG),
-  })), body, 'floor');
-
-  /* ---------------- engine cover and airbox ----------------
-     A separate volume sitting on the tub: the intake mouth behind the
-     driver's head, tapering into the spine that feeds the rear wing. */
-  // The roll hoop stands BEHIND the driver's head, not over it — checked
-  // against side-on and overhead photographs of the real car, where the
-  // helmet sits clear in front of the intake and the hoop rises behind
-  // the headrest. An earlier build had the apex at the same station as
-  // the helmet, which put the intake in front of the driver's face.
-  // The roll hoop's front is BLUNT — a near-vertical face with the
-  // intake cut into it — not a cone tapering to a point. That matters
-  // for more than silhouette: the cover is a closed loft, so a duct
-  // modelled inside a pointed nose is sealed in the solid and cannot be
-  // seen at all. It only ever showed because it was oversized and burst
-  // out through the flanks. A blunt face gives the opening somewhere to
-  // actually be.
-  // The hoop arches ABOVE the helmet, not merely behind it. It topped
-  // out three centimetres over the top of the driver's head, which put
-  // the intake at head height looking like a bulge behind him; a roll
-  // structure has to stand clear over the helmet, and the intake with
-  // it. Apex is now ~0.90 against a helmet crown at 0.775.
-  // The front face is the intake, and almost nothing else.
-  //
-  // It used to be 28 cm tall against a 13 cm mouth sitting in the top
-  // half of it, which left thirteen centimetres of flat red wall below
-  // the opening. Rendered from the side that is not an airbox: it is a
-  // red box strapped behind the driver with a slot in it. On a real car
-  // the structure necks down hard below the mouth into the headrest —
-  // there is no wall there to see. The first station is now 18 cm tall
-  // and the mouth fills all but a couple of centimetres of rim, so the
-  // hoop reads as a duct standing up out of the bodywork. The volume it
-  // loses is put back further aft, where the cover actually is bulky.
-  loft(COVER.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, s.q) })), body, 'airbox');
-  // The airbox intake.
-  //
-  // Photographs taken straight into a real one show a broad roof
-  // narrowing to a slot at the floor — a rounded triangle, not the oval
-  // that was here — and a deep throat you can see a long way down, with
-  // a carbon lip standing proud all round the mouth. The taper is what
-  // says the duct goes somewhere; the oval said "dimple".
-  // The throat now stands a full 3 cm proud of that face and sits above
-  // the helmet crown, in the blackest material on the car. A few
-  // millimetres of dark rim flush against red bodywork was technically
-  // an opening and read as a smudge — an air intake has to look like a
-  // hole you could put your arm down.
-  loft([
-    { x: 0.045, ring: mouthRing(0.070, 0.030, 0.070, 0.812, 2.4) },
-    { x: 0.150, ring: mouthRing(0.062, 0.026, 0.060, 0.802, 2.4) },
-    { x: 0.300, ring: mouthRing(0.046, 0.018, 0.042, 0.780, 2.4) },
-    { x: 0.460, ring: mouthRing(0.024, 0.010, 0.025, 0.740, 2.4) },
-    { x: 0.600, ring: mouthRing(0.013, 0.005, 0.014, 0.700, 2.4) },
-  ], underbody, 'airbox', { capFront: false });
-  // The lip around the mouth, which is what catches the light and makes
-  // the opening read from a distance.
-  loft([
-    { x: 0.026, ring: mouthRing(0.084, 0.044, 0.084, 0.812, 2.4) },
-    { x: 0.062, ring: mouthRing(0.079, 0.041, 0.079, 0.812, 2.4) },
-  ], body, 'airbox', { capFront: false, capBack: false });
-  // Side cooling inlets in the flanks of the hoop — more real holes,
-  // and the reason the structure is as wide as it is.
-  for (const side of [1, -1]) {
-    loft([
-      { x: 0.150, ring: ring(0.010, 0.030, 0.772, 3).map(([y, z]) => [y, z + side * 0.090]) },
-      { x: 0.300, ring: ring(0.008, 0.024, 0.756, 3).map(([y, z]) => [y, z + side * 0.114]) },
-    ], underbody, 'airbox', { capFront: false });
-  }
-  // A second, smaller duct along the floor of the throat. Every close-up
-  // of the real intake shows one down there, feeding something other
-  // than the engine — which of the car's several cooling circuits is not
-  // published, so it is drawn and not labelled.
-  loft([
-    { x: 0.056, ring: ring(0.026, 0.008, 0.756, 4) },
-    { x: 0.280, ring: ring(0.015, 0.005, 0.744, 4) },
-  ], dark, 'airbox', { capFront: false });
-
-  /* ---------------- sidepods ----------------
-     Wide at the inlet, undercut hard along the bottom edge, and drawn in
-     to nothing at the rear — the shape that makes the waist. */
-  for (const side of [1, -1]) {
-    loft(POD.map((s) => ({
-      x: s.x,
-      ring: ring(s.w, s.h, s.cy, POD_Q).map(([y, z]) => [y, z + side * s.z]),
-    })), body, 'sidepod');
-    // The undercut, in shadow: the step between pod and floor is most of
-    // what makes a sidepod read as a sidepod rather than as a bulge.
-    loft([
-      { x: -0.40, ring: ring(0.030, 0.052, 0.214, 3.2).map(([y, z]) => [y, z + side * 0.470]) },
-      { x: 0.20, ring: ring(0.036, 0.056, 0.220, 3.2).map(([y, z]) => [y, z + side * 0.462]) },
-      { x: 0.90, ring: ring(0.030, 0.048, 0.238, 3.2).map(([y, z]) => [y, z + side * 0.390]) },
-      { x: 1.40, ring: ring(0.020, 0.034, 0.268, 3.2).map(([y, z]) => [y, z + side * 0.288]) },
-    ], dark, 'sidepod');
-  }
-
-  /* ---------------- details that the eye looks for ----------------
-     Not decoration: a car without a cockpit opening, a radiator exit or a
-     gearbox reads as a shape rather than as a machine. */
-
-  // Head protection padding, wrapping behind and up the sides of the
-  // opening. Raised to stand proud of the cell rather than sit inside
-  // it: on the real car this is a distinctly raised horseshoe, and it is
-  // mandated equipment whose shape the 2026 rules did not change.
-  // Sits a little lower than the airbox throat above and behind it, so
-  // the two meet rather than pass through each other.
-  loft([
-    { x: 0.14, ring: ring(0.150, 0.046, 0.612, 3.0) },
-    { x: 0.24, ring: ring(0.156, 0.052, 0.616, 3.0) },
-    { x: 0.34, ring: ring(0.134, 0.042, 0.608, 3.0) },
-  ], dark, 'halo');
-
-  // Sidepod inlet.
-  //
-  // There were two of these lofted almost on top of each other, a few
-  // millimetres and one station apart — two near-coplanar dark surfaces
-  // fighting for the same pixels, and neither carried the lip the
-  // comment claimed. This is one duct, tapering back into the pod, with
-  // a raised surround, and it uses the same broad-roof-narrow-floor
-  // shape as the airbox because it is the same kind of opening.
-  for (const side of [1, -1]) {
-    loft([
-      { x: -0.590, ring: mouthRing(0.058, 0.030, 0.088, 0.303, 2.5).map(([y, z]) => [y, z + side * 0.512]) },
-      { x: -0.500, ring: mouthRing(0.050, 0.026, 0.076, 0.305, 2.5).map(([y, z]) => [y, z + side * 0.510]) },
-      { x: -0.390, ring: mouthRing(0.038, 0.020, 0.058, 0.308, 2.5).map(([y, z]) => [y, z + side * 0.507]) },
-      { x: -0.290, ring: mouthRing(0.026, 0.014, 0.040, 0.311, 2.5).map(([y, z]) => [y, z + side * 0.503]) },
-    ], dark, 'sidepod', { capFront: false });
-    loft([
-      { x: -0.612, ring: mouthRing(0.070, 0.040, 0.100, 0.303, 2.5).map(([y, z]) => [y, z + side * 0.512]) },
-      { x: -0.582, ring: mouthRing(0.066, 0.037, 0.096, 0.303, 2.5).map(([y, z]) => [y, z + side * 0.512]) },
-    ], body, 'sidepod', { capFront: false, capBack: false });
-    // Cooling exit louvres: a bank along the pod shoulder and a second up
-    // on the engine cover flank. Every car has to dump its radiator heat
-    // somewhere along here, and the vents are the most visible thing on
-    // the upper bodywork — this was one flat painted-looking stripe.
-    //
-    // Drawn as a plain row of slots on purpose. The arrangement teams
-    // actually run is a cooling decision, traded against drag, and
-    // neither side of that trade is published anywhere this project can
-    // reach — so copying any particular one would be inventing detail.
-    for (let i = 0; i < 6; i += 1) {
-      const t = i / 5;
-      const slot = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.010, 0.064), dark);
-      slot.position.set(0.20 + t * 0.62, 0.450 - t * 0.012, side * (0.512 - t * 0.078));
-      slot.rotation.x = side * 0.20;
-      slot.rotation.y = side * 0.10;
-      slot.userData.part = 'sidepod';
-      car.add(slot);
-    }
-    for (let i = 0; i < 7; i += 1) {
-      const t = i / 6;
-      const slot = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.009, 0.034), dark);
-      slot.position.set(0.58 + t * 0.54, 0.772 - t * 0.126, side * (0.124 - t * 0.024));
-      slot.rotation.x = side * 0.80;
-      slot.rotation.z = -0.10;
-      slot.userData.part = 'airbox';
-      car.add(slot);
-    }
-    // In-wash wake-control board ahead of the inlet, angled to turn the
-    // front tyre's wake inward — 2026's published shift from the previous
-    // cars' outwash aim.
-    const board = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.10, 0.012), carbon);
-    board.position.set(-0.86, 0.31, side * 0.470);
-    board.rotation.y = side * -0.32;
-    board.userData.part = 'sidepod';
-    car.add(board);
-  }
-
-  // Rear crash structure and gearbox fairing, so the tail is a car and not
-  // a taper running into thin air.
-  loft([
-    { x: 1.62, ring: ring(0.112, 0.104, 0.300, 2.8) },
-    { x: 1.92, ring: ring(0.092, 0.086, 0.286, 2.8) },
-    { x: 2.16, ring: ring(0.066, 0.062, 0.276, 2.6) },
-    { x: 2.34, ring: ring(0.046, 0.042, 0.270, 2.4) },
-  ], carbon, 'diffuser');
-  // Rain light, low and central on the crash structure.
-  // The rain light: a dark panel standing on the crash structure with a
-  // ring of LEDs on its back face, which is what photographs from behind
-  // actually show — not the solid red block this used to be. Mandatory
-  // equipment, the same on every car.
-  const lightPanel = new THREE.Mesh(new THREE.BoxGeometry(0.030, 0.132, 0.104), haloMat);
-  lightPanel.position.set(2.352, 0.300, 0);
-  lightPanel.userData.part = 'diffuser';
-  car.add(lightPanel);
-  const lamp = new THREE.Mesh(
-    new THREE.TorusGeometry(0.034, 0.009, 8, 22),
-    new THREE.MeshStandardMaterial({ color: 0xff2a1e, emissive: 0x8c1409, roughness: 0.45 }),
-  );
-  lamp.rotation.y = Math.PI / 2;
-  lamp.position.set(2.370, 0.300, 0);
-  lamp.userData.part = 'diffuser';
-  car.add(lamp);
-
-  /* ---------------- floor, edge fences and diffuser ---------------- */
-  loft(FLOOR.map((s) => ({ x: s.x, ring: ring(s.w, s.h, s.cy, 6) })), underbody, 'floor');
-
-  // The diffuser: the floor's exit, ramped up and fenced.
-  loft([
-    { x: 1.70, ring: ring(0.520, 0.022, 0.092, 5) },
-    { x: 1.96, ring: ring(0.512, 0.044, 0.132, 5) },
-    { x: 2.18, ring: ring(0.498, 0.070, 0.180, 5) },
-    { x: 2.34, ring: ring(0.480, 0.086, 0.212, 5) },
-  ], underbody, 'diffuser');
-  for (const side of [1, -1]) {
-    for (const z of [0.30, 0.45]) {
-      plate([[0, 0], [0.62, 0], [0.62, 0.17], [0, 0.10]], 0.016, underbody, 'diffuser',
-        1.74, 0.10, side * z);
-    }
-    // Side skirt along the floor's outer lip: the sealing edge that keeps
-    // the low pressure under the floor from being fed by air spilling in
-    // from the side, which is most of what makes ground effect work.
-    //
-    // A flat strip of constant height was standing in for this. The real
-    // edge follows the floor's own plan shape, hangs deepest through the
-    // middle where the venturi throat is, and rolls up at both ends.
-    const SKIRT = [
-      { x: -1.42, z: 0.404, drop: 0.020 },
-      { x: -1.00, z: 0.626, drop: 0.046 },
-      { x: -0.40, z: 0.740, drop: 0.062 },
-      { x: 0.35, z: 0.757, drop: 0.066 },
-      { x: 1.00, z: 0.725, drop: 0.058 },
-      { x: 1.45, z: 0.645, drop: 0.040 },
-      { x: 1.80, z: 0.565, drop: 0.022 },
-    ];
-    loft(SKIRT.map((s) => ({
-      x: s.x,
-      ring: ring(0.011, s.drop, 0.066 - s.drop * 0.45, 5).map(([yy, zz]) => [yy, zz + side * s.z]),
-    })), underbody, 'floor');
-    // The edge wing standing above it, turning the flow that gets past.
-    plate([[0, 0], [1.42, 0], [1.42, 0.040], [0, 0.058]], 0.012, underbody, 'floor',
-      -0.50, 0.070, side * 0.744);
-  }
-
-  /* ---------------- front wing ----------------
-     Drawn against a labelled 2026 illustration, which names six parts:
-     a FIXED MAINPLANE, a stack of MOVABLE ACTIVE FLAPS above it, two
-     PYLONS hanging the assembly off the nose, an ENDPLATE, and — under
-     the wing — a FENCE and a STRAKE. Three of those were not here.
-
-     The stack is what makes a front wing read as one. A single flap
-     over a mainplane is two arcs, and head-on that is a thick red bar;
-     the real thing is a run of chords stepping up and back, and the
-     steps are most of what the eye picks up.
-
-     Endplates sit close to the front tyre's outer face, not well
-     inboard of it — checked against real 2026 car photos front-on,
-     where the wingtip and the tyre nearly line up. */
-  const FW_SPAN = 1.78;
-  // The fixed element. Its chord comes down from 0.40 to make room for
-  // the second flap without running the assembly past its own endplate.
-  //
-  // Two numbers here were doing most of the damage. `thickness` is a
-  // half-thickness, so 0.030 drew a 60 mm-thick element — three times a
-  // real front wing blade, and head-on that is the fat red tube this
-  // wing kept being called. And `dip` at 0.062 against a `curve` of
-  // 0.115 arched the span so hard it read as a moustache; the reference
-  // shows a mainplane close to flat across the middle with a gentle
-  // rise into the endplate.
-  car.add(wingElement({
-    chord: 0.36, thickness: 0.018, span: FW_SPAN, drop: 0.070,
-    curve: 0.075, dip: 0.030, taper: 0.66, sweep: 0.075,
-    x: -2.70, y: 0.150, tilt: 0.10, mat: body, part: 'frontWing',
-  }));
-  // Both flaps hang off one pivot, so the active-aero mode turns the
-  // whole movable stack together — which is what "movable active flaps"
-  // means, and what one flap on its own could not show.
+  // The two movable elements hang off pivots so the active-aero mode can
+  // still turn them. Their hinge lines are measured off the loaded
+  // geometry rather than hardcoded — a number tuned to the old lofted
+  // wing would be wrong for this one, and silently so.
   const frontFlapPivot = new THREE.Group();
-  frontFlapPivot.position.set(-2.42, 0.174, 0);
-  frontFlapPivot.add(wingElement({
-    chord: 0.21, thickness: 0.014, span: FW_SPAN - 0.05, drop: 0.078,
-    curve: 0.072, dip: 0.028, taper: 0.60, sweep: 0.070,
-    x: 0, y: 0, mat: carbon, part: 'frontFlap',
-  }));
-  frontFlapPivot.add(wingElement({
-    chord: 0.155, thickness: 0.012, span: FW_SPAN - 0.11, drop: 0.072,
-    curve: 0.070, dip: 0.026, taper: 0.56, sweep: 0.062,
-    x: 0.15, y: 0.058, mat: carbon, part: 'frontFlap',
-  }));
-  car.add(frontFlapPivot);
-  for (const side of [1, -1]) {
-    // Endplate, lofted rather than stamped out flat. Close-ups of the
-    // real part show a panel that curls outward as it runs back and
-    // stands taller at its rear corner; a flat polygon extruded sideways
-    // can only ever be a slab hung off the wingtip.
-    // It also has to be long enough to hold the wing. It ran out at
-    // x -2.27 while the flap's trailing edge was at -2.14, so thirteen
-    // centimetres of wing hung out past the back of its own endplate.
-    const EP = [
-      { x: -2.735, cy: 0.172, h: 0.048, out: 0.000 },
-      { x: -2.640, cy: 0.196, h: 0.082, out: 0.008 },
-      { x: -2.500, cy: 0.222, h: 0.110, out: 0.026 },
-      { x: -2.360, cy: 0.236, h: 0.116, out: 0.048 },
-      { x: -2.230, cy: 0.238, h: 0.108, out: 0.070 },
-      { x: -2.105, cy: 0.226, h: 0.084, out: 0.090 },
-    ];
-    loft(EP.map((s) => ({
-      x: s.x,
-      ring: ring(0.010, s.h, s.cy, 5)
-        .map(([yy, zz]) => [yy, zz + side * (FW_SPAN / 2 + s.out)]),
-    })), carbon, 'frontWing');
-    // Footplate rolling outward along the bottom edge.
-    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.013, 0.090), carbon);
-    foot.position.set(-2.50, 0.124, side * (FW_SPAN / 2 + 0.040));
-    foot.rotation.x = side * 0.26;
-    foot.userData.part = 'frontWing';
-    car.add(foot);
-    // Nose pylons: the wing hangs off the nose rather than growing out of it.
-    const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.20, 0.020), carbon);
-    pylon.rotation.z = 0.5;
-    pylon.position.set(-2.36, 0.235, side * 0.115);
-    pylon.userData.part = 'frontWing';
-    car.add(pylon);
-
-    // The underwing fence and the strake, both named in the reference
-    // and both missing here. They hang below the wing, and WHERE they
-    // can hang is set by the element's own spanwise shape: `dip` takes
-    // the mid-span down to about 29 mm off the road at the trailing
-    // edge, which leaves no room for a fin, while the arch outboard of
-    // it opens up 75 mm. So they sit at 0.56 and 0.72 of half-span —
-    // not because that looks right, but because that is where the wing
-    // is high enough to hang anything from.
-    plate([[0, 0], [0.30, 0], [0.30, -0.040], [0.02, -0.048]],
-      0.010, underbody, 'frontWing', -2.66, 0.105, side * 0.56);
-    plate([[0, 0], [0.36, 0], [0.36, -0.055], [0.02, -0.066]],
-      0.010, underbody, 'frontWing', -2.66, 0.137, side * 0.72);
-  }
-
-  /* ---------------- rear wing ----------------
-     TWO elements, not three. The X-mode/Z-mode reference draws the rear
-     wing in section in both states, and in both it is a mainplane and
-     one flap — the third element here was left over from the shape this
-     wing replaced, and it stacked the assembly 12 cm taller than the
-     drawing.
-
-     No beam wing under them, and hung from a double mount attached to
-     the underside — the published 2026 change from 2022-2025's single,
-     curved swan-neck bracket, which built the DRS actuator into the
-     bend of the mount itself. */
-  const RW_SPAN = 1.02;
-  car.add(wingElement({
-    chord: 0.32, thickness: 0.026, span: RW_SPAN, drop: 0.055,
-    curve: -0.026, taper: 0.80, sweep: 0.030,
-    x: 2.02, y: 0.815, tilt: 0.08, mat: body, part: 'rearWing',
-  }));
-  // The one movable element, and it takes over the chord the third
-  // element used to carry: two thin flaps stacked read as a slot, one
-  // deep one reads as a wing.
   const rearFlapPivot = new THREE.Group();
-  rearFlapPivot.position.set(2.24, 0.868, 0);
-  rearFlapPivot.add(wingElement({
-    chord: 0.26, thickness: 0.022, span: RW_SPAN - 0.04, drop: 0.068,
-    curve: -0.024, taper: 0.78, sweep: 0.028,
-    x: 0, y: 0, mat: carbon, part: 'rearFlap',
-  }));
+  car.add(frontFlapPivot);
   car.add(rearFlapPivot);
-  for (const side of [1, -1]) {
-    // Sized to the wing it carries — and it still was not. The previous
-    // outline was cut back at the trailing edge but kept its full depth,
-    // so it hung 12 cm BELOW the main plane's lower surface and stood
-    // 32 cm tall around a wing box 21 cm deep. Rendered from behind, the
-    // two of them were a pair of black boards with a red sliver
-    // somewhere between them.
-    //
-    // A 2026 endplate's lower edge sits at the main plane, not a
-    // hand's width under it; that deep skirt belongs to the 2017-2021
-    // wings. The outline follows the wing instead: bottom edge level
-    // with the main plane, a rounded leading edge sweeping up, and a
-    // crest a few centimetres proud of the upper flap.
-    //
-    // Lengthened again with the flap: the panel stopped at x 2.47 and
-    // the flap's trailing edge now reaches 2.50, so it ran out from
-    // under its own wing. The top edge is longer and flatter than the
-    // last cut too, which is the profile the reference draws.
-    //
-    // The CAD reference names the features on this panel, and it was a
-    // blank sheet of carbon: an ENDPLATE CUTOUT at the top rear, a run
-    // of LOUVRES along the top, a LEADING EDGE SLOT and a REAR SLOT.
-    // They are what stops an endplate reading as a board — every
-    // photograph of the back of a car shows light coming through them.
-    //
-    // The cutout is a bite out of the top-rear corner, taken out of the
-    // outline rather than punched through it, because that is what a
-    // cutout is.
-    //
-    // Every slot below is placed against the outline, not by eye. The
-    // leading edge stops at y 0.245 because above that the front edge
-    // has swept back past x 0.11 and a slot at 0.085 would be cut in
-    // fresh air; the louvres stop at y 0.328 because the top edge is
-    // between 0.334 and 0.344 across their span.
-    const EP_LOUVRES = Array.from({ length: 4 }, (_, i) => {
-      const x0 = 0.235 + i * 0.060;
-      return [[x0, 0.298], [x0 + 0.045, 0.306], [x0 + 0.045, 0.328], [x0, 0.320]];
-    });
-    plate([[0.10, 0.086], [0.28, 0.074], [0.44, 0.086], [0.52, 0.128],
-      [0.575, 0.196], [0.585, 0.284], [0.556, 0.298], [0.548, 0.330],
-      [0.30, 0.344], [0.14, 0.326], [0.072, 0.244], [0.060, 0.150]],
-    0.018, carbon, 'rearWing', 1.94, 0.690, side * (RW_SPAN / 2), [
-      // Leading edge slot, parallel to the front edge.
-      [[0.086, 0.168], [0.104, 0.172], [0.112, 0.243], [0.094, 0.245]],
-      // Rear slot, parallel to the back edge.
-      [[0.548, 0.192], [0.564, 0.196], [0.570, 0.286], [0.552, 0.288]],
-      ...EP_LOUVRES,
-    ]);
-    // The outward gurney: a lip standing off the outer face along the
-    // trailing edge. It is 12 mm of panel extruded 30 mm ACROSS the
-    // car rather than along it — a gurney works by standing square to
-    // the surface it sits on, so drawn in the plane of the endplate it
-    // would be nothing at all.
-    plate([[0.575, 0.196], [0.585, 0.284], [0.571, 0.286], [0.561, 0.198]],
-      0.030, carbon, 'rearWing', 1.94, 0.690, side * (RW_SPAN / 2 + 0.024));
-    // The top edge rolls outward. It is the feature that identifies an
-    // endplate at a glance in any photograph of the back of a car, and
-    // a flat-topped panel does not read as one however well it is
-    // proportioned. Canted 32 degrees, sitting on the crest.
-    // It has to START inside the panel, not on top of it: sat on the
-    // crest and canted 32 degrees, a 7 cm strip swung out into a
-    // free-floating shelf above the wing with daylight under it. Its
-    // base is now 4 cm down inside the endplate and the cant is 23
-    // degrees, so what shows is a top edge that turns out — which is
-    // the whole of the effect being after.
-    const roll = plate([[0.28, 0.000], [0.555, 0.014], [0.570, 0.052],
-      [0.26, 0.062], [0.14, 0.034]], 0.014, carbon, 'rearWing',
-    1.94, 0.996, side * (RW_SPAN / 2));
-    roll.rotation.x = side * 0.40;
-    // Rain lights down the outer face of each endplate: mandated, and
-    // the same on every car.
-    //
-    // This one was at x 2.02, which is the endplate's LEADING edge — a
-    // rain light pointing up the road, with the whole panel between it
-    // and the car behind. It is a light meant to be seen from behind,
-    // so it belongs aft. Moved to x 2.44 and shortened, which also
-    // takes it off the leading-edge slot it was sitting on top of; its
-    // span is held between the endplate's lower edge at local y 0.118
-    // and the rear slot starting at 0.192.
-    const strip = new THREE.Mesh(
-      new THREE.BoxGeometry(0.020, 0.100, 0.010),
-      new THREE.MeshStandardMaterial({ color: 0xd83228, emissive: 0x5e1108, roughness: 0.5 }),
-    );
-    strip.position.set(2.44, 0.870, side * (RW_SPAN / 2 + 0.010));
-    strip.userData.part = 'rearWing';
-    car.add(strip);
-  }
-  // The adjuster fairing, which the reference names and puts on the axis
-  // the flap turns about. Something has to drive a movable element, and
-  // on a car that something is faired over; leaving it out made the flap
-  // look as though it pivoted on nothing. One per side, bridging the
-  // main plane's upper surface to the flap above it.
-  for (const side of [1, -1]) {
-    plate([[0, 0], [0.11, 0.006], [0.132, 0.028], [0.10, 0.050], [0.02, 0.044]],
-      0.022, carbon, 'rearWing', 2.17, 0.828, side * 0.22);
-  }
 
-  // Double mount: two struts per side reaching the underside of the main
-  // plane, the published 2026 change from a single curved bracket with
-  // the DRS actuator built into its bend.
-  //
-  // They used to be short cylinders floating at mid-height — the crash
-  // structure's top is around y 0.30 and the struts began at 0.61, so a
-  // third of a metre of nothing sat between the mount and the car. These
-  // are aimed from one to the other, so they cannot not meet.
-  for (const side of [1, -1]) {
-    for (const dz of [-0.052, 0.052]) {
-      strut(
-        new THREE.Vector3(2.06, 0.318, side * 0.088 + dz * 0.5),
-        new THREE.Vector3(2.03, 0.812, side * 0.150 + dz),
-        0.052, 0.026, carbon, 'rearWing',
-      );
-    }
-  }
+  const PIVOTS = { frontFlap: frontFlapPivot, rearFlap: rearFlapPivot };
 
-  /* ---------------- cockpit and halo ----------------
-     The opening has to sit ON the top surface of the survival cell. It
-     was twelve centimetres down inside it, so the cockpit rendered as a
-     blank patch of bodywork with a helmet floating out of it — the one
-     part of the car every photograph shows clearly, and this model was
-     not drawing it at all. */
-  // The seat pan, lining the floor of the trough so the inside of the
-  // cockpit is dark rather than a red-painted dish.
-  loft([
-    { x: -0.40, ring: ring(0.108, 0.018, 0.512, 4) },
-    { x: -0.18, ring: ring(0.138, 0.020, 0.498, 4) },
-    { x: 0.02, ring: ring(0.140, 0.020, 0.502, 4) },
-    // Narrower than the trough's mouth where it closes, or the pan
-    // breaks back out through the bodywork as a shard.
-    { x: 0.10, ring: ring(0.074, 0.016, 0.544, 4) },
-  ], suit, 'halo');
+  let disposed = false;
 
-  // The driver: reclined, shoulders at about the height of the rim, head
-  // and helmet standing clear of it. Deliberately a mannequin — the
-  // shapes carry scale and tell a reader where a person is, and nothing
-  // more detailed than that would be honest at this level of drawing.
-  loft([
-    { x: -0.20, ring: ring(0.086, 0.052, 0.546, 2.5) },
-    { x: -0.08, ring: ring(0.112, 0.066, 0.556, 2.6) },
-    { x: 0.03, ring: ring(0.132, 0.074, 0.566, 2.6) },
-    { x: 0.08, ring: ring(0.104, 0.060, 0.562, 2.6) },
-  ], suit, 'halo');
-  // Neck and the head restraint collar sitting on the shoulders.
-  const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.062, 0.070, 14), suit);
-  collar.position.set(-0.035, 0.596, 0);
-  collar.userData.part = 'halo';
-  car.add(collar);
+  const draco = new DRACOLoader();
+  draco.setDecoderPath(`${import.meta.env.BASE_URL}draco/`);
+  const loader = new GLTFLoader();
+  loader.setDRACOLoader(draco);
 
-  // Helmet, which is what gives the cockpit its scale. Raised so it sits
-  // clear of the rim and level with the halo, as every photograph shows
-  // it — it used to be sunk with only its crown showing.
-  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.115, 22, 18), helmetShell);
-  helmet.scale.set(1.18, 1, 0.94);
-  helmet.position.set(-0.06, 0.658, 0);
-  helmet.userData.part = 'halo';
-  car.add(helmet);
-  // Visor: a band across the front only, not a stripe round the whole
-  // shell. phi = 0 faces -x on three's sphere, which is the car's nose.
-  const visor = new THREE.Mesh(
-    new THREE.SphereGeometry(0.1165, 26, 10,
-      -Math.PI * 0.42, Math.PI * 0.84, Math.PI * 0.34, Math.PI * 0.23),
-    visorMat,
+  loader.load(
+    `${import.meta.env.BASE_URL}models/2026/car.glb`,
+    (gltf) => {
+      // The load is asynchronous and dispose() can win the race. Adding
+      // to a torn-down scene leaks the whole graph.
+      if (disposed) return;
+      const meshes = [];
+      gltf.scene.traverse((o) => { if (o.isMesh) meshes.push(o); });
+      for (const mesh of meshes) {
+        // The exporter names each object after its part, which is the
+        // whole point of the segmentation step.
+        const part = mesh.name.replace(/[._]\d+$/, '');
+        mesh.userData.part = part;
+        const pivot = PIVOTS[part];
+        if (!pivot) {
+          car.add(mesh);
+          continue;
+        }
+        // Hinge at the element's own leading edge, mid-height, so the
+        // flap rotates about its front edge the way a real one does
+        // rather than pivoting about the car's origin.
+        const box = new THREE.Box3().setFromObject(mesh);
+        pivot.position.set(box.min.x, (box.min.y + box.max.y) / 2, 0);
+        mesh.position.sub(pivot.position);
+        pivot.add(mesh);
+      }
+    },
+    undefined,
+    (err) => {
+      // A car that fails to load must not take the page with it: the
+      // charts, the readout and the steering wheel are all still worth
+      // having, and the viewport says what happened.
+      console.error('aero rig: could not load the car model', err);
+      onLoadError();
+    },
   );
-  visor.scale.copy(helmet.scale);
-  visor.position.copy(helmet.position);
-  visor.userData.part = 'halo';
-  car.add(visor);
-
-  // Steering wheel: a squared-off rack on a short column, tilted back
-  // into the driver's hands, with a display face on the near side.
-  const wheelRim = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.112, 0.196), dark);
-  wheelRim.position.set(-0.286, 0.594, 0);
-  wheelRim.rotation.z = 0.42;
-  wheelRim.userData.part = 'halo';
-  car.add(wheelRim);
-  const display = new THREE.Mesh(new THREE.BoxGeometry(0.010, 0.052, 0.104), carbon);
-  display.position.set(-0.268, 0.606, 0);
-  display.rotation.z = 0.42;
-  display.userData.part = 'halo';
-  car.add(display);
-  strut(
-    new THREE.Vector3(-0.286, 0.586, 0),
-    new THREE.Vector3(-0.196, 0.540, 0),
-    0.036, 0.036, carbon, 'halo',
-  );
-
-  for (const side of [1, -1]) {
-    // Arms, shoulder to wheel rim.
-    strut(
-      new THREE.Vector3(0.010, 0.578, side * 0.104),
-      new THREE.Vector3(-0.268, 0.606, side * 0.072),
-      0.052, 0.050, suit, 'halo',
-    );
-    // Harness, over each shoulder and down to the lap.
-    strut(
-      new THREE.Vector3(0.098, 0.596, side * 0.062),
-      new THREE.Vector3(-0.104, 0.520, side * 0.048),
-      0.056, 0.011, dark, 'halo',
-    );
-  }
-
-  // Halo: one continuous blade from the left rear mount, round the front
-  // of the opening, back to the right rear mount — swept as a single part
-  // rather than assembled from a hoop plus two legs, because that is how
-  // it is actually made and the joins were showing.
-  //
-  // Checked against real car photos: the rails are a deep, narrow blade
-  // at about the height of the top of the helmet, they carry their
-  // widest point beside the driver's head, and they drop away steeply
-  // into the chassis behind it.
-  const haloPath = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.32, 0.560, 0.208),
-    new THREE.Vector3(0.17, 0.672, 0.264),
-    new THREE.Vector3(-0.02, 0.734, 0.292),
-    new THREE.Vector3(-0.22, 0.752, 0.252),
-    new THREE.Vector3(-0.38, 0.750, 0.148),
-    new THREE.Vector3(-0.45, 0.742, 0),
-    new THREE.Vector3(-0.38, 0.750, -0.148),
-    new THREE.Vector3(-0.22, 0.752, -0.252),
-    new THREE.Vector3(-0.02, 0.734, -0.292),
-    new THREE.Vector3(0.17, 0.672, -0.264),
-    new THREE.Vector3(0.32, 0.560, -0.208),
-  ], false, 'catmullrom', 0.3);
-  sweep(haloPath, 0.021, 0.040, haloMat, 'halo');
-
-  // The central front pillar. Wide seen from the side, thin seen from the
-  // driver's seat — the whole point of its section is to cost as little
-  // forward vision as a structural member can.
-  plate([[-0.052, 0], [0.052, 0], [0.036, 0.200], [-0.036, 0.200]],
-    0.038, haloMat, 'halo', -0.45, 0.548, 0);
-
-  /* ---------------- camera and antenna pod ----------------
-     On top of the roll hoop, which is where every real car carries it —
-     an earlier build had it stuck on the front of the halo, which no
-     photograph supports. Mandatory equipment: the same housing in the
-     same place on every car on the grid, in one of the two identification
-     colours the sport assigns between team-mates. */
-  // The housing lies along the car, lens forward, on a black base plate —
-  // not across it. A first pass had it as a lateral bar, which no
-  // photograph of the real thing supports.
-  const podFoot = new THREE.Mesh(new THREE.BoxGeometry(0.186, 0.040, 0.078), haloMat);
-  podFoot.position.set(0.340, 0.896, 0);
-  podFoot.userData.part = 'camera';
-  car.add(podFoot);
-
-  const pod = new THREE.Mesh(new THREE.CylinderGeometry(0.030, 0.030, 0.172, 18), marker);
-  pod.rotation.z = Math.PI / 2;
-  pod.position.set(0.310, 0.944, 0);
-  pod.userData.part = 'camera';
-  car.add(pod);
-
-  const podNose = new THREE.Mesh(new THREE.SphereGeometry(0.030, 18, 12), marker);
-  podNose.position.set(0.224, 0.944, 0);
-  podNose.userData.part = 'camera';
-  car.add(podNose);
-
-  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.014, 14), dark);
-  lens.rotation.z = Math.PI / 2;
-  lens.position.set(0.201, 0.944, 0);
-  lens.userData.part = 'camera';
-  car.add(lens);
-
-  // Three aerial stubs standing on the base plate behind the housing.
-  for (const z of [-0.030, 0, 0.030]) {
-    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.013, 0.054, 0.012), haloMat);
-    fin.position.set(0.418, 0.938, z);
-    fin.rotation.z = -0.10;
-    fin.userData.part = 'camera';
-    car.add(fin);
-  }
-  // Mirrors. Close-up photographs show these carried well outboard on a
-  // long swept fairing, not tucked against the cockpit side — the stalk
-  // is a shaped aerodynamic member in its own right and is most of what
-  // the eye reads, so a pair of small boxes was never going to do.
-  for (const side of [1, -1]) {
-    strut(
-      new THREE.Vector3(-0.10, 0.602, side * 0.215),
-      new THREE.Vector3(-0.30, 0.642, side * 0.410),
-      0.070, 0.024, body, 'halo',
-    );
-    const shell = new THREE.Mesh(new THREE.BoxGeometry(0.062, 0.070, 0.036), body);
-    shell.position.set(-0.318, 0.646, side * 0.428);
-    shell.rotation.y = side * 0.22;
-    shell.userData.part = 'halo';
-    car.add(shell);
-    const glass = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.058, 0.028), dark);
-    glass.position.set(-0.288, 0.646, side * 0.432);
-    glass.rotation.y = side * 0.22;
-    glass.userData.part = 'halo';
-    car.add(glass);
-  }
-
-  /* ---------------- wheels, brake ducts and suspension ---------------- */
-  function wheel(x, side, rear) {
-    const halfWidth = (rear ? 0.405 : 0.355) / 2;
-    const z = side * W_HALF;
-    const group = new THREE.Group();
-    group.position.set(x, AXLE, z);
-
-    // A tyre is a revolved cross-section, not a ring wrapped round a
-    // cylinder. The previous build had both: a correct tread cylinder and a
-    // torus whose hole axis TorusGeometry puts on local +Z, which a
-    // rotation.y then pointed along the car's LENGTH — so every wheel had a
-    // stretched ring crossing through it at ninety degrees. Revolving a
-    // profile has no axis to get wrong and gives the bead, the sidewall
-    // bulge, the shoulder and the crowned tread that make a tyre read.
-    const W = halfWidth;
-    const profile = [
-      [0.232, -W * 0.94],
-      [0.268, -W * 1.00],
-      [0.316, -W * 0.98],
-      [0.348, -W * 0.86],
-      [0.359, -W * 0.62],
-      [0.362, 0],
-      [0.359, W * 0.62],
-      [0.348, W * 0.86],
-      [0.316, W * 0.98],
-      [0.268, W * 1.00],
-      [0.232, W * 0.94],
-    ].map(([r, h]) => new THREE.Vector2(r, h));
-    const tyre = new THREE.Mesh(new THREE.LatheGeometry(profile, 40), rubber);
-    tyre.rotation.x = Math.PI / 2;
-    tyre.userData.part = 'wheel';
-    group.add(tyre);
-
-    // Rim: a barrel with a dished outer face rather than a plain disc.
-    const rimProfile = [
-      [0.150, -W * 0.92],
-      [0.228, -W * 0.94],
-      [0.230, -W * 0.20],
-      [0.230, W * 0.60],
-      [0.228, W * 0.94],
-      [0.196, W * 0.90],
-      [0.120, W * 0.76],
-      [0.052, W * 0.72],
-    ].map(([r, h]) => new THREE.Vector2(r, h));
-    const rim = new THREE.Mesh(new THREE.LatheGeometry(rimProfile, 32), alloy);
-    rim.rotation.x = Math.PI / 2;
-    rim.scale.z = side;
-    rim.userData.part = 'wheel';
-    group.add(rim);
-
-    // Centre lock and the spokes behind it, so the face is not a blank disc.
-    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.056, 0.055, 12), alloy);
-    hub.rotation.x = Math.PI / 2;
-    hub.position.z = side * W * 0.78;
-    hub.userData.part = 'wheel';
-    group.add(hub);
-    for (let i = 0; i < 5; i += 1) {
-      const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.155, 0.030, 0.020), carbon);
-      spoke.position.set(0, 0, side * W * 0.70);
-      spoke.rotation.z = (i / 5) * Math.PI * 2;
-      spoke.translateX(0.09);
-      spoke.userData.part = 'wheel';
-      group.add(spoke);
-    }
-
-    // Wheel-body fairing: the rim cover 2026 cars run, set just proud of
-    // the rim face rather than floating outside the tyre.
-    const cover = new THREE.Mesh(new THREE.CylinderGeometry(0.192, 0.186, 0.016, 30), carbon);
-    cover.rotation.x = Math.PI / 2;
-    cover.position.z = side * W * 0.87;
-    cover.userData.part = 'wheel';
-    group.add(cover);
-
-    // Brake duct drum, inboard, where it actually sits.
-    const duct = new THREE.Mesh(new THREE.CylinderGeometry(0.168, 0.182, W * 1.1, 22, 1, true), carbon);
-    duct.rotation.x = Math.PI / 2;
-    duct.position.z = -side * W * 0.38;
-    duct.userData.part = 'wheel';
-    group.add(duct);
-    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.150, 0.150, 0.030, 26), dark);
-    disc.rotation.x = Math.PI / 2;
-    disc.position.z = -side * W * 0.22;
-    disc.userData.part = 'wheel';
-    group.add(disc);
-
-    car.add(group);
-  }
-
-  // A wishbone is an A-arm: two legs from separated points on the chassis
-  // converging on one point at the upright. Photographs of the real car
-  // head-on show that triangle clearly, and show the legs as flat blades —
-  // chord along the airflow, thin top to bottom — because they are
-  // aerofoils as much as they are structure. The old build drew each arm
-  // as a single round rod, which read as plumbing.
-  function wishbone(x, side, y, spread, innerZ, outerZ) {
-    for (const dx of [-1, 1]) {
-      strut(
-        new THREE.Vector3(x + dx * spread, y, side * innerZ),
-        new THREE.Vector3(x, y, side * outerZ),
-        0.072, 0.017, carbon, 'suspension',
-      );
-    }
-  }
-
-  for (const [x, rear] of [[X_FRONT, false], [X_REAR, true]]) {
-    for (const side of [1, -1]) {
-      wheel(x, side, rear);
-      const outer = rear ? 0.545 : 0.575;
-      wishbone(x, side, AXLE + 0.105, 0.175, 0.128, outer);
-      wishbone(x, side, AXLE - 0.110, 0.185, 0.140, outer);
-      // Track rod at the front, toe link at the rear: one arm, set fore of
-      // the lower wishbone, that turns the wheel or holds its angle.
-      strut(
-        new THREE.Vector3(x + (rear ? 0.24 : -0.24), AXLE - 0.055, side * 0.120),
-        new THREE.Vector3(x + (rear ? 0.10 : -0.10), AXLE - 0.055, side * outer),
-        0.050, 0.015, carbon, 'suspension',
-      );
-      // Pushrod: up and inboard from the bottom of the upright to where
-      // the springs live under the bodywork.
-      strut(
-        new THREE.Vector3(x, AXLE - 0.150, side * (outer - 0.02)),
-        new THREE.Vector3(x + (rear ? -0.20 : 0.20), AXLE + 0.190, side * 0.105),
-        0.042, 0.030, carbon, 'suspension',
-      );
-    }
-  }
-
   /* ---------------- streamlines ----------------
      Drawn, not solved. Evenly spaced ribbons pushed around the silhouette
      so the shape reads in three dimensions. There is no flow field here and
@@ -1369,7 +324,14 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
   // Angles are a drawing, not a specification. No published source gives a
   // flap angle for either mode, so these are chosen to read clearly and the
   // panel beside them says exactly that.
-  const MODE_ANGLE = { Z: { front: -0.42, rear: -0.62 }, X: { front: -0.05, rear: -0.06 } };
+  //
+  // Z-mode is ZERO because the model arrives with its wings already at
+  // their loaded angle — the previous numbers were measured from a flat
+  // baseline, which was right for the lofted wings and swung this one's
+  // rear flap thirty-five degrees out of its own bodywork. X-mode is a
+  // positive rotation about z, which lifts each trailing edge and so
+  // flattens the element.
+  const MODE_ANGLE = { Z: { front: 0, rear: 0 }, X: { front: 0.30, rear: 0.40 } };
   let flapNow = { front: MODE_ANGLE.Z.front, rear: MODE_ANGLE.Z.rear };
 
   /* ---------------- render loop ---------------- */
@@ -1457,6 +419,8 @@ export function createAeroRig(canvas, { onPick = () => {} } = {}) {
       currentMode = mode === 'X' ? 'X' : 'Z';
     },
     dispose() {
+      disposed = true;
+      draco.dispose();
       cancelAnimationFrame(rafId);
       rafId = null;
       seen.disconnect();

@@ -64,6 +64,33 @@ Base: `https://archive-api.open-meteo.com/v1/archive`
 `https://livetiming.formula1.com` — 403s datacenter IPs, so FastF1's telemetry path
 is unusable from CI. OpenF1 replaced it.
 
+### Aero Rig car model — third party, CC-BY-4.0
+
+The 3D car on `/aero-rig` is **not** this project's geometry. It is:
+
+> "F1 2026 concept (polygon model)"
+> (<https://sketchfab.com/3d-models/f1-2026-concept-polygon-model-ea3bde709b1e4dc9b0ec8557d106ed42>)
+> by Qvist_designs (<https://sketchfab.com/Qvist_Designs>)
+> licensed under CC-BY-4.0 (<http://creativecommons.org/licenses/by/4.0/>).
+
+Changes made: decimated to 16% of its original 1.16M triangles, re-cut by
+`scripts/model/segment_car.py` into the thirteen parts the page names, given
+materials, and re-exported Draco-compressed. The donor file is kept under
+`scripts/model/donor/` with its original licence text so the derivation stays
+reproducible.
+
+Attribution is a **condition of the licence, not a courtesy** — without it there
+is no permission to use the model at all — so the credit appears under the
+viewer on the page itself as well as here.
+
+What this means for the page's claims: the car's *shape* is an artist's
+interpretation of the 2026 regulations, not something derived here, and the
+page says exactly that in its banner and in every part's verdict. Only the
+numbers around the car are measured. Two parts are additionally approximate,
+and say so: the front flap (the donor does not split the movable elements from
+the fixed mainplane) and the suspension (wishbones cannot be separated from
+wheels and bodywork by position alone).
+
 ## Hosting and CI
 
 - GitHub Pages, via `actions/upload-pages-artifact` + `actions/deploy-pages`
@@ -109,11 +136,6 @@ this project asks about first.
 - Colour tokens in `src/theme/tokens.css` — validated with a palette checker, not copied
 - Every model: curvature fit, aero, tyre degradation, what-if, corner detection,
   mini-sectors, qualifying head-to-head
-- Aero Rig geometry (`src/lib/aeroRigScene.js`) — a schematic drawn to widely
-  published 2026 regulation characteristics (a narrower front wing, a
-  three-element rear wing, no beam wing, 18-inch wheels), not scanned or
-  modelled from any team's real bodywork, and not sized against the FIA's own
-  technical regulations document, which this project does not have
 
 ## Deliberately not used
 

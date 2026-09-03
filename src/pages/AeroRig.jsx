@@ -148,16 +148,17 @@ export default function AeroRig() {
       <header className="page-head">
         <h1>Aero Rig</h1>
         <p className="page-sub">
-          A schematic 2026 car built to the published technical regulations, wearing numbers
-          measured from real driven laps. Drag to orbit, scroll to zoom, click a part to ask
-          what this project can actually say about it.
+          A 2026 car wearing numbers measured from real driven laps. Drag to orbit, scroll to
+          zoom, click a part to ask what this project can actually say about it.
         </p>
       </header>
 
       <div className="warning-banner" role="note">
-        <strong>The car is a diagram, not a scan.</strong> Its shape follows the 2026 regulations'
-        published dimensions — it is not any team's real bodywork, which nobody publishes. Click a
-        part for its verdict: <span className="mono">measured</span> means a real number backs it,{' '}
+        <strong>The shape is somebody else's concept, not this project's measurement.</strong>{' '}
+        The car is an open-licence concept model of a 2026 car by a third-party artist, re-cut
+        into the parts below — it is neither a scan of any team's real bodywork, which nobody
+        publishes, nor geometry derived here from the regulations. Only the numbers around it
+        are measured. Click a part for its verdict: <span className="mono">measured</span> means a real number backs it,{' '}
         <span className="mono">schematic</span> means only its geometry is known, and{' '}
         <span className="mono">refused</span> means nothing published anywhere gives this project
         a way to say anything about it.
@@ -197,6 +198,28 @@ export default function AeroRig() {
             </span>
           </div>
           <p className="rig-mode-note">{MODE_COPY[mode].label}</p>
+          {/* CC-BY's attribution clause is the condition that grants the
+              licence to use this model at all, so the credit ships with
+              the thing it credits rather than living only in the docs. */}
+          <p className="rig-credit">
+            Car model:{' '}
+            <a
+              href="https://sketchfab.com/3d-models/f1-2026-concept-polygon-model-ea3bde709b1e4dc9b0ec8557d106ed42"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              F1 2026 concept (polygon model)
+            </a>{' '}
+            by{' '}
+            <a href="https://sketchfab.com/Qvist_Designs" target="_blank" rel="noreferrer noopener">
+              Qvist_designs
+            </a>
+            , licensed{' '}
+            <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer noopener">
+              CC-BY-4.0
+            </a>
+            . Decimated and re-cut into parts for this page.
+          </p>
         </div>
       </section>
 

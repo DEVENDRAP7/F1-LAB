@@ -1,8 +1,10 @@
-// Render the Blender body next to the Three.js-lofted one, and save
-// both as PNGs. This is the comparison the prototype exists to produce:
-// same camera, same lights, same material intent, different geometry.
+// Render a model from four angles and save the PNGs.
 //
-//   node scripts/model/preview.mjs
+//   node scripts/model/preview.mjs [model.glb] [outPrefix]
+//
+// With no argument it renders the segmented car. Pass car-debug.glb to
+// check the part cut: every part is a different colour there, which is
+// the only practical way to see a segmentation rule that is wrong.
 //
 // Playwright is not a project dependency (see scripts/screenshot.mjs).
 import { chromium } from 'playwright';
@@ -61,6 +63,7 @@ ground.rotation.x = -Math.PI / 2; scene.add(ground);
 
 const params = new URLSearchParams(location.search);
 const view = params.get('view') ?? 'q';
+const MODEL = params.get('model') ?? '/public/models/2026/car.glb';
 // Metres. The car is 5.0 long and 0.95 tall, so a three-quarter view
 // needs to sit about 7 out to hold all of it.
 const VIEWS = {
@@ -73,8 +76,11 @@ camera.position.set(...VIEWS[view]);
 camera.lookAt(0, 0.42, 0);
 
 const loader = new GLTFLoader();
-loader.load('/public/models/2026/car-body.glb', (gltf) => {
+loader.load(MODEL, (gltf) => {
   scene.add(gltf.scene);
+  const names = [];
+  gltf.scene.traverse((o) => { if (o.isMesh) names.push(o.name); });
+  window.__names = names;
   let tris = 0;
   gltf.scene.traverse((o) => {
     if (o.isMesh) tris += o.geometry.index
@@ -94,12 +100,17 @@ for (const view of ['q', 'side', 'front', 'top']) {
   const tab = await browser.newPage({ viewport: { width: 1200, height: 760 } });
   const errs = [];
   tab.on('pageerror', (e) => errs.push(e.message));
-  await tab.goto(`http://localhost:${PORT}/scripts/model/.preview.html?view=${view}`);
+  const model = process.argv[2] ? `/public/models/2026/${process.argv[2]}` : '/public/models/2026/car.glb';
+  await tab.goto(`http://localhost:${PORT}/scripts/model/.preview.html?view=${view}&model=${model}`);
   await tab.waitForFunction('window.__ready === true', { timeout: 60000 });
   const err = await tab.evaluate(() => window.__error);
   if (err) { console.error('load error:', err); process.exitCode = 1; }
-  if (view === 'q') console.log('stats:', await tab.evaluate(() => window.__stats));
-  await tab.screenshot({ path: path.join(out, `blender-${view}.png`) });
+  if (view === 'q') {
+    console.log('stats:', await tab.evaluate(() => window.__stats));
+    console.log('parts:', (await tab.evaluate(() => window.__names)).join(' '));
+  }
+  const prefix = process.argv[3] ?? (process.argv[2] ?? 'car').replace('.glb', '');
+  await tab.screenshot({ path: path.join(out, `${prefix}-${view}.png`) });
   await tab.close();
   if (errs.length) console.error(errs.join('\n'));
 }

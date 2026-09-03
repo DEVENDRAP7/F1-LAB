@@ -2023,6 +2023,19 @@ tbody tr.is-on {
   color: var(--ink-2);
 }
 
+/* The model credit. Deliberately quiet — it is a licence condition, not
+   a headline — but it ships with the viewport rather than being buried
+   in the docs, because that is where the thing it credits is. */
+.rig-credit {
+  margin: 0.35rem 0 0;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.rig-credit a { color: inherit; text-decoration: underline; }
+.rig-credit a:hover { color: var(--accent-0); }
+
 .verdict-badge {
   display: inline-flex;
   margin-top: 0.55rem;
