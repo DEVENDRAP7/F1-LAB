@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { VOICES, cutoffHz, engineGain, firingHz, voiceRpm } from './engineAudio.js';
+import {
+  VOICES, cutoffHz, engineGain, firingHz, pulseCurve, voiceRpm,
+} from './engineAudio.js';
 
 describe('firingHz', () => {
   it('is the four-stroke firing frequency, not the crank speed', () => {
@@ -74,13 +76,16 @@ describe('voices', () => {
     }
   });
 
-  it('gives the W16 its weight in the low orders and the V6 in the harmonics', () => {
-    const low = (v) => v.partials.filter((p) => p.ratio < 1)
-      .reduce((a, p) => a + p.gain, 0);
-    const high = (v) => v.partials.filter((p) => p.ratio > 1)
-      .reduce((a, p) => a + p.gain, 0);
-    expect(low(VOICES.w16)).toBeGreaterThan(low(VOICES.v6));
-    expect(high(VOICES.v6)).toBeGreaterThan(high(VOICES.w16));
+  it('keeps the road engines’ spectral weight lower than the racing ones', () => {
+    // Compared by centre of mass rather than by summing the bands
+    // either side of the fundamental: every voice carries sub-octave
+    // weight now, and the W16 also carries an inharmonic 1.5 order for
+    // roughness, which counted as "high" and made the old comparison
+    // meaningless.
+    const centre = (v) => v.partials.reduce((a, p) => a + p.ratio * p.gain, 0)
+      / v.partials.reduce((a, p) => a + p.gain, 0);
+    expect(centre(VOICES.w16)).toBeLessThan(centre(VOICES.v6));
+    expect(centre(VOICES.v8road)).toBeLessThan(centre(VOICES.v8));
   });
 
   it('says out loud that the W16 is not a Formula 1 engine', () => {
@@ -91,12 +96,40 @@ describe('voices', () => {
 describe('voice character', () => {
   const loudest = (v) => v.partials.reduce((a, p) => (p.gain > a.gain ? p : a));
 
-  it('puts the racing engines’ energy an octave up, at the second harmonic', () => {
-    // Perceived pitch follows the strongest partial. With the loudest
-    // term at the fundamental these read as a growl, and neither a
-    // Formula 1 V6 nor a V8 growls.
-    expect(loudest(VOICES.v6).ratio).toBe(2);
-    expect(loudest(VOICES.v8).ratio).toBe(2);
+  it('never lets a partial above the fundamental be the loudest', () => {
+    // Perceived pitch follows the strongest partial, so putting the
+    // second harmonic on top raises the note an octave. That was done
+    // deliberately once and it is what "too high pitched" meant: an
+    // engine's fundamental is its firing rate, and it should be the
+    // loudest thing in the sound.
+    for (const voice of Object.values(VOICES)) {
+      expect(loudest(voice).ratio, voice.id).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('gates every voice at its combustion rate', () => {
+    // The piece that was missing through three earlier attempts. A stack
+    // of continuous oscillators through a filter is a synthesiser pad by
+    // definition; an engine is discrete bangs that merge into a tone. No
+    // voice is allowed to be ungated.
+    for (const voice of Object.values(VOICES)) {
+      expect(voice.pulse?.depth, voice.id).toBeGreaterThan(0.3);
+      expect(voice.pulse.sharp, voice.id).toBeGreaterThan(1);
+    }
+  });
+
+  it('shapes a pulse that starts open and decays shut', () => {
+    const curve = pulseCurve(5, 512);
+    expect(curve[0]).toBeCloseTo(1, 6);
+    expect(curve[curve.length - 1]).toBeCloseTo(0, 6);
+    for (let i = 1; i < curve.length; i += 1) {
+      expect(curve[i]).toBeLessThanOrEqual(curve[i - 1]);
+    }
+    // Sharper means a shorter bang: more of the cycle spent near zero.
+    const soft = pulseCurve(2, 512);
+    const sharp = pulseCurve(9, 512);
+    const area = (c) => c.reduce((a, v) => a + v, 0);
+    expect(area(sharp)).toBeLessThan(area(soft));
   });
 
   it('keeps the firing rate audible on the W16 without making it dominant', () => {

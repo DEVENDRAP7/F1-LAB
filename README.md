@@ -113,7 +113,9 @@ load time rather than written into the copy.
   set, a shift point, or what a deployment mode is worth, so the speeds and
   revs are a plausible shape rather than a measurement, and nothing else on
   the site derives anything from them. The engine note is **synthesised in
-  the browser** from an oscillator stack (`src/lib/engineAudio.js`) — a real
+  the browser** (`src/lib/engineAudio.js`) — an oscillator stack gated at the
+  engine's own combustion rate, which is what makes it a series of bangs
+  rather than a held tone — a real
   recording would be somebody else's copyright and would cost more on its
   own than this site's entire initial-load budget. Four voices are offered:
   the 2026 V6, the naturally aspirated V8 that ran to 2013, and — both
