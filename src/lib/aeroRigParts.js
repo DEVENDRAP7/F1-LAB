@@ -21,7 +21,7 @@ export const PARTS = {
   frontFlap: {
     name: 'Front flap · movable',
     text: 'The element that moves between modes: loaded in Z, flattened in X. Both wings '
-      + 'move in 2026, which is what makes it more than a rebadged DRS. The donor model does not separate the movable elements from the fixed mainplane, so what moves here is the upper-rear band of the wing — close, not exact.',
+      + 'move in 2026, which is what makes it more than a rebadged DRS. The donor model does not label its elements, so the movable one is found by measurement: the wing's mass sits at 100-150 mm, thins to almost nothing at 200-250, and returns at 250-300. That gap is the slot, and what moves here is the element above it.',
     verdict: ['s', 'shape from a concept model; no flap angle is published'],
   },
   nose: {

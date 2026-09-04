@@ -227,8 +227,11 @@ mainplane, so the flap is taken as the upper-rear band; and wishbones
 share their space with wheels and bodywork and cannot be told apart by
 position alone.
 
-Output is 186k triangles in 0.8 MB, Draco-compressed. The decoder is
-served from `public/draco/`.
+Output is 186k triangles in 0.8 MB, Draco-compressed, with the decoder
+served from `public/draco/`. It costs nothing at the door: the model and
+the viewer are both lazy-loaded, so the initial page load is 376 KB
+against the 400 KB budget in `docs/SPEC.md`, and `/aero-rig` adds
+1.60 MB against the 3 MB lazy budget.
 
 ## Where the data comes from
 
