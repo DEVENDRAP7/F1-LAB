@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 import { seriesColor } from '../theme/palette.js';
@@ -129,8 +130,8 @@ export default function Sprint() {
         <div className="panel-head">
           <h2>Across {summary.roundsRun} sprint weekend{summary.roundsRun === 1 ? '' : 's'}</h2>
           <p className="panel-note">
-            Each figure is the mean over the rounds that had one. A round whose sample was
-            too thin contributes nothing rather than a placeholder.
+            The mean over the rounds that had one. A round whose sample was too thin
+            contributes nothing rather than a placeholder.
           </p>
         </div>
 
@@ -178,10 +179,12 @@ export default function Sprint() {
         <div className="panel-head">
           <h2>The weekend, race by race</h2>
           <p className="panel-note">
-            Both results as published, joined on the driver code. A driver who did not
-            finish keeps the position the feed gives them, marked as not classified, and is
-            excluded from every figure above.
+            Both results as published, joined on the driver code.
           </p>
+          <Method>
+            A driver who did not finish keeps the position the feed gives them, marked as
+            not classified, and is excluded from every figure above.
+          </Method>
         </div>
 
         <div className="controls-row">
@@ -292,9 +295,8 @@ export default function Sprint() {
           <div className="panel-head">
             <h2>What the sprint was worth</h2>
             <p className="panel-note">
-              Points taken on these weekends, split between the two races. This is a share
-              of the sprint weekends only — the rounds that are not sprint rounds are not in
-              this document, so it is not a share of anyone's season.
+              Points taken on these weekends only, split between the two races — a share of
+              the sprint rounds, not of anyone's season.
             </p>
           </div>
 
@@ -343,17 +345,12 @@ export default function Sprint() {
         </section>
       )}
 
-      <section className="panel panel-limitations">
-        <div className="panel-head">
-          <h2>What this page cannot tell you</h2>
-        </div>
-        <ul className="reason-list">
-          {limitations.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-        <p className="panel-note mono">source: {doc.data.source}</p>
-      </section>
+      <Limitations title="What this page cannot tell you">
+        {limitations.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+        <li className="mono">source: {doc.data.source}</li>
+      </Limitations>
 
       <RelatedLinks
         context={`Each link opens on round ${round} rather than its own default.`}

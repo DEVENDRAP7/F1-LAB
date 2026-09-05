@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { dataPath } from '../lib/dataPath.js';
+import { GROUPS } from '../lib/modules.js';
 
 // The front door. The site had none: it opened on a championship table
 // with no statement of what it is, what it refuses to do, or where the
@@ -11,79 +12,11 @@ import { dataPath } from '../lib/dataPath.js';
 // time rather than written into the copy. A hardcoded "12 rounds" would
 // be wrong the week after the next race, and a landing page that lies
 // about its own scale is a bad advertisement for one about honesty.
+//
+// The module list is imported rather than declared here: it was
+// duplicated between this page and the nav, and the two had already
+// drifted apart.
 
-const MODULES = [
-  {
-    to: '/ledger',
-    name: 'Season Ledger',
-    line: 'The championship, accumulated independently and cross-checked against the published table.',
-  },
-  {
-    to: '/circuits',
-    name: 'Circuit Atlas',
-    line: 'Outlines traced from real laps, with detected turns, gear, braking point and elevation.',
-  },
-  {
-    to: '/strategy',
-    name: 'Race Strategy',
-    line: 'Stints by real compound, an undercut ledger, and per-stint pace fits with their R².',
-  },
-  {
-    to: '/lines',
-    name: 'Racing Lines',
-    line: 'Driven laps overlaid, colourable by any published channel, with a mini-sector dominance map.',
-  },
-  {
-    to: '/qualifying',
-    name: 'Qualifying',
-    line: 'Team-mate head to head — the one comparison where the car is held constant.',
-  },
-  {
-    to: '/sprint',
-    name: 'Sprint Weekends',
-    line: 'Two races, one circuit, two grids, a day apart — and how far the orders agreed.',
-  },
-  {
-    to: '/radio',
-    name: 'Team Radio',
-    line: 'Who the broadcast put on air, on which lap — linked, never transcribed.',
-  },
-  {
-    to: '/errors',
-    name: 'Error Review',
-    line: 'What race control recorded, kept strictly apart from what this site merely noticed.',
-  },
-  {
-    to: '/style',
-    name: 'Driving Style',
-    line: 'How a lap was driven rather than how quick it was. There is no better column.',
-  },
-  {
-    to: '/aero',
-    name: 'Aero Explainer',
-    line: 'Cornering load computed from the driven line: a g-g diagram and grip against speed.',
-  },
-  {
-    to: '/aero-rig',
-    name: 'Aero Rig',
-    line: 'The 2026 car in 3D, built to the published regulations, wearing a measured downforce signature.',
-  },
-  {
-    to: '/whatif',
-    name: 'What-If Engine',
-    line: 'Replay a race on a different strategy — only where the model reproduces the real one.',
-  },
-  {
-    to: '/upcoming',
-    name: 'Upcoming',
-    line: 'Priors from past editions of the next circuit, each with the sample behind it.',
-  },
-  {
-    to: '/refusals',
-    name: 'Refusals',
-    line: 'Everything computed and then withheld, with the number that made the decision.',
-  },
-];
 
 export default function Home() {
   const [stats, setStats] = useState(null);
@@ -127,9 +60,8 @@ export default function Home() {
       <header className="page-head">
         <h1>Apex Lab</h1>
         <p className="page-sub">
-          A 2026 Formula 1 season built from public data, where every derived number carries
-          the way it was derived — and the ones that could not be stood behind were left out
-          on purpose.
+          A 2026 Formula 1 season built from public data. Every derived number carries how it
+          was derived; the ones that could not be stood behind were left out.
         </p>
       </header>
 
@@ -169,50 +101,43 @@ export default function Home() {
           <h2>The rules it is built under</h2>
         </div>
         <ul className="reason-list">
+          <li><strong>Real data only.</strong> An empty state beats a fabricated one.</li>
           <li>
-            <strong>Real data only.</strong> No invented lap times, no synthetic telemetry,
-            no plausible-looking gaps. An empty state beats a fabricated one, and the site
-            says which it is showing.
+            <strong>Every figure carries how it was derived.</strong> A slope ships its R²
+            and its sample count.
           </li>
           <li>
-            <strong>Every derived figure ships with how it was derived.</strong> A
-            degradation slope carries its R² and sample count; a position unit carries the
-            measurement it came from; a modelled race time carries the error it was checked
-            against.
+            <strong>A model that cannot reproduce reality is not published.</strong> Within
+            1%, or it is listed as refused.
           </li>
           <li>
-            <strong>A model that cannot reproduce reality is not published.</strong> The
-            what-if engine appears only for drivers whose real race it replays within 1%.
-            The rest are listed with their error.
+            <strong>A flag is not an accusation.</strong> What race control recorded is kept
+            apart from what this site merely noticed.
           </li>
           <li>
-            <strong>A flag is not an accusation.</strong> The error review keeps what race
-            control published strictly apart from what this site merely observed, and never
-            diagnoses a cause.
-          </li>
-          <li>
-            <strong>Nothing is recalled from memory.</strong> Season facts are fetched.
-            Where a constant would have to be remembered — the 2026 aero regulations, the
-            meaning of the DRS codes — the module says so and stops.
+            <strong>Nothing is recalled from memory.</strong> Where a constant would have to
+            be remembered, the module says so and stops.
           </li>
         </ul>
       </section>
 
-      <section className="panel">
-        <div className="panel-head">
-          <h2>What is in it</h2>
-        </div>
-        <ul className="module-grid">
-          {MODULES.map((module) => (
-            <li key={module.to}>
-              <Link to={module.to} className="module-card">
-                <span className="module-name">{module.name}</span>
-                <span className="module-line">{module.line}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {GROUPS.map((group) => (
+        <section className="panel" key={group.id}>
+          <div className="panel-head">
+            <h2>{group.name}</h2>
+          </div>
+          <ul className="module-grid">
+            {group.items.map((module) => (
+              <li key={module.to}>
+                <Link to={module.to} className="module-card">
+                  <span className="module-name">{module.name}</span>
+                  <span className="module-line">{module.line}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
 
       {stats?.generatedAt && (
         <p className="panel-note mono">

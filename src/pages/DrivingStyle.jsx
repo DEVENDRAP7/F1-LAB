@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlSelection, useUrlState } from '../lib/urlState.js';
 import { loadManifest, loadRacingLine } from '../lib/racingLine.js';
@@ -305,15 +306,16 @@ export default function DrivingStyle() {
               <div className="panel-head">
                 <h2>What the race costs a lap</h2>
                 <p className="panel-note">
-                  The same driver, the same circuit, both sessions: a qualifying lap
-                  against their fastest lap of the race, and where on the circuit the
-                  difference was paid. The cost is the official gap between the two laps.
-                  The sector split cannot be — no source publishes one — so it is
-                  integrated from the speed channels, which recovers most of that gap but
-                  not all of it: the "recovered" column is how much, and the sector
-                  figures should be read as where the cost fell rather than as a second
-                  measurement of how large it was.
+                  The same driver's qualifying lap against their fastest race lap, and where
+                  on the circuit the difference was paid.
                 </p>
+                <Method>
+                  The cost is the official gap between the two laps. The sector split cannot
+                  be — no source publishes one — so it is integrated from the speed
+                  channels, which recovers most of that gap but not all of it. The
+                  "recovered" column says how much; read the sector figures as where the
+                  cost fell, not as a second measurement of how large it was.
+                </Method>
               </div>
               <div className="table-scroll table-wide">
                 <table>
@@ -365,43 +367,36 @@ export default function DrivingStyle() {
                 </table>
               </div>
               <p className="panel-note">
-                This is not a fuel-and-tyre figure. The gap contains fuel load, tyre age
-                and compound, engine mode, traffic, and a circuit that rubbered in across
-                the weekend — nothing here separates them. It is the measured cost of the
-                same driver doing the same lap under race conditions.
+                Not a fuel-and-tyre figure: the gap also contains engine mode, traffic and a
+                circuit that rubbered in across the weekend, and nothing here separates them.
               </p>
             </section>
           )}
 
-          <section className="panel panel-limitations">
-            <div className="panel-head">
-              <h2>What this cannot tell you</h2>
-            </div>
-            <ul className="reason-list">
-              <li>
-                No steering channel is published here, so nothing on this page is about
-                what a driver did with their hands — only with the pedals and the gearbox.
-              </li>
-              <li>
-                Brake is published as on or off, not as pressure. Trail braking and a
-                stab at the pedal look identical in this data.
-              </li>
-              <li>
-                One lap each, on that lap's fuel and tyre. A qualifying lap and a race lap
-                are different exercises, and the picker above says which you are reading.
-              </li>
-              <li>
-                Corners come from this project's own turn detection — a stretch carrying
-                at least 1g of lateral load — not from the circuit's official numbering,
-                which nothing here publishes.
-              </li>
-              <li>
-                A corner whose exit runs into the next braking zone never reaches full
-                throttle. It is left out of the throttle-pickup average rather than
-                counted as the length of the search.
-              </li>
-            </ul>
-          </section>
+          <Limitations>
+            <li>
+              No steering channel is published here, so nothing on this page is about
+              what a driver did with their hands — only with the pedals and the gearbox.
+            </li>
+            <li>
+              Brake is published as on or off, not as pressure. Trail braking and a
+              stab at the pedal look identical in this data.
+            </li>
+            <li>
+              One lap each, on that lap's fuel and tyre. A qualifying lap and a race lap
+              are different exercises, and the picker above says which you are reading.
+            </li>
+            <li>
+              Corners come from this project's own turn detection — a stretch carrying
+              at least 1g of lateral load — not from the circuit's official numbering,
+              which nothing here publishes.
+            </li>
+            <li>
+              A corner whose exit runs into the next braking zone never reaches full
+              throttle. It is left out of the throttle-pickup average rather than
+              counted as the length of the search.
+            </li>
+          </Limitations>
 
           <RelatedLinks
             context={`Each link opens on round ${round} rather than its own default.`}

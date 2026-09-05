@@ -7,6 +7,7 @@ import { useUrlState } from '../lib/urlState.js';
 import { formatLapTime } from '../lib/formatTime.js';
 import { driverIndex, driverCode, driverName } from '../lib/driverNames.js';
 import { seriesColor } from '../theme/palette.js';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 
 // Team-mate qualifying, which is the one comparison in this sport where
 // the car is held constant.
@@ -99,11 +100,13 @@ export default function Qualifying() {
         <div className="panel-head">
           <h2>Head to head</h2>
           <p className="panel-note">
-            Each weekend goes to whoever qualified further up the grid. The gap is the
-            median across the weekends where both drivers set a time in the same segment —
-            the last one they both reached — so it is a typical difference rather than the
-            best or worst one.
+            Each weekend goes to whoever qualified further up the grid.
           </p>
+          <Method>
+            The gap is the median across the weekends where both drivers set a time in the
+            same segment — the last one they both reached — so it is a typical difference
+            rather than the best or the worst one.
+          </Method>
         </div>
 
         {teams.length === 0 ? (
@@ -170,8 +173,8 @@ export default function Qualifying() {
         <div className="panel-head">
           <h2>The grid, round by round</h2>
           <p className="panel-note">
-            As published: every segment time the source carries. A blank is a session that
-            driver set no time in, which is not the same as a slow one.
+            Every segment time the source carries. A blank is a session that driver set no
+            time in, which is not a slow one.
           </p>
         </div>
 
@@ -225,17 +228,12 @@ export default function Qualifying() {
         )}
       </section>
 
-      <section className="panel panel-limitations">
-        <div className="panel-head">
-          <h2>What a head-to-head does not say</h2>
-        </div>
-        <ul className="reason-list">
-          {(doc.data.limitations ?? []).map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-        <p className="panel-note mono">source: {doc.data.source}</p>
-      </section>
+      <Limitations title="What a head-to-head does not say">
+        {(doc.data.limitations ?? []).map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+        <li className="mono">source: {doc.data.source}</li>
+      </Limitations>
 
       <RelatedLinks
         context={`Each link opens on round ${round} rather than its own default.`}

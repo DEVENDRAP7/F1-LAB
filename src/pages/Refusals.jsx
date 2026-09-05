@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
+import { Limitations } from '../components/Disclosure.jsx';
 
 // The ledger of everything this site declined to publish.
 //
@@ -98,24 +99,19 @@ export default function Refusals() {
         </section>
       ))}
 
-      <section className="panel panel-limitations">
-        <div className="panel-head">
-          <h2>About this ledger</h2>
-        </div>
-        <ul className="reason-list">
-          <li>{note}</li>
-          <li>
-            It is gathered at the end of each refresh, over the tree that refresh just
-            wrote, so it reports what was actually published rather than what was intended.
-          </li>
-          <li>
-            The two hard gates that never reach this page are the ones that stop a build
-            instead: a standings figure that disagrees with the published table, and a
-            qualifying lap whose telemetry time disagrees with the official result by more
-            than a hundredth. Those do not get withheld — they fail the deploy.
-          </li>
-        </ul>
-      </section>
+      <Limitations title="About this ledger">
+        <li>{note}</li>
+        <li>
+          It is gathered at the end of each refresh, over the tree that refresh just wrote,
+          so it reports what was actually published rather than what was intended.
+        </li>
+        <li>
+          The two hard gates that never reach this page are the ones that stop a build
+          instead: a standings figure that disagrees with the published table, and a
+          qualifying lap whose telemetry time disagrees with the official result by more
+          than a hundredth. Those do not get withheld — they fail the deploy.
+        </li>
+      </Limitations>
     </section>
   );
 }

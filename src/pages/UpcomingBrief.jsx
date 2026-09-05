@@ -174,9 +174,8 @@ export default function UpcomingBrief() {
             <div className="panel-head">
               <h2>Edition by edition</h2>
               <p className="panel-note">
-                The medians above come from these rows. A prior drawn from editions that
-                disagree with each other is a weaker claim than the single number suggests,
-                which is why the rows are here.
+                The rows the medians above come from — a prior drawn from editions that
+                disagree is a weaker claim than one number suggests.
               </p>
             </div>
             <div className="table-scroll table-compact">
@@ -211,9 +210,8 @@ export default function UpcomingBrief() {
             <div className="panel-head">
               <h2>Not available</h2>
               <p className="panel-note">
-                Priors a brief like this would normally carry, and why this one does not.
-                Listing them is the point: an absent section reads as an oversight, a named
-                gap reads as a limit of the source.
+                Priors a brief like this would normally carry, and why this one does not. An
+                absent section reads as an oversight; a named gap reads as a limit.
               </p>
             </div>
             <ul className="reason-list">

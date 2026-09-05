@@ -10,6 +10,7 @@ import { monteCarlo, median } from '../lib/whatifModel.js';
 import { sensitivity } from '../lib/sensitivity.js';
 import { formatDuration, formatDelta } from '../lib/formatTime.js';
 import { driverIndex, driverCode, driverName } from '../lib/driverNames.js';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 
 // M5 — the What-If engine.
 //
@@ -245,11 +246,14 @@ export default function WhatIf() {
       </header>
 
       <div className="warning-banner" role="note">
-        <strong>This is a model, and it is offered only where it works.</strong> Its
-        parameters are fitted to this race's own lap times, and a driver appears here only if
-        replaying their real strategy reproduces their real race time to within 1%. Even then
-        it knows nothing about traffic, rivals, or a safety car falling in a different place,
-        so it estimates a race time and says nothing about finishing position.
+        <strong>This is a model, and it is offered only where it works.</strong> It estimates
+        a race time and says nothing about finishing position.
+        <Method label="What that means">
+          Its parameters are fitted to this race's own lap times, and a driver appears here
+          only if replaying their real strategy reproduces their real race time to within
+          1%. Even then it knows nothing about traffic, rivals, or a safety car falling in a
+          different place.
+        </Method>
       </div>
 
       {pastRounds.length > 0 && (
@@ -364,14 +368,17 @@ export default function WhatIf() {
             <div className="panel-head">
               <h2>Change the strategy</h2>
               <p className="panel-note">
-                Degradation per compound is fitted from this race:{' '}
+                Degradation per compound, fitted from this race:{' '}
                 {Object.entries(entry.params.compounds)
                   .map(([c, p]) => `${compoundLabel(c)} ${p.deg_rate_s_per_lap.toFixed(3)}s/lap`)
                   .join(' · ')}
-                . A stint on a compound this driver never ran is still a model of this race's
+                .
+              </p>
+              <Method>
+                A stint on a compound this driver never ran is still a model of this race's
                 tyres, but the further it is from what was run, the more of it is
                 extrapolation.
-              </p>
+              </Method>
             </div>
             <StrategyEditor
               strategy={strategy}
@@ -441,9 +448,9 @@ export default function WhatIf() {
           <div className="panel-head">
             <h2>What the answer rests on</h2>
             <p className="panel-note">
-              Each fitted number moved on its own to the edge of its stated uncertainty,
-              with everything else held still. A row that moves the race time by more than
-              the difference you are trying to read is a row that decides the answer.
+              Each fitted number moved on its own to the edge of its uncertainty. A row that
+              moves the race time by more than the difference you are reading is the row
+              that decides the answer.
             </p>
           </div>
           <div className="table-scroll table-wide">
@@ -477,8 +484,7 @@ export default function WhatIf() {
             <h2>Drivers the model does not describe</h2>
             <p className="panel-note">
               Replaying these drivers' real strategies missed their real race time by more
-              than 1%, so no counterfactual is offered for them. They are listed rather than
-              hidden: that the model fails on them is the useful fact.
+              than 1%, so no counterfactual is offered. They are listed rather than hidden.
             </p>
           </div>
           <ul className="reason-list">
@@ -495,21 +501,16 @@ export default function WhatIf() {
       )}
 
       {doc.data?.limitations && (
-        <section className="panel panel-limitations">
-          <div className="panel-head">
-            <h2>What this model does not know</h2>
-          </div>
-          <ul className="reason-list">
-            {doc.data.limitations.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-            <li>
-              No rivals and no traffic. The model runs one car against the clock, so it
-              cannot say whether a different strategy would have come out ahead of anyone —
-              only how long the race would have taken on these parameters.
-            </li>
-          </ul>
-        </section>
+        <Limitations title="What this model does not know">
+          {doc.data.limitations.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+          <li>
+            No rivals and no traffic. The model runs one car against the clock, so it
+            cannot say whether a different strategy would have come out ahead of anyone —
+            only how long the race would have taken on these parameters.
+          </li>
+        </Limitations>
       )}
 
       <RelatedLinks

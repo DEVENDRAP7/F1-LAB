@@ -17,6 +17,7 @@ import { useUrlSelection, useUrlState } from '../lib/urlState.js';
 import GGDiagram from '../components/GGDiagram.jsx';
 import EnvelopeChart from '../components/EnvelopeChart.jsx';
 import ChannelMap from '../components/ChannelMap.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 import { detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 import { GRIP_LIMITED_TOLERANCE_PCT, cornerModel, impliedGripG } from '../lib/cornerModel.js';
 import { COAST_MIN_SPEED_KPH, dragFit } from '../lib/drag.js';
@@ -322,12 +323,14 @@ export default function AeroExplainer() {
             <div className="panel-head">
               <h2>Acceleration envelope</h2>
               <p className="panel-note">
-                Every sample of the lap, plotted as cornering against braking and
-                acceleration. The outline is the limit the car actually operated at.
-                Rings are whole g. Lateral is <span className="mono">v² · κ</span> and
-                longitudinal is <span className="mono">v · dv/ds</span>, both from the
-                position trace and its speed channel.
+                Every sample of the lap, cornering against braking and acceleration. The
+                outline is the limit the car actually operated at; rings are whole g.
               </p>
+              <Method>
+                Lateral is <span className="mono">v² · κ</span> and longitudinal is{' '}
+                <span className="mono">v · dv/ds</span>, both from the position trace and
+                its speed channel.
+              </Method>
             </div>
             {series.length === 0 ? (
               <p className="panel-note">Select a driver to plot their lap.</p>
@@ -354,12 +357,13 @@ export default function AeroExplainer() {
             <div className="panel-head">
               <h2>Where the load is</h2>
               <p className="panel-note">
-                {series[0]?.code ?? 'The'} driven lap, coloured by the lateral g being
-                carried at each point of it — the braking zones and the corner exits are
-                where the colour changes. Markers sit at the strongest point of each
-                detected turn. Colour is smoothed over about 20 m of track so a corner
-                reads as a corner; hover the line for the unsmoothed figure at a point.
+                {series[0]?.code ?? 'The'} driven lap, coloured by the lateral g carried at
+                each point. Markers sit at the strongest point of each detected turn.
               </p>
+              <Method>
+                Colour is smoothed over about 20 m of track so a corner reads as a corner;
+                hover the line for the unsmoothed figure at a point.
+              </Method>
             </div>
             {series.length === 0 ? (
               <p className="panel-note">Select a driver to draw their lap.</p>
@@ -384,15 +388,18 @@ export default function AeroExplainer() {
                 {turns.length > 0 && (
                   <>
                     <p className="panel-note">
-                      {turns.length} turns detected on this lap: a stretch carrying at least{' '}
+                      {turns.length} turns detected, numbered in the order this lap meets
+                      them — not the circuit's official numbers, which no source here
+                      publishes.
+                    </p>
+                    <Method label="How a turn is detected">
+                      A stretch carrying at least{' '}
                       <span className="mono">{TURN_DEFAULTS.gThreshold.toFixed(1)}g</span> of
                       lateral load for at least{' '}
                       <span className="mono">{TURN_DEFAULTS.minLengthM}m</span>, with a brief
-                      release in the middle treated as one turn rather than two. These are
-                      not the circuit's official corner numbers — no source here publishes
-                      those — so they are numbered in the order this lap meets them, and the
+                      release in the middle treated as one turn rather than two. The
                       numbering does not carry across drivers.
-                    </p>
+                    </Method>
                     <div className="table-scroll table-wide">
                       <table>
                         <thead>
@@ -440,13 +447,15 @@ export default function AeroExplainer() {
             <div className="panel-head">
               <h2>Grip against speed</h2>
               <p className="panel-note">
-                The lateral g sustained in each speed band — the 95th percentile of samples
-                in that band, so one noisy sample cannot set the line. A car generating
-                aerodynamic downforce holds more lateral g as speed rises; a car relying on
-                mechanical grip alone would run flat. This shows the shape without
-                converting it into a downforce figure, which would need mass, air density
-                and frontal area that no source here publishes.
+                Lateral g sustained in each speed band. A car making downforce holds more g
+                as speed rises; one on mechanical grip alone stays flat.
               </p>
+              <Method>
+                Each point is the 95th percentile of samples in that band, so one noisy
+                sample cannot set the line. It is the shape only — converting it to a
+                downforce figure needs mass, air density and frontal area, none of which
+                any source here publishes.
+              </Method>
             </div>
             {series.length === 0 ? (
               <p className="panel-note">Select a driver to plot their envelope.</p>
@@ -460,14 +469,15 @@ export default function AeroExplainer() {
               <div className="panel-head">
                 <h2>The corner model, and how wrong it is</h2>
                 <p className="panel-note">
-                  A corner has a radius and a car has a grip limit, and steady-state
-                  cornering says <span className="mono">v = √(a·r)</span>. The radius is
-                  measured from the same curvature fit as everything else on this page. The
-                  grip is one number for the whole lap, so every corner below is predicted
-                  from geometry alone — feeding each corner its own measured g would return
-                  the speed it was taken at exactly, at every corner, and a model that
-                  reproduces its input is not a model.
+                  Steady-state cornering says <span className="mono">v = √(a·r)</span>, so
+                  every corner below is predicted from geometry alone.
                 </p>
+                <Method>
+                  The radius comes from the same curvature fit as everything else on this
+                  page. The grip is one number for the whole lap: feeding each corner its
+                  own measured g would return the speed it was taken at exactly, at every
+                  corner, and a model that reproduces its input is not a model.
+                </Method>
               </div>
 
               <div className="figure-grid">
@@ -580,25 +590,26 @@ export default function AeroExplainer() {
               </div>
 
               <p className="chart-caption">
-                A corner near the model was grip-limited: the car was doing what the corner
-                allowed. A corner well below it was limited by something this model has no
-                term for — braking for what comes next, a compromised entry to protect the
-                exit onto a straight, traffic, a kerb, or a driver leaving margin. That is
-                not a mistake list and must not be read as one. There is no engine here, no
-                brakes, no gearbox, no sequence and no other cars: each corner is one
-                steady-state instant, and being slower than it is the normal case around
-                most of a lap. Where the geometry supports more speed than the car reached
-                anywhere on this lap, no model speed is printed at all: that corner is not
-                limited by grip.
+                Slower than the model is the normal case. Faster than it is the interesting
+                one — that is downforce, and it is what the grip-against-speed panel plots.
               </p>
-              <p className="chart-caption">
-                The corners that come out <em>above</em> the model are worth more than the
-                ones below it, and they are not noise. A single grip number is the model's
-                one assumption, and it is wrong in a specific direction: the fast corners
-                beat it because downforce gives the car more grip the quicker it is going.
-                That is the same fact the grip-against-speed panel plots directly. Across
-                the 88 laps published here the median lap sits 12% off this model.
-              </p>
+              <Method label="How to read this table">
+                <p>
+                  A corner near the model was grip-limited: the car did what the corner
+                  allowed. A corner well below it was limited by something this model has no
+                  term for — braking for what comes next, a compromised entry to protect the
+                  exit onto a straight, traffic, a kerb, a driver leaving margin. It is not
+                  a mistake list. There is no engine here, no brakes, no gearbox, no
+                  sequence and no other cars: each corner is one steady-state instant.
+                </p>
+                <p>
+                  Where the geometry supports more speed than the car reached anywhere on
+                  this lap, no model speed is printed: that corner is not limited by grip.
+                  The corners that beat the model do so because a single grip number is the
+                  model's one assumption and it is wrong in a specific direction. Across the
+                  88 laps published here the median lap sits 12% off this model.
+                </p>
+              </Method>
             </section>
           )}
 
@@ -607,15 +618,17 @@ export default function AeroExplainer() {
               <div className="panel-head">
                 <h2>Apparent drag</h2>
                 <p className="panel-note">
-                  When a driver lifts and does not brake, everything resisting the car shows
-                  up at once, and it splits by how it scales with speed:{' '}
-                  <span className="mono">a = k·v² + c</span>. Drag is the v² term; whatever
-                  does not care how fast the car is going lands in c. Fitting that to real
-                  coasting samples would give k in units of 1/m — not{' '}
-                  <span className="mono">C_dA</span>, which needs the car's mass and the air
-                  density on the day, and neither is published anywhere this project can
-                  reach.
+                  When a driver lifts without braking, everything resisting the car shows up
+                  at once and splits by how it scales with speed:{' '}
+                  <span className="mono">a = k·v² + c</span>.
                 </p>
+                <Method>
+                  Drag is the v² term; whatever does not care how fast the car is going
+                  lands in c. Fitting that to real coasting samples gives k in units of
+                  1/m — not <span className="mono">C_dA</span>, which needs the car's mass
+                  and the air density on the day, neither published anywhere this project
+                  can reach.
+                </Method>
               </div>
 
               {drag.available ? (
@@ -657,63 +670,60 @@ export default function AeroExplainer() {
                     reason={drag.reason}
                   />
                   <p className="chart-caption">
-                    This is the normal outcome, not a gap waiting on a fix. A flying lap is
-                    spent on the throttle or on the brakes; genuine coasting — off both
-                    pedals, above {COAST_MIN_SPEED_KPH} km/h, going roughly straight — barely
-                    happens. Across the 88 laps published here the median lap has{' '}
-                    <strong>one</strong> such sample and 38 laps have none, so the
-                    coefficient is left unpublished rather than fitted to corner-entry lifts
-                    that would return a number with no drag in it.
+                    The normal outcome, not a gap waiting on a fix.
                   </p>
+                  <Method label="Why coasting is this rare">
+                    A flying lap is spent on the throttle or on the brakes; genuine
+                    coasting — off both pedals, above {COAST_MIN_SPEED_KPH} km/h, going
+                    roughly straight — barely happens. Across the 88 laps published here the
+                    median lap has <strong>one</strong> such sample and 38 laps have none,
+                    so the coefficient is left unpublished rather than fitted to
+                    corner-entry lifts that would return a number with no drag in it.
+                  </Method>
                 </>
               )}
             </section>
           )}
 
-          <section className="panel panel-limitations">
-            <div className="panel-head">
-              <h2>What this cannot tell you</h2>
-            </div>
-            <ul className="reason-list">
-              <li>
-                No downforce in newtons, no <span className="mono">C_dA</span>, no
-                efficiency ratio. Each needs mass, air density and frontal area; none is
-                published by any source here, and assuming them would turn a measurement
-                into a guess wearing a unit.
-              </li>
-              <li>
-                Braking g is total longitudinal deceleration — brakes, engine braking and
-                aerodynamic drag together. Nothing in this data separates them, so it is
-                never labelled "drag".
-              </li>
-              <li>
-                Curvature is fitted, not differentiated. Position arrives at roughly
-                3.7 Hz — more than 20 m between fixes at racing speed — so a curve is
-                fitted to a window of the path at least{' '}
-                <span className="mono">{CURVATURE_MIN_HALF_WINDOW_M}</span> m either side,
-                widened with speed to always span several real fixes. Taken over 2 m
-                instead, the same laps read 18–24g, which is several times what any
-                Formula 1 car generates: that number was measuring the interpolation, not
-                the corner.
-              </li>
-              <li>
-                The headline figures are {Math.round(PEAK_PERCENTILE * 100)}th percentiles
-                rather than maxima. A handful of samples per lap still land outside what
-                the car could have done, and a maximum would publish one of those as the
-                result.
-              </li>
-              <li>
-                The 2026 active-aero and power-unit specifics are absent. They would need{' '}
-                <span className="mono">config/regulations_2026.json</span> verified against
-                the published FIA technical regulations, and filling those numbers from
-                memory is the one thing this project will not do.
-              </li>
-              <li>
-                One flying lap per driver, not a race average. It is that driver's fastest
-                non-out lap of the race, on whatever fuel and tyre they were on at the time.
-              </li>
-            </ul>
-          </section>
+          <Limitations>
+            <li>
+              No downforce in newtons, no <span className="mono">C_dA</span>, no
+              efficiency ratio. Each needs mass, air density and frontal area; none is
+              published by any source here, and assuming them would turn a measurement
+              into a guess wearing a unit.
+            </li>
+            <li>
+              Braking g is total longitudinal deceleration — brakes, engine braking and
+              aerodynamic drag together. Nothing in this data separates them, so it is
+              never labelled "drag".
+            </li>
+            <li>
+              Curvature is fitted, not differentiated. Position arrives at roughly
+              3.7 Hz — more than 20 m between fixes at racing speed — so a curve is
+              fitted to a window of the path at least{' '}
+              <span className="mono">{CURVATURE_MIN_HALF_WINDOW_M}</span> m either side,
+              widened with speed to always span several real fixes. Taken over 2 m
+              instead, the same laps read 18–24g, which is several times what any
+              Formula 1 car generates: that number was measuring the interpolation, not
+              the corner.
+            </li>
+            <li>
+              The headline figures are {Math.round(PEAK_PERCENTILE * 100)}th percentiles
+              rather than maxima. A handful of samples per lap still land outside what
+              the car could have done, and a maximum would publish one of those as the
+              result.
+            </li>
+            <li>
+              The 2026 active-aero and power-unit specifics are absent. They would need{' '}
+              <span className="mono">config/regulations_2026.json</span> verified against
+              the published FIA technical regulations, and filling those numbers from
+              memory is the one thing this project will not do.
+            </li>
+            <li>
+              One flying lap per driver, not a race average. It is that driver's fastest
+              non-out lap of the race, on whatever fuel and tyre they were on at the time.
+            </li>
+          </Limitations>
 
           <RelatedLinks
             context={`Each link opens on round ${round} rather than its own default.`}

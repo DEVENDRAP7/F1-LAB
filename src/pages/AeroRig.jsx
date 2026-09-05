@@ -6,6 +6,7 @@ import RelatedLinks from '../components/RelatedLinks.jsx';
 import EnvelopeChart from '../components/EnvelopeChart.jsx';
 import AeroRigViewport from '../components/AeroRigViewport.jsx';
 import SteeringWheel from '../components/SteeringWheel.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 import { partInfo, VERDICT_LABEL } from '../lib/aeroRigParts.js';
 import { relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlSelection, useUrlState } from '../lib/urlState.js';
@@ -155,26 +156,33 @@ export default function AeroRig() {
 
       <div className="warning-banner" role="note">
         <strong>The shape is somebody else's concept, not this project's measurement.</strong>{' '}
-        The car is an open-licence concept model of a 2026 car by a third-party artist, re-cut
-        into the parts below — it is neither a scan of any team's real bodywork, which nobody
-        publishes, nor geometry derived here from the regulations. Only the numbers around it
-        are measured. Click a part for its verdict: <span className="mono">measured</span> means a real number backs it,{' '}
-        <span className="mono">schematic</span> means only its geometry is known, and{' '}
-        <span className="mono">refused</span> means nothing published anywhere gives this project
-        a way to say anything about it.
+        Only the numbers around it are measured. Click any part for its verdict.
+        <Method label="What the verdicts mean">
+          <p>
+            The car is an open-licence concept model of a 2026 car by a third-party artist,
+            re-cut into the parts below — neither a scan of any team's real bodywork, which
+            nobody publishes, nor geometry derived here from the regulations.
+          </p>
+          <p>
+            <span className="mono">measured</span> means a real number backs it,{' '}
+            <span className="mono">schematic</span> means only its geometry is known, and{' '}
+            <span className="mono">refused</span> means nothing published anywhere gives
+            this project a way to say anything about it.
+          </p>
+        </Method>
       </div>
 
       <section className="panel">
         <div className="panel-head">
           <h2>The car</h2>
-          <p className="panel-note">
-            {MODE_COPY[mode].text} The flap angle changes, and the ribbons around the car
-            follow it: they are turned hard by a loaded wing and pass much straighter over a
-            flattened one. That is a drawing, not a solution — there is no flow field here, the
-            size of the difference is chosen to read clearly rather than computed, and no lap
-            below is measured in X-mode because the sport does not publish which mode a car
-            was in.
-          </p>
+          <p className="panel-note">{MODE_COPY[mode].text}</p>
+          <Method label="What the ribbons are, and are not">
+            The flap angle changes and the ribbons follow it — turned hard by a loaded wing,
+            passing straighter over a flattened one. That is a drawing, not a solution:
+            there is no flow field here and the size of the difference is chosen to read
+            clearly rather than computed. No lap below is measured in X-mode, because the
+            sport does not publish which mode a car was in.
+          </Method>
         </div>
 
         <div className="rig-chamber">
@@ -230,12 +238,14 @@ export default function AeroRig() {
         <div className="panel-head">
           <h2>The wheel in the driver's hands</h2>
           <p className="panel-note">
-            Hover or tap any control. Every one of these is a control the real cars carry —
-            several are required by the regulations — but the arrangement is representative
-            rather than copied: no team publishes its own layout, and it changes between
-            teams and between races. The <span className="mono">AERO</span> button is the
+            Hover or tap any control. The <span className="mono">AERO</span> button is the
             same Z-to-X switch as the one above the car.
           </p>
+          <Method label="How faithful this layout is">
+            Every control here is one the real cars carry, several required by the
+            regulations, but the arrangement is representative rather than copied: no team
+            publishes its own layout, and it changes between teams and between races.
+          </Method>
         </div>
         <SteeringWheel mode={mode} onMode={setMode} />
       </section>
@@ -332,11 +342,13 @@ export default function AeroRig() {
             <div className="panel-head">
               <h2>Downforce signature</h2>
               <p className="panel-note">
-                Lateral g sustained at each speed band. A car making more of its grip
-                aerodynamically holds more g as speed rises; one running on mechanical grip alone
-                stays flatter. This is the measured half of what the rig above draws from
-                regulation geometry alone.
+                Lateral g sustained at each speed band — the measured half of what the rig
+                above draws from geometry alone.
               </p>
+              <Method>
+                A car making more of its grip aerodynamically holds more g as speed rises;
+                one running on mechanical grip alone stays flatter.
+              </Method>
             </div>
             <EnvelopeChart series={series} />
           </section>
@@ -345,9 +357,8 @@ export default function AeroRig() {
             <div className="panel-head">
               <h2>Who this session has telemetry for</h2>
               <p className="panel-note">
-                The position feed the pipeline decodes publishes a handful of drivers per
-                session, not the full field — a blank tile is a car not exported yet, not a car
-                measured at zero.
+                A blank tile is a car not exported yet, not a car measured at zero: the
+                position feed publishes a handful of drivers per session, not the full field.
               </p>
             </div>
             <div className="figure-grid">
@@ -372,16 +383,11 @@ export default function AeroRig() {
         </>
       )}
 
-      <section className="panel panel-limitations">
-        <div className="panel-head">
-          <h2>What this rig cannot tell you</h2>
-        </div>
-        <ul className="reason-list">
-          {doc.data.limitations.map((line) => (
-            <li key={line.slice(0, 40)}>{line}</li>
-          ))}
-        </ul>
-      </section>
+      <Limitations title="What this rig cannot tell you">
+        {doc.data.limitations.map((line) => (
+          <li key={line.slice(0, 40)}>{line}</li>
+        ))}
+      </Limitations>
 
       <RelatedLinks
         context={`Each link opens on round ${round} rather than its own default.`}

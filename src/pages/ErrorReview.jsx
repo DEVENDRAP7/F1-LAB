@@ -5,6 +5,7 @@ import RelatedLinks from '../components/RelatedLinks.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 import { formatDelta, formatLapTime } from '../lib/formatTime.js';
+import { Method } from '../components/Disclosure.jsx';
 
 // M7 — Driver Error Review.
 //
@@ -198,9 +199,7 @@ export default function ErrorReview() {
                   <h2>Recorded by race control</h2>
                   <p className="panel-note">
                     Official messages concerning this car, quoted exactly as published and
-                    attributed by the car number the feed carries — not by reading the
-                    text. Blue flags are separated out below: they are information, not a
-                    finding about this driver.
+                    attributed by car number rather than by reading the text.
                   </p>
                 </div>
                 {noted.length === 0 ? (
@@ -225,9 +224,8 @@ export default function ErrorReview() {
                       {informational.length === 1 ? '' : 's'} (blue flags)
                     </summary>
                     <p className="panel-note">
-                      A blue flag tells a driver a faster car is approaching. It is
-                      information handed to them, not a finding about their driving, so it
-                      is kept separate from the list above rather than mixed into it.
+                      A blue flag says a faster car is approaching — information handed to a
+                      driver, not a finding about them, so it is kept out of the list above.
                     </p>
                     <ul className="reason-list">
                       {informational.map((r, i) => (
@@ -246,13 +244,16 @@ export default function ErrorReview() {
                   <h2>Flagged laps</h2>
                   <p className="panel-note">
                     Laps at least {doc.thresholds.slowLapS}s slower than this driver's own
-                    median green-flag lap, with anything race control published about the
-                    track on that lap beside it — a yellow is a reason for a slow lap that
-                    has nothing to do with the driver. Laps run under a safety car or red flag are
-                    excluded using the published track-status messages —{' '}
+                    median green-flag lap, with whatever race control published about the
+                    track alongside.
+                  </p>
+                  <Method>
+                    A yellow is a reason for a slow lap that has nothing to do with the
+                    driver. Laps run under a safety car or red flag are excluded using the
+                    published track-status messages —{' '}
                     <span className="mono">{doc.neutralisedLaps.length}</span> lap
                     {doc.neutralisedLaps.length === 1 ? '' : 's'} in this race.
-                  </p>
+                  </Method>
                 </div>
 
                 {flagged.length === 0 ? (

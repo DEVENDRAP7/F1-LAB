@@ -6,6 +6,7 @@ import {
 } from '../lib/steeringWheel.js';
 import { DEMOS, stateAt } from '../lib/wheelDemo.js';
 import EngineAudio, { VOICES } from '../lib/engineAudio.js';
+import { Method } from './Disclosure.jsx';
 
 // A 2026 steering wheel you can actually work.
 //
@@ -607,14 +608,13 @@ export default function SteeringWheel({ mode, onMode }) {
         {caption
           ? <p className="wheel-caption" aria-live="polite">{caption}</p>
           : (
-            <p className="wheel-demo-note">
-              The sequences drive this wheel and the car above it — gears, modes, the
-              override and the wings. The engine is synthesised in the browser from an
-              oscillator stack, not a recording: a real one would be somebody&rsquo;s
-              copyright and would cost more than this whole page&rsquo;s payload budget.
-              Speeds, revs and shift points are illustrative, not measured — no team
-              publishes a ratio set, a shift point or what a deployment mode is worth.
-            </p>
+            <Method label="About the sound and the numbers">
+              The engine is synthesised in the browser from an oscillator stack, not a
+              recording: a real one would be somebody&rsquo;s copyright and would cost more
+              than this whole page&rsquo;s payload budget. Speeds, revs and shift points are
+              illustrative, not measured — no team publishes a ratio set, a shift point or
+              what a deployment mode is worth.
+            </Method>
           )}
       </div>
     </div>

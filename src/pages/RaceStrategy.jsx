@@ -6,6 +6,7 @@ import RelatedLinks from '../components/RelatedLinks.jsx';
 import StintChart from '../components/StintChart.jsx';
 import LapTimeChart from '../components/LapTimeChart.jsx';
 import UndercutLedger from '../components/UndercutLedger.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 import { formatLapTime } from '../lib/formatTime.js';
 import { driverCode, driverIndex, driverName } from '../lib/driverNames.js';
 import { circuitForRound, isSprintRound, relatedLinks } from '../lib/relatedLinks.js';
@@ -219,11 +220,14 @@ export default function RaceStrategy() {
             <div className="panel-head">
               <h2>Stints</h2>
               <p className="panel-note">
-                Boundaries are inferred from pit-stop laps. Bars are coloured by the tyre
-                compound the OpenF1 stint feed publishes, matched to these stints by driver
+                Boundaries inferred from pit-stop laps, coloured by the published tyre
+                compound.
+              </p>
+              <Method>
+                Compounds come from the OpenF1 stint feed, matched to these stints by driver
                 code and lap overlap. A stint that could not be matched confidently keeps
                 the stint-order shading rather than being given a guessed compound.
-              </p>
+              </Method>
             </div>
             <StintChart
               codeFor={(id) => driverCode(names, id)}
@@ -385,11 +389,14 @@ export default function RaceStrategy() {
               <div className="panel-head">
                 <h2>Undercut ledger</h2>
                 <p className="panel-note">
-                  Every stop measured against rivals who were within 30 seconds and had not
-                  yet stopped. Gaps come from elapsed race time — the running sum of lap
-                  times — so no gap channel is needed.
+                  Every stop measured against rivals within 30 seconds who had not yet
+                  stopped.
                   {selected.length > 0 && ' Filtered to the drivers selected above.'}
                 </p>
+                <Method>
+                  Gaps come from elapsed race time — the running sum of lap times — so no
+                  gap channel is needed.
+                </Method>
               </div>
               <UndercutLedger
               codeFor={(id) => driverCode(names, id)}
@@ -405,8 +412,8 @@ export default function RaceStrategy() {
               <h2>Per-stint pace trend</h2>
               <p className="panel-note">
                 Least-squares slope of lap time against tyre life within each stint. A slope
-                is only called usable when it clears both a sample-count and an R² floor —
-                the reason is shown either way.
+                counts as usable only above a sample-count and an R² floor; the reason shows
+                either way.
               </p>
             </div>
             <div className="table-scroll">
@@ -459,12 +466,13 @@ export default function RaceStrategy() {
               <div className="panel-head">
                 <h2>What the conditions were</h2>
                 <p className="panel-note">
-                  Every degradation slope on this page was measured in some weather, and
-                  until this existed the page never said which. Air temperature is measured
-                  twice, by two sources that do not know about each other: the circuit's own
-                  sensors, and an independent reanalysis of the same hours at the
-                  coordinates the calendar publishes for this circuit.
+                  The weather every degradation slope above was measured in.
                 </p>
+                <Method label="Why two temperatures">
+                  Air temperature is measured twice by two sources that do not know about
+                  each other: the circuit's own sensors, and an independent reanalysis of
+                  the same hours at the coordinates the calendar publishes for this circuit.
+                </Method>
               </div>
 
               {raceConditions.conditions.published ? (
@@ -535,9 +543,8 @@ export default function RaceStrategy() {
               <div className="panel-head">
                 <h2>Positions changed hands</h2>
                 <p className="panel-note">
-                  Not overtakes. The feed's own description includes position changes from
-                  pit stops and from penalties applied after the race alongside passes made
-                  on track, and nothing published separates them.
+                  Not overtakes: the feed counts pit stops and post-race penalties alongside
+                  passes made on track, and nothing published separates them.
                 </p>
               </div>
 
@@ -589,15 +596,12 @@ export default function RaceStrategy() {
             </section>
           )}
 
-          <section className="panel panel-limitations">
-            <h2>What this page cannot tell you</h2>
-            <ul>
-              {data.limitations.map((l) => (
-                <li key={l}>{l}</li>
-              ))}
-            </ul>
-            <p className="panel-note mono">source: {data.source}</p>
-          </section>
+          <Limitations title="What this page cannot tell you">
+            {data.limitations.map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+            <li className="mono">source: {data.source}</li>
+          </Limitations>
 
           <RelatedLinks
             context={`Each link opens on round ${round} rather than its own default.`}

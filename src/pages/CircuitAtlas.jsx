@@ -10,6 +10,7 @@ import { accelerationTrace } from '../lib/aero.js';
 import { describeTurns, detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 import TelemetryTrace from '../components/TelemetryTrace.jsx';
 import { seriesColor } from '../theme/palette.js';
+import { Method } from '../components/Disclosure.jsx';
 
 // M1 — Circuit Atlas. The outline is a real driven lap: the position
 // trace of the fastest race lap, in metres, thinned but not smoothed.
@@ -290,11 +291,14 @@ export default function CircuitAtlas() {
                 <p className="panel-note">
                   The lap's height, over{' '}
                   <span className="mono">{Math.round(turns.elevationRangeM)}m</span> from its
-                  lowest point to its highest. It is the position feed's own z channel on
-                  the same measured unit as x and y, relative to whatever datum that feed
-                  uses — not a height above sea level. A round whose z does not vary gets no
-                  profile here rather than a flat line drawn at full scale.
+                  lowest point to its highest.
                 </p>
+                <Method>
+                  The position feed's own z channel, on the same measured unit as x and y
+                  and relative to whatever datum that feed uses — not a height above sea
+                  level. A round whose z does not vary gets no profile rather than a flat
+                  line drawn at full scale.
+                </Method>
               </div>
               <TelemetryTrace
                 label="Elevation"
@@ -323,18 +327,26 @@ export default function CircuitAtlas() {
                 <p className="panel-note">
                   {turns.rows.length} stretches of {turns.code}'s fastest{' '}
                   {doc.sessionLabel ?? 'race'} lap
-                  {turns.lapTimeS ? ` (${turns.lapTimeS.toFixed(3)}s)` : ''} carrying at
-                  least <span className="mono">{TURN_DEFAULTS.gThreshold.toFixed(1)}g</span>{' '}
-                  of lateral load for at least{' '}
-                  <span className="mono">{TURN_DEFAULTS.minLengthM}m</span>. Gear and
-                  braking point come straight from the published channels; the apex is the
-                  strongest point of the turn, and its distance is measured along the lap
-                  from the start/finish line. A turn "begins" where that load threshold is
-                  crossed rather than at the geometric turn-in, so a braking point on a
-                  long banked corner reads further back than a driver would describe it. These are not the circuit's official corner
-                  numbers — nothing here publishes those — so they are numbered in the
-                  order this lap meets them.
+                  {turns.lapTimeS ? ` (${turns.lapTimeS.toFixed(3)}s)` : ''}, numbered in the
+                  order the lap meets them rather than by the circuit's official numbers.
                 </p>
+                <Method label="How a turn is detected">
+                  <p>
+                    A stretch carrying at least{' '}
+                    <span className="mono">{TURN_DEFAULTS.gThreshold.toFixed(1)}g</span> of
+                    lateral load for at least{' '}
+                    <span className="mono">{TURN_DEFAULTS.minLengthM}m</span>. Gear and
+                    braking point come straight from the published channels; the apex is the
+                    strongest point of the turn, its distance measured along the lap from
+                    the start/finish line.
+                  </p>
+                  <p>
+                    A turn "begins" where the load threshold is crossed rather than at the
+                    geometric turn-in, so a braking point on a long banked corner reads
+                    further back than a driver would describe it. Nothing here publishes the
+                    official corner numbers.
+                  </p>
+                </Method>
               </div>
               <div className="table-scroll table-wide">
                 <table>
@@ -374,8 +386,8 @@ export default function CircuitAtlas() {
 
           {turns.status === 'empty' && (
             <p className="panel-note">
-              No racing line has been exported for this round yet, so there is an outline
-              here but nothing to detect turns on.
+              No racing line exported for this round yet — an outline, but nothing to detect
+              turns on.
             </p>
           )}
 

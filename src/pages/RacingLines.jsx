@@ -23,6 +23,7 @@ import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlSelection, useUrlState } from '../lib/urlState.js';
 import TelemetryTrace from '../components/TelemetryTrace.jsx';
 import TrackMap from '../components/TrackMap.jsx';
+import { Method } from '../components/Disclosure.jsx';
 
 // M3 — Racing Lines. Real driven lines only, decoded from the pipeline's
 // Int16 .bin exports; the crosshair index is the single piece of shared
@@ -370,22 +371,21 @@ export default function RacingLines() {
       </div>
 
       <section className="panel panel-limitations">
-        <h2>What these lines are</h2>
-        <p className="panel-note">
-          Each line is one driver's fastest non-out lap of{' '}
-          {manifest.data?.sessionLabel ?? 'the session'}, decoded from the position trace
-          OpenF1 publishes at roughly 3.7 Hz and resampled onto a fixed distance grid. It is
-          a lap somebody drove, not an average and not an ideal line, so two drivers' lines
-          differ because they took different paths. A qualifying lap is the faster one — low
-          fuel, fresh tyres — and a race lap is the one that had to last.
-        </p>
-        <p className="panel-note">
-          Distances are in metres, converted using a scale measured per round rather than
-          assumed — the position feed does not document its unit, so the pipeline recovers
-          it by integrating published speed over the lap. Corner numbering is absent
-          because this source publishes none, and numbering corners from memory would be
-          invented detail.
-        </p>
+        <Method label="What these lines are">
+          <p>
+            Each line is one driver's fastest non-out lap of{' '}
+            {manifest.data?.sessionLabel ?? 'the session'}, decoded from the position trace
+            OpenF1 publishes at roughly 3.7 Hz and resampled onto a fixed distance grid. It
+            is a lap somebody drove, not an average and not an ideal line, so two drivers'
+            lines differ because they took different paths.
+          </p>
+          <p>
+            Distances are in metres on a scale measured per round rather than assumed: the
+            position feed does not document its unit, so the pipeline recovers it by
+            integrating published speed over the lap. Corner numbering is absent because
+            this source publishes none.
+          </p>
+        </Method>
       </section>
 
       {!round && (
@@ -429,8 +429,7 @@ export default function RacingLines() {
               <h2>The lap, and the lap beside it</h2>
               <p className="panel-note">
                 Select up to {MAX_DRIVERS} drivers. Hovering any trace moves the crosshair on
-                all of them and on the map, so a spike in one channel can be found on the
-                track it happened at.
+                all of them and on the map.
               </p>
             </div>
           <div className="driver-picker">
@@ -521,14 +520,16 @@ export default function RacingLines() {
               <div className="panel-head">
                 <h2>Who was fastest where</h2>
                 <p className="panel-note">
-                  The lap cut into {DEFAULT_SECTORS} equal fractions of itself, with each
-                  piece taken by whoever crossed it quickest. Times come off the same
-                  cumulative-time curve as the delta trace above, so the two cannot
-                  disagree about who gained where. These are not the sport's timing-loop
-                  mini-sectors — nothing here publishes where those loops are — and the
-                  split is by fraction of each driver's own lap rather than by fixed
-                  distance, because two measured racing lines are not the same length.
+                  The lap cut into {DEFAULT_SECTORS} equal fractions of itself, each piece
+                  taken by whoever crossed it quickest.
                 </p>
+                <Method>
+                  Times come off the same cumulative-time curve as the delta trace above, so
+                  the two cannot disagree about who gained where. These are not the sport's
+                  timing-loop mini-sectors — nothing here publishes where those loops are —
+                  and the split is by fraction of each driver's own lap rather than by fixed
+                  distance, because two measured racing lines are not the same length.
+                </Method>
               </div>
 
               <button
@@ -557,9 +558,8 @@ export default function RacingLines() {
                   {active.length > sectorDrivers.length && (
                     <p className="panel-note">
                       Showing the first {sectorDrivers.length} of your {active.length}{' '}
-                      selections. On a map any two pieces of track can end up touching, so
-                      the colours have to stay apart across every pair at once — and only
-                      three of them do.
+                      selections: on a map any two pieces of track can touch, so the colours
+                      have to stay apart across every pair at once, and only three do.
                     </p>
                   )}
                   <div className="table-scroll table-wide">
@@ -612,13 +612,14 @@ export default function RacingLines() {
               <div className="panel-head">
                 <h2>Where the time went</h2>
                 <p className="panel-note">
-                  Turns detected on {active[0]}'s lap, ordered by the largest swing through
-                  them. Each figure is that driver's time against {active[0]} through the
-                  turn alone, read off the delta trace at its two ends — a positive number
-                  is time lost. These are not the circuit's official corner numbers: nothing
-                  this project reads publishes those, so they are numbered in the order this
-                  lap meets them.
+                  Turns on {active[0]}'s lap, ordered by the largest swing. Each figure is
+                  time against {active[0]} through that turn alone; positive is time lost.
                 </p>
+                <Method>
+                  Read off the delta trace at the turn's two ends. These are not the
+                  circuit's official corner numbers — nothing this project reads publishes
+                  those — so they are numbered in the order this lap meets them.
+                </Method>
               </div>
               <div className="table-scroll table-wide">
                 <table>

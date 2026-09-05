@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
+import { Limitations } from '../components/Disclosure.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 
@@ -169,8 +170,7 @@ export default function TeamRadio() {
               <h2>The timeline</h2>
               <p className="panel-note">
                 In the order the clips were published. A message before the first recorded
-                lap start carries no lap number rather than lap 1 — the grid and the
-                formation lap are radio-heavy and are not racing.
+                lap start carries no lap number rather than lap 1.
               </p>
             </div>
 
@@ -213,17 +213,12 @@ export default function TeamRadio() {
         </>
       )}
 
-      <section className="panel panel-limitations">
-        <div className="panel-head">
-          <h2>What this page cannot tell you</h2>
-        </div>
-        <ul className="reason-list">
-          {limitations.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-        <p className="panel-note mono">source: {doc.data.source}</p>
-      </section>
+      <Limitations title="What this page cannot tell you">
+        {limitations.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+        <li className="mono">source: {doc.data.source}</li>
+      </Limitations>
 
       <RelatedLinks
         context={`Each link opens on round ${round} rather than its own default.`}

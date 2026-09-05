@@ -3,6 +3,7 @@ import { dataPath } from '../lib/dataPath.js';
 import { MAX_SERIES, seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
 import ProgressionChart from '../components/ProgressionChart.jsx';
+import { Method } from '../components/Disclosure.jsx';
 
 // M2 — Season Ledger. Standings are computed by the pipeline and
 // cross-checked against the API at export time (docs/SPEC.md); this page
@@ -92,7 +93,7 @@ export default function SeasonLedger() {
             <h2>Points progression</h2>
             <p className="panel-note">
               Cumulative points after each completed round. Select up to {MAX_SERIES}{' '}
-              drivers; colour is assigned per selection slot and stays with the driver.
+              drivers.
             </p>
           </div>
 
@@ -158,31 +159,35 @@ export default function SeasonLedger() {
       )}
 
       {elimination && elimination.remainingRounds > 0 && (
-        <p className="verified-note">
-          {eliminatedCount === 0 ? (
-            <>No driver is mathematically out of the championship yet.</>
-          ) : (
-            <>
-              <strong>{eliminatedCount}</strong> of {standings.length} drivers can no
-              longer win the championship.
-            </>
-          )}{' '}
-          With {elimination.remainingRounds} round
-          {elimination.remainingRounds === 1 ? '' : 's'} left, a maximum of{' '}
-          <span className="mono">{elimination.remainingMaxPoints}</span> points remain, so a
-          driver is only counted out when taking every one of them still leaves them behind
-          the leader's current <span className="mono">{elimination.leaderPoints}</span> —
-          even if the leader never scores again. A driver who could draw level is not
-          counted out.
-        </p>
+        <div className="verified-note">
+          <p>
+            {eliminatedCount === 0 ? (
+              <>No driver is mathematically out of the championship yet.</>
+            ) : (
+              <>
+                <strong>{eliminatedCount}</strong> of {standings.length} drivers can no
+                longer win the championship.
+              </>
+            )}{' '}
+            {elimination.remainingRounds} round
+            {elimination.remainingRounds === 1 ? '' : 's'} left, worth at most{' '}
+            <span className="mono">{elimination.remainingMaxPoints}</span> points.
+          </p>
+          <Method label="How elimination is decided">
+            A driver is counted out only when taking every remaining point still leaves them
+            behind the leader's current{' '}
+            <span className="mono">{elimination.leaderPoints}</span> — even if the leader
+            never scores again. A driver who could draw level is not counted out.
+          </Method>
+        </div>
       )}
 
       <section className="panel">
         <div className="panel-head">
           <h2>The championship as it stands</h2>
           <p className="panel-note">
-            Accumulated here from each round's results, not copied from the published
-            table — the cross-check above is what says the two agree.
+            Accumulated from each round's results, not copied from the published table. The
+            cross-check above is what says the two agree.
           </p>
         </div>
         <div className="table-scroll is-full">

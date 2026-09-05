@@ -52,10 +52,19 @@
   z-index: 1;
 }
 
-.app-nav {
+/* ---------- the header bar ----------
+ *
+ * A wordmark, then four grouped menus. What was here before was fifteen
+ * links in one nowrap row inside `overflow-x: auto`: wider than any
+ * viewport the site is read at, with no scrollbar and no edge fade, so
+ * the last five pages had no visible entrance. Four triggers fit at
+ * 390px with room to spare.
+ */
+.app-bar {
   display: flex;
-  gap: 0.35rem;
-  padding: 0.6rem 1.25rem;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 0.55rem 1.25rem;
   border-bottom: 1px solid var(--line);
   /* The one surface content actually passes behind, so it is the one
      that has to be actual glass: tinted, blurred, and lit along its top
@@ -67,14 +76,9 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  /* Labels never wrap mid-word ("Season / Ledger"); when the row is
-     tighter than its items it scrolls sideways instead. */
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
-.app-nav::before {
+.app-bar::before {
   content: '';
   position: absolute;
   inset: 0 0 auto 0;
@@ -83,35 +87,183 @@
   opacity: 0.85;
 }
 
-.app-nav a {
-  color: var(--ink-1);
+.brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
   text-decoration: none;
+  color: var(--ink-0);
+  white-space: nowrap;
+  padding: 0.3rem 0.1rem;
+  flex: 0 0 auto;
+}
+
+.brand span {
+  background: var(--grad-head);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  margin-left: 0.28em;
+}
+
+.brand.is-here {
+  text-decoration: none;
+}
+
+.app-nav {
+  display: flex;
+  gap: 0.2rem;
+  align-items: center;
+}
+
+.nav-group {
+  position: relative;
+}
+
+.nav-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 0.03em;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
   white-space: nowrap;
-  flex: 0 0 auto;
-  padding: 0.35rem 0.7rem;
-  border-radius: var(--radius);
+  color: var(--ink-1);
+  background: none;
   border: 1px solid transparent;
-  transition: color 120ms ease, background 120ms ease, border-color 120ms ease,
-    box-shadow 120ms ease;
+  border-radius: var(--radius);
+  padding: 0.42rem 0.7rem;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
-.app-nav a:hover {
+.nav-trigger:hover {
   color: var(--ink-0);
   background: var(--bg-3);
-  box-shadow: inset 0 1px 0 var(--glass-rim);
 }
 
-/* The active tab is pressed into the bar rather than raised off it —
-   a groove, not a button. It is where you already are. */
-.app-nav a.active {
+/* Two different states, deliberately drawn differently: `is-here` is
+   the section you are in, `is-open` is the menu you have pulled down.
+   Drawing them the same makes an open menu look like a navigation you
+   already performed. */
+.nav-trigger.is-here {
   color: var(--accent-0);
+}
+
+.nav-trigger.is-open {
+  color: var(--ink-0);
+  background: var(--bg-3);
+  border-color: var(--line-strong);
+}
+
+.nav-label-short {
+  display: none;
+}
+
+.nav-chevron {
+  width: 9px;
+  height: 6px;
+  opacity: 0.6;
+  transition: transform 140ms ease;
+}
+
+.nav-trigger.is-open .nav-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 30;
+  min-width: 20rem;
+  max-width: min(24rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  padding: 0.35rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  /* Opaque, unlike every other surface on the site. A menu is drawn
+     over the content it is about to replace, so glass here puts a
+     headline and a stat tile straight through the link labels — which
+     is exactly what the first cut of this did. */
+  background: var(--bg-2);
+  box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-rim);
+}
+
+.nav-item {
+  display: block;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: var(--bg-3);
+}
+
+.nav-item.active {
   background: var(--accent-glow);
   border-color: var(--accent-edge);
-  box-shadow: var(--groove);
+}
+
+.nav-item-name {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--ink-0);
+}
+
+.nav-item.active .nav-item-name {
+  color: var(--accent-0);
+}
+
+/* The description is the point of the menu — a link that says where it
+   goes needs no guessing — but it is support, not the label. */
+.nav-item-line {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+@media (max-width: 560px) {
+  .app-bar {
+    gap: 0.5rem;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .nav-trigger {
+    padding: 0.4rem 0.42rem;
+    font-size: 0.82rem;
+  }
+
+  /* "Car & Track" is the one label long enough to push the last group
+     off a 390px bar. It shortens rather than the row scrolling, because
+     a scrolling row is the thing this nav exists to get rid of. */
+  .nav-label-full {
+    display: none;
+  }
+
+  .nav-label-short {
+    display: inline;
+  }
+
+  /* At this width a left-anchored menu runs off the right edge for the
+     last group, so every menu spans the bar instead. */
+  .nav-menu {
+    position: fixed;
+    left: 0.6rem;
+    right: 0.6rem;
+    max-width: none;
+    min-width: 0;
+  }
 }
 
 /* Links had no rule of their own, so every inline link on the site was
@@ -130,7 +282,7 @@ a:hover {
 }
 
 a:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-0);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -393,6 +545,9 @@ tbody tr:hover {
 .page-sub {
   margin: 0;
   color: var(--ink-1);
+  /* A line of prose across the full 1500px shell is about 190
+     characters — roughly three times a comfortable measure. */
+  max-width: 72ch;
 }
 
 /* The primary surface. Tinted glass over the page's own light, lit
@@ -480,6 +635,117 @@ tbody tr:hover {
   font-size: 0.85rem;
   line-height: 1.5;
   max-width: 62ch;
+}
+
+/* ---------- disclosure ----------
+ *
+ * The trigger has to read as a control and not as a heading, or nobody
+ * opens it and the method is worse hidden than it was long. So: the
+ * chevron leads, the whole row is a hit target, and it changes on hover
+ * the way every other control on the site does.
+ */
+.disclosure {
+  border-top: 1px solid var(--line);
+  margin-top: 0.9rem;
+}
+
+.disclosure summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.1rem;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  transition: color 120ms ease;
+}
+
+.disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure summary:hover {
+  color: var(--ink-0);
+}
+
+.disclosure summary:focus-visible {
+  outline: 2px solid var(--accent-0);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.disclosure-chevron {
+  width: 10px;
+  height: 6px;
+  flex: 0 0 auto;
+  transition: transform 140ms ease;
+}
+
+.disclosure[open] > summary {
+  color: var(--ink-0);
+}
+
+.disclosure[open] > summary .disclosure-chevron {
+  transform: rotate(180deg);
+}
+
+/* The count is the honest part: it says how much is behind the trigger
+   before it is opened. */
+.disclosure-count {
+  font-size: 0.72rem;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.02rem 0.42rem;
+}
+
+.disclosure-body {
+  padding: 0.15rem 0 0.7rem;
+  color: var(--ink-1);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  max-width: 74ch;
+}
+
+.disclosure-body p {
+  margin: 0 0 0.6rem;
+}
+
+.disclosure-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* A method note sits under the figure it explains, inside a panel that
+   already has a rule above it, so it does not draw a second one. */
+.disclosure-method {
+  border-top: none;
+  margin-top: 0.35rem;
+}
+
+.disclosure-method > summary {
+  padding-left: 0;
+}
+
+/* The limitations panel is nothing but its disclosure, so it loses the
+   rule and the heading treatment and becomes a single quiet row until
+   it is opened. */
+.panel-limitations {
+  padding: 0.35rem 1.4rem;
+}
+
+.panel-limitations .disclosure {
+  border-top: none;
+  margin-top: 0;
+}
+
+.panel-limitations .disclosure > summary {
+  font-size: 0.85rem;
+  color: var(--ink-1);
 }
 
 .panel-limitations ul {
@@ -807,6 +1073,10 @@ tr.is-muted td {
   margin: 0 0 1rem;
 }
 
+.verified-note > p {
+  margin: 0;
+}
+
 .ledger-table td,
 .ledger-table th {
   vertical-align: middle;
@@ -907,9 +1177,8 @@ tr.is-muted td {
     padding: 0.85rem;
   }
 
-  .app-nav {
-    gap: 0.3rem;
-    padding: 0.55rem 0.6rem;
+  .app-bar {
+    padding: 0.5rem 0.7rem;
   }
 
   .page-head h1,
@@ -1595,7 +1864,12 @@ tbody tr.is-on {
 .module-grid {
   display: grid;
   gap: 0.7rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  /* auto-FILL, not auto-fit: the home page now shows one grid per
+     section, and auto-fit collapses the empty tracks so a two-card
+     section drew cards twice the width of a four-card one directly
+     above it. Keeping the empty tracks keeps every card on the page the
+     same size. */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   list-style: none;
   margin: 0.6rem 0 0;
   padding: 0;
@@ -1781,7 +2055,7 @@ tbody tr.is-on {
    The opaque fallbacks are the same colours the glass resolves to, so
    nothing moves and nothing changes contrast — only the material. */
 @media (prefers-reduced-transparency: reduce) {
-  .app-nav,
+  .app-bar,
   .panel,
   .empty-state,
   .warning-banner,
@@ -1972,12 +2246,19 @@ tbody tr.is-on {
   border-radius: 6px;
 }
 
+/* Readout left, mode right, credit on its own line under both.
+ *
+ * All three were flex items on one row, and the credit — the longest
+ * text of the three — took half the width, which squeezed the readout
+ * down to its 16rem minimum. The part description then ran in a narrow
+ * column beside a large empty space, with the verdict badge wrapping
+ * onto three lines inside it. The credit is a licence line, not a
+ * column: it belongs across the bottom. */
 .readout-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.9rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.5rem 1.4rem;
   background: var(--glass-tint-strong);
   border: 1px solid var(--line);
   border-top: none;
@@ -1987,16 +2268,8 @@ tbody tr.is-on {
 }
 
 .readout {
-  /* flex-basis sets the main-axis size, and the main axis becomes
-     height once the mobile rule below switches this row to a column —
-     a length basis meant as a row width would turn into a tall box with
-     mostly blank space under two lines of text. flex-basis: 0 plus
-     min-width lets flex-grow still share out row space on wide screens,
-     and costs nothing in column mode, where height is content's to
-     decide. */
-  flex: 1 1 0;
-  min-width: 16rem;
-  max-width: 46rem;
+  min-width: 0;
+  max-width: 62ch;
   border-left: 2px solid var(--accent-0);
   padding-left: 0.9rem;
 }
@@ -2016,8 +2289,7 @@ tbody tr.is-on {
 }
 
 .rig-mode-note {
-  flex: 0 0 auto;
-  align-self: center;
+  justify-self: end;
   max-width: 22rem;
   font-size: 0.82rem;
   color: var(--ink-2);
@@ -2027,6 +2299,7 @@ tbody tr.is-on {
    a headline — but it ships with the viewport rather than being buried
    in the docs, because that is where the thing it credits is. */
 .rig-credit {
+  grid-column: 1 / -1;
   margin: 0.35rem 0 0;
   font-size: 0.68rem;
   line-height: 1.45;
@@ -2062,7 +2335,11 @@ tbody tr.is-on {
 
 @media (max-width: 640px) {
   .readout-bar {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rig-mode-note {
+    justify-self: start;
   }
 
   .rig-hint-drag {
