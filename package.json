@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "model:build": "python3 scripts/model/segment_car.py",
     "model:preview": "node scripts/model/preview.mjs",
-    "model:debug": "python3 scripts/model/segment_car.py --debug && node scripts/model/preview.mjs car-debug.glb"
+    "model:debug": "python3 scripts/model/segment_car.py --debug && node scripts/model/preview.mjs car-debug.glb",
+    "audio:preview": "node scripts/audio_preview.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

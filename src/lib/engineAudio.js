@@ -6,43 +6,52 @@
 // from. None of it is ours to ship, and this site's whole claim is that
 // what it publishes is real and legitimately sourced. A clip long
 // enough to cover a fifteen-second demo would also be several hundred
-// kilobytes on its own, against a 400 KB budget for the entire initial
-// load.
+// kilobytes on its own.
 //
-// So the engine here is generated in the browser from an oscillator
-// stack. It costs about four kilobytes of code and no assets at all,
-// and it is honest: it is a plausible V6 turbo note, not a recording of
-// one, and the page says as much.
+// ── the rewrite, and what four earlier attempts got wrong ─────────────
+// The first four versions were a stack of DETUNED SAWTOOTH OSCILLATORS
+// through a lowpass. That is a supersaw: the most recognisable synth
+// patch there is. It was rearranged four times — harmonics moved, a
+// growl LFO added, a combustion gate added — and every time it still
+// sounded electric, because the identity of a sound is in its SOURCE
+// and the source was a synthesiser.
 //
-// ── how an engine note is built ───────────────────────────────────────
-// The pitch you hear is the FIRING frequency, not the crank speed. A
-// four-stroke fires once per cylinder every two revolutions, so
+// It also had no bass, and the reason is arithmetic. The spectrum was
+// built upward from the FIRING frequency, which at demo revs is about
+// 600 Hz for a V6. Everything else was a multiple of that, so the
+// lowest significant content sat around 150 Hz and was a minor partial.
+// There was nothing down there to be bass.
 //
-//     f0 = (rpm / 60) x (cylinders / 2)
+// This version is built the way an engine actually makes noise:
 //
-// which for a V6 at 12 000 rpm is 600 Hz. Everything else is harmonics
-// of that, a lowpass whose cutoff opens with throttle — that is what
-// makes an engine sound like it is being worked rather than just spun —
-// and a band of noise around a much higher, rpm-linked frequency for
-// the turbo.
+//   HALF-ORDER SUB.  A sine at the half engine order — the crank turning
+//   at half speed, f0 / cylinders. For a V6 at 12 600 rpm that is 105 Hz,
+//   which is bass. It is the largest term in the mix.
+//
+//   CRANK-RATE BODY.  A triangle at the crank rotation rate, twice the
+//   half-order. This is the note you actually hear as the engine's pitch.
+//
+//   FIRING BUZZ.  A single sawtooth at the firing rate, quietly, for
+//   edge. One, not six, and not detuned: the detuning was the supersaw.
+//
+//   EXHAUST ROAR.  Looping noise gated at the firing rate. Broadband,
+//   not tonal — a real exhaust is mostly noise, and a narrow band of it
+//   is a whistle, which is what the old one was.
+//
+//   FIXED RESONANCES.  Two or three bandpass peaks at frequencies that
+//   DO NOT MOVE WITH RPM. This is the part that makes a sound belong to
+//   a physical object: an exhaust pipe and a body shell ring at their
+//   own frequencies whatever the engine is doing. Everything in the old
+//   synth scaled with revs, and a spectrum where every feature slides
+//   together is the definition of synthetic.
 
 /** One combustion pulse, as a waveshaper curve.
  *
- *  This is the piece that was missing, and it is why every earlier
- *  attempt kept coming back as "electric" however the harmonics were
- *  rearranged. An engine is not a tone. It is a series of discrete bangs
- *  that only merge into a tone because they arrive six hundred times a
- *  second — and a stack of continuous oscillators through a filter is,
- *  definitionally, a synthesiser pad. No amount of rebalancing partials
- *  turns one into the other.
- *
- *  So the whole engine bus is now gated by a sharp decaying envelope
- *  fired at the combustion rate. A sawtooth sweeps -1 to +1 once per
- *  firing; this curve maps that to 1 falling to 0, so each cycle is an
- *  attack and a decay. At idle you hear the individual strokes; at the
- *  limiter they fuse, and the sidebands the modulation throws are the
- *  ones a real engine has. */
-export function pulseCurve(sharpness = 6, n = 2048) {
+ *  An engine is not a tone. It is a series of discrete bangs that only
+ *  merge into a tone because they arrive hundreds of times a second. A
+ *  sawtooth sweeps -1 to +1 once per firing; this maps that to 1 falling
+ *  to 0, so every cycle is an attack and a decay. */
+export function pulseCurve(sharpness = 4, n = 2048) {
   const curve = new Float32Array(n);
   for (let i = 0; i < n; i += 1) {
     curve[i] = (1 - i / (n - 1)) ** sharpness;
@@ -55,46 +64,26 @@ export function firingHz(rpm, cylinders = 6) {
   return (rpm / 60) * (cylinders / 2);
 }
 
-/** Where the lowpass sits, in Hz.
+/** The half engine order: the crank turning at half speed, in Hz.
  *
- *  Opening the filter with throttle rather than only with revs is what
- *  separates an engine under load from one coasting at the same speed.
- *  Clamped at the top so a high-rev, full-throttle sample cannot run
- *  into the region where the harmonics turn into a whistle. */
-export function cutoffHz(rpm, throttle, voice = DEFAULT_VOICE) {
-  // Steeper with revs and wider with throttle than it was, because the
-  // V6's sixth order at 12 600 rpm is 3.8 kHz and the old slope left the
-  // cutoff at 5.0 kHz — audible, but with the top of the note shelved.
-  // The W16 is untouched by this: its own 3 kHz ceiling clamps first at
-  // every point in its range.
-  const open = 420 + rpm * 0.28 + throttle * 3200;
-  // Never below the fundamental it is meant to be shaping: a low-revving
-  // voice has a low ceiling, and on the W16 a flat 3 000 Hz cap would
-  // have closed under its own firing frequency at the top end.
-  return Math.max(firingHz(rpm, voice.cylinders) * 1.6, Math.min(voice.ceiling, open));
+ *  This is where an engine's weight lives, and building the spectrum
+ *  upward from the firing rate instead of downward from here is why
+ *  four earlier versions had no bass at all. */
+export function halfOrderHz(rpm, cylinders = 6) {
+  return rpm / 120;
+}
+
+/** Where the lowpass sits, in Hz. */
+export function cutoffHz(rpm, throttle, voice) {
+  const open = 380 + rpm * 0.16 + throttle * 1800;
+  return Math.max(240, Math.min(voice.ceiling, open));
 }
 
 /** How loud, 0..1. Idle is audible; nothing is ever full scale. */
-export function engineGain(rpm, throttle, voice = DEFAULT_VOICE) {
-  return Math.min(0.9, 0.22 + (rpm / voice.redline) * 0.34 + throttle * 0.3);
+export function engineGain(rpm, throttle, voice) {
+  return Math.min(0.9, 0.30 + (rpm / voice.redline) * 0.28 + throttle * 0.26);
 }
 
-// ── voices ───────────────────────────────────────────────────────────
-// Two engines, and the interesting thing is that swapping the cylinder
-// count alone would not make them sound different.
-//
-// A W16 does not rev where a Formula 1 V6 revs — call it 6 700 against
-// 15 000 — and firing frequency is (rpm/60) x (cylinders/2), so sixteen
-// cylinders at a quarter of the crank speed land at very nearly the
-// same pitch. Wire the demos' revs straight through with cylinders: 16
-// and you get an F1 note with the wrong label on it.
-//
-// What actually separates them is the rev range each one is asked to
-// cover, and the TIMBRE: a big low-revving engine carries most of its
-// energy in the low orders — quarter and half of the firing frequency,
-// the rumble you feel — while the F1 unit is thin and bright and its
-// energy is all in the harmonics above f0. So each voice brings its own
-// rev range, its own partials, and its own filter ceiling.
 export const VOICES = {
   v6: {
     id: 'v6',
@@ -103,106 +92,20 @@ export const VOICES = {
     cylinders: 6,
     idle: 4000,
     redline: 15000,
-    // Was 6200, which rolled off the harmonics that make this engine
-    // sound like this engine: at 12 600 rpm the sixth order is 3.8 kHz
-    // and it was being filtered away.
-    // 7.4 kHz, not 9.6: the top orders were being heard on their own,
-    // with nothing under them, which is most of what "electric" means.
-    // 5.2 kHz, down from 7.4. The top orders were being heard on their
-    // own and that is most of what "too high pitched" meant.
-    ceiling: 5200,
-    trim: 1.0,
-    q: 1.1,
-    growl: { ratio: 1, depth: 200 },
-    pulse: { sharp: 3, depth: 0.52 },
-    noise: 0.06,
-    // Was centred near 4.7 kHz at speed. That is not a turbo, that is a
-    // hiss sitting on top of the note.
-    noiseHz: [900, 0.10],
-    shelf: { hz: 175, gain: 8 },
-    // Pitch is not only frequency. What you hear as the pitch of a
-    // complex note is the partial carrying the most energy, and the
-    // strongest term here used to be the fundamental with a heavy
-    // half-order under it — which is a heavy, low reading of a V6.
-    // The second harmonic is the loudest term now, so the perceived
-    // pitch sits an octave up, and the half-order is nearly gone. That
-    // is the difference between a growl and a scream, and a Formula 1
-    // V6 screams.
-    // The FUNDAMENTAL is loudest again. Making the second harmonic
-    // dominant put the perceived pitch an octave up, which is exactly
-    // the complaint; the sixth order is gone entirely.
-    partials: [
-      { ratio: 0.25, gain: 0.55, type: 'sawtooth', detune: -16 },
-      { ratio: 0.5, gain: 0.85, type: 'sawtooth', detune: -6 },
-      { ratio: 1, gain: 1, type: 'sawtooth', detune: 0 },
-      { ratio: 2, gain: 0.42, type: 'sawtooth', detune: 7 },
-      { ratio: 3, gain: 0.2, type: 'sawtooth', detune: -11 },
-      { ratio: 4, gain: 0.1, type: 'square', detune: 9 },
-    ],
+    ceiling: 4200,
+    trim: 0.26,
+    // Layer gains. The sub is the loudest thing in the engine, which is
+    // the opposite of every earlier version.
+    sub: 1.0,
+    body: 0.82,
+    buzz: 0.26,
+    roar: 0.62,
+    pulse: { sharp: 3, depth: 0.5 },
+    // [Hz, Q, gain] — an exhaust and a body shell, ringing where they
+    // ring regardless of what the engine is doing.
+    formants: [[140, 3.0, 1.0], [330, 2.4, 0.7], [720, 1.8, 0.35]],
+    shelf: { hz: 180, gain: 9 },
   },
-  // The first cut of this sounded like an electric motor, and the reason
-  // is worth keeping written down. Its loudest partial was at 0.5 — HALF
-  // the firing frequency — as a clean sawtooth under a 3 kHz lowpass.
-  // That is a synth bass patch, near enough exactly. A combustion engine
-  // is a series of discrete bangs, and three things were missing:
-  //
-  //  - the firing rate itself has to dominate. It is the pulse you hear;
-  //    burying it under a sub-octave drone removes the combustion.
-  //  - the spectrum has to be dense and slightly INHARMONIC. Four clean
-  //    integer partials is a chord, not an engine, so there is a 1.5
-  //    order in here now and much wider detune spread.
-  //  - the filter has to move with the pulses. A static lowpass over a
-  //    steady tone is what a synthesiser sounds like; sweeping the
-  //    cutoff at the crank-cycle rate is the chug of an engine, and it
-  //    throws sidebands that no amount of extra partials would give.
-  w16: {
-    id: 'w16',
-    name: 'W16 quad-turbo',
-    note: 'NOT a Formula 1 engine — a road-car layout, here so you can hear what '
-      + 'sixteen cylinders and a 6 700 rpm limit do to the same rev sweep.',
-    cylinders: 16,
-    idle: 900,
-    redline: 6700,
-    // Back down from 5200. The last pass fixed this voice sounding
-    // electric and then overshot into pitchy, and the ceiling was most
-    // of it — 5.2 kHz let through harmonics a sixteen-cylinder engine
-    // has no business being heard through.
-    ceiling: 3200,
-    trim: 0.7,
-    q: 2.6,
-    growl: { ratio: 0.5, depth: 700 },
-    pulse: { sharp: 4, depth: 0.62 },
-    // Big turbos are low, breathy noise, not hiss. This band was
-    // centred near 1.7 kHz at speed, which is a hiss.
-    noise: 0.16,
-    noiseHz: [280, 0.1],
-    // A low shelf under the whole voice. Partials alone could not do
-    // this: the weight of a big engine is energy below 200 Hz, and at
-    // this engine's revs the quarter-order is the only term down there.
-    shelf: { hz: 190, gain: 10 },
-    // The correction to the correction. What made this sound electric
-    // was SMOOTHNESS — a static filter over a sparse, clean spectrum —
-    // not the low fundamental, and moving the energy up to the firing
-    // rate to fix it took the weight out with the drone. The roughness
-    // now comes from the swept cutoff, the 1.5 order and the noise, so
-    // the energy can go back down where a W16's actually is: the
-    // half-order dominates again, with a quarter-order under it, and
-    // the firing rate stays loud enough to still hear as combustion.
-    partials: [
-      { ratio: 0.25, gain: 0.55, type: 'sawtooth', detune: -19 },
-      { ratio: 0.5, gain: 1, type: 'sawtooth', detune: -14 },
-      { ratio: 1, gain: 0.8, type: 'sawtooth', detune: 0 },
-      { ratio: 1.5, gain: 0.24, type: 'sawtooth', detune: 11 },
-      { ratio: 2, gain: 0.4, type: 'sawtooth', detune: -7 },
-      { ratio: 3, gain: 0.16, type: 'square', detune: 13 },
-    ],
-  },
-  // The 2006-2013 Formula 1 engine: 2.4 litres, eight cylinders, and
-  // twice the crank speed of a road car's redline. At 18 000 rpm it
-  // fires 1 200 times a second against the 2026 V6's 750, which is the
-  // whole reason people remember these as the ones that screamed.
-  // Naturally aspirated, so there is almost no turbo noise in it — what
-  // little there is here is induction, not boost.
   v8: {
     id: 'v8',
     name: 'V8 (2006-2013)',
@@ -211,41 +114,34 @@ export const VOICES = {
     cylinders: 8,
     idle: 5000,
     redline: 18000,
-    // This one measured with NOTHING below 250 Hz and a centroid above
-    // 5 kHz — the top of the note and none of the bottom. It is a
-    // high-revving engine and it should be the brightest of the four,
-    // but brightest is not the same as weightless. Ceiling down from
-    // 12 kHz, and a quarter- and half-order under it to stand on.
-    ceiling: 6000,
-    trim: 0.95,
-    q: 0.9,
-    growl: { ratio: 1, depth: 170 },
-    pulse: { sharp: 3, depth: 0.48 },
-    noise: 0.05,
-    noiseHz: [1100, 0.09],
-    shelf: { hz: 165, gain: 9 },
-    // Still the brightest voice of the four, because a flat-plane V8 at
-    // 18 000 rpm is — but the fundamental carries it, not the octave.
-    partials: [
-      { ratio: 0.25, gain: 0.45, type: 'sawtooth', detune: -15 },
-      { ratio: 0.5, gain: 0.75, type: 'sawtooth', detune: -5 },
-      { ratio: 1, gain: 1, type: 'sawtooth', detune: 0 },
-      { ratio: 2, gain: 0.55, type: 'sawtooth', detune: 6 },
-      { ratio: 3, gain: 0.3, type: 'sawtooth', detune: -9 },
-      { ratio: 4, gain: 0.14, type: 'square', detune: 11 },
-    ],
+    ceiling: 5400,
+    trim: 0.26,
+    sub: 0.92,
+    body: 0.9,
+    buzz: 0.34,
+    roar: 0.46,
+    pulse: { sharp: 3, depth: 0.46 },
+    formants: [[160, 2.8, 0.9], [380, 2.2, 0.85], [880, 1.7, 0.45]],
+    shelf: { hz: 175, gain: 8 },
   },
-  // A cross-plane road-car V8, and the reason it is a separate voice
-  // rather than a tweak to the one above is a real difference between
-  // the engines, not a preference.
-  //
-  // A Formula 1 V8 is FLAT-PLANE: each bank fires evenly, 180 degrees
-  // apart, and an even pulse train is a clean harmonic series — smooth,
-  // and high. A road V8 is CROSS-PLANE: the banks fire unevenly, so
-  // each one puts out a lumpy pulse train whose energy lands on half
-  // and three-quarter orders that a flat-plane engine simply does not
-  // produce. That unevenness IS the burble. It cannot be dialled into
-  // the F1 V8 without making that voice a lie about the engine.
+  w16: {
+    id: 'w16',
+    name: 'W16 quad-turbo',
+    note: 'NOT a Formula 1 engine — a road-car layout, here so you can hear what '
+      + 'sixteen cylinders and a 6 700 rpm limit do to the same rev sweep.',
+    cylinders: 16,
+    idle: 900,
+    redline: 6700,
+    ceiling: 2600,
+    trim: 0.22,
+    sub: 1.0,
+    body: 0.86,
+    buzz: 0.2,
+    roar: 0.72,
+    pulse: { sharp: 4, depth: 0.6 },
+    formants: [[75, 3.4, 1.0], [180, 2.6, 0.8], [430, 1.9, 0.3]],
+    shelf: { hz: 200, gain: 12 },
+  },
   v8road: {
     id: 'v8road',
     name: 'V8 road car',
@@ -255,23 +151,18 @@ export const VOICES = {
     cylinders: 8,
     idle: 700,
     redline: 7000,
-    ceiling: 2600,
-    trim: 0.72,
-    q: 2.4,
-    growl: { ratio: 0.5, depth: 820 },
-    pulse: { sharp: 4.5, depth: 0.66 },
-    noise: 0.12,
-    noiseHz: [220, 0.09],
-    shelf: { hz: 210, gain: 12 },
-    partials: [
-      { ratio: 0.25, gain: 0.5, type: 'sawtooth', detune: -21 },
-      { ratio: 0.5, gain: 1, type: 'sawtooth', detune: -13 },
-      { ratio: 0.75, gain: 0.3, type: 'sawtooth', detune: 15 },
-      { ratio: 1, gain: 0.72, type: 'sawtooth', detune: 0 },
-      { ratio: 1.5, gain: 0.34, type: 'sawtooth', detune: 9 },
-      { ratio: 2, gain: 0.4, type: 'sawtooth', detune: -8 },
-      { ratio: 3, gain: 0.14, type: 'square', detune: 12 },
-    ],
+    ceiling: 2200,
+    trim: 0.21,
+    sub: 1.0,
+    body: 0.8,
+    buzz: 0.22,
+    roar: 0.66,
+    // Sharper and deeper than the racing voices: at 700-7000 rpm the
+    // individual strokes are slow enough to hear as separate events,
+    // and that lumpiness is the burble.
+    pulse: { sharp: 5, depth: 0.66 },
+    formants: [[68, 3.6, 1.0], [165, 2.8, 0.85], [370, 2.0, 0.35]],
+    shelf: { hz: 210, gain: 13 },
   },
 };
 
@@ -281,8 +172,7 @@ export const DEFAULT_VOICE = VOICES.v6;
  *
  *  The sequences are written in Formula 1 revs because that is the car
  *  they describe. Playing them on an engine that stops at 6 700 means
- *  mapping the FRACTION of the sweep, not the number — otherwise a W16
- *  spends the whole demo three times past its limiter. */
+ *  mapping the FRACTION of the sweep, not the number. */
 export function voiceRpm(voice, demoRpm, from = VOICES.v6) {
   const span = from.redline - from.idle;
   const u = Math.max(0, Math.min(1, (demoRpm - from.idle) / span));
@@ -292,13 +182,13 @@ export function voiceRpm(voice, demoRpm, from = VOICES.v6) {
 /** The engine, wired up in a Web Audio graph.
  *
  *  Nothing is created until start(), which must be called from a user
- *  gesture — a browser will not let a page make noise on its own, and
- *  quite right too. */
+ *  gesture — a browser will not let a page make noise on its own. */
 export default class EngineAudio {
   constructor() {
     this.ctx = null;
     this.nodes = null;
     this.voice = DEFAULT_VOICE;
+    this.owned = true;
   }
 
   get running() {
@@ -307,167 +197,157 @@ export default class EngineAudio {
 
   /** Build the graph, or rebuild it if the voice has changed.
    *
-   *  A voice is a different oscillator stack, not a parameter, so
-   *  switching means tearing the old one down. Doing it here rather
-   *  than in the caller keeps "start with this voice" a single call. */
-  start(voice = DEFAULT_VOICE) {
-    if (this.ctx && this.voice.id === voice.id) {
+   *  `context` is for rendering offline: scripts/audio_preview.mjs drives
+   *  this exact graph through an OfflineAudioContext to produce a WAV,
+   *  which is the only way anything about how it SOUNDS can be checked
+   *  rather than asserted. */
+  start(voice = DEFAULT_VOICE, context = null) {
+    if (this.ctx && this.voice.id === voice.id && !context) {
       if (this.ctx.state === 'suspended') this.ctx.resume();
       return;
     }
     if (this.ctx) this.stop();
     this.voice = voice;
-    const Ctx = window.AudioContext ?? window.webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
-    // Six detuned sawtooths can line up in phase, and turning the level
-    // up without catching those peaks is how a synthesised engine turns
-    // into a buzz. The limiter is what makes the louder trim safe.
+
+    let ctx = context;
+    if (!ctx) {
+      const Ctx = window.AudioContext ?? window.webkitAudioContext;
+      if (!Ctx) return;
+      ctx = new Ctx();
+    }
+    this.owned = !context;
+
     const limiter = ctx.createDynamicsCompressor();
-    // -3 dB, not -8: at -8 the limiter was working most of the time and
-    // a louder trim would have been compressed straight back down to
-    // where it started. It catches peaks now instead of riding the note.
     limiter.threshold.value = -3;
     limiter.knee.value = 3;
     limiter.ratio.value = 20;
     limiter.attack.value = 0.003;
     limiter.release.value = 0.25;
     limiter.connect(ctx.destination);
+
     const master = ctx.createGain();
     master.gain.value = 0;
     master.connect(limiter);
 
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 600;
-    filter.Q.value = voice.q ?? 0.9;
     const shelf = ctx.createBiquadFilter();
     shelf.type = 'lowshelf';
-    shelf.frequency.value = voice.shelf?.hz ?? 150;
-    shelf.gain.value = voice.shelf?.gain ?? 0;
+    shelf.frequency.value = voice.shelf.hz;
+    shelf.gain.value = voice.shelf.gain;
+    shelf.connect(master);
 
-    // The combustion gate. Everything tonal passes through it, and it
-    // opens and shuts once per firing, so what leaves is a train of
-    // bangs rather than a held note. See pulseCurve() for why this and
-    // not more harmonics is what stops the whole thing sounding like a
-    // synthesiser.
+    // The ceiling. Low, because an engine heard from outside a car is a
+    // dull roar and not a buzz.
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.value = 900;
+    lowpass.Q.value = 0.7;
+    lowpass.connect(shelf);
+
+    // Fixed resonances, in parallel, plus a dry path. All formants and
+    // no dry signal is a vocoder; all dry and no formants is a synth.
+    const bus = ctx.createGain();
+    bus.gain.value = 1;
+    const dry = ctx.createGain();
+    dry.gain.value = 0.4;
+    bus.connect(dry).connect(lowpass);
+    for (const [hz, q, gain] of voice.formants) {
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = hz;
+      bp.Q.value = q;
+      const g = ctx.createGain();
+      g.gain.value = gain;
+      bus.connect(bp).connect(g).connect(lowpass);
+    }
+
+    // The combustion gate: everything passes through it, and it opens
+    // and shuts once per firing.
     const gate = ctx.createGain();
-    const pulse = voice.pulse ?? { sharp: 5, depth: 0.45 };
-    // The gain is driven entirely by its inputs: a constant floor so the
-    // engine never goes fully silent between strokes, plus the shaped
-    // pulse on top of it.
     gate.gain.value = 0;
-    const floor = ctx.createConstantSource();
-    floor.offset.value = 1 - pulse.depth;
-    floor.connect(gate.gain);
-    floor.start();
+    const floorSrc = ctx.createConstantSource();
+    floorSrc.offset.value = 1 - voice.pulse.depth;
+    floorSrc.connect(gate.gain);
+    floorSrc.start();
     const pulseOsc = ctx.createOscillator();
     pulseOsc.type = 'sawtooth';
     pulseOsc.frequency.value = 120;
     const shaper = ctx.createWaveShaper();
-    shaper.curve = pulseCurve(pulse.sharp);
+    shaper.curve = pulseCurve(voice.pulse.sharp);
     const pulseDepth = ctx.createGain();
-    pulseDepth.gain.value = pulse.depth;
+    pulseDepth.gain.value = voice.pulse.depth;
     pulseOsc.connect(shaper).connect(pulseDepth).connect(gate.gain);
     pulseOsc.start();
+    gate.connect(bus);
 
-    // ORDER MATTERS, and getting it wrong is measurable. With the gate
-    // after the filter, the pulse's own sidebands went out unfiltered —
-    // a sharp pulse is broadband, so gating at the firing rate sprayed
-    // high harmonics past the voice's ceiling and nearly doubled the
-    // W16's spectral centroid. Gating BEFORE the filter puts those
-    // sidebands under the same lowpass as everything else, which keeps
-    // the combustion texture without the brightness that came with it.
-    gate.connect(filter);
-    filter.connect(shelf).connect(master);
-
-    // The chug. An oscillator locked to the firing rate (or half of it)
-    // sweeping the cutoff, which is what a static filter over a steady
-    // tone cannot do and what made the first W16 sound like a motor
-    // rather than an engine. Modulating an audible-rate parameter also
-    // throws sidebands, and those are most of the roughness.
-    const growlOsc = ctx.createOscillator();
-    growlOsc.type = 'sawtooth';
-    growlOsc.frequency.value = 120;
-    const growlDepth = ctx.createGain();
-    growlDepth.gain.value = voice.growl?.depth ?? 0;
-    growlOsc.connect(growlDepth).connect(filter.frequency);
-    growlOsc.start();
-
-    const oscillators = voice.partials.map((p) => {
+    // Sources. Sine and triangle, not sawtooths, and NOT detuned: the
+    // detuning is what made every earlier version a supersaw.
+    const layer = (type, gain) => {
       const osc = ctx.createOscillator();
-      osc.type = p.type;
-      osc.detune.value = p.detune;
-      const gain = ctx.createGain();
-      gain.gain.value = p.gain * 0.18;
-      osc.connect(gain).connect(gate);
+      osc.type = type;
+      osc.frequency.value = 100;
+      const g = ctx.createGain();
+      g.gain.value = gain * 0.34;
+      osc.connect(g).connect(gate);
       osc.start();
-      return { osc, ratio: p.ratio };
-    });
+      return osc;
+    };
+    const subOsc = layer('sine', voice.sub);
+    const bodyOsc = layer('triangle', voice.body);
+    const buzzOsc = layer('sawtooth', voice.buzz);
 
-    // Turbo and induction: two seconds of white noise on a loop, held
-    // in a narrow band that climbs with the revs. It is what fills the
-    // gap between the harmonics, and without it the stack above sounds
-    // like a synthesiser playing a chord.
-    const frames = ctx.sampleRate * 2;
+    // Exhaust roar: two seconds of noise on a loop, gated with the rest.
+    const frames = Math.floor(ctx.sampleRate * 2);
     const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let i = 0; i < frames; i += 1) data[i] = Math.random() * 2 - 1;
+    // Brown-ish noise: integrated white, which has far more low-frequency
+    // energy than white and is what a exhaust actually sounds like.
+    let last = 0;
+    for (let i = 0; i < frames; i += 1) {
+      last = (last + 0.035 * (Math.random() * 2 - 1)) / 1.02;
+      data[i] = last * 12;
+    }
     const noise = ctx.createBufferSource();
     noise.buffer = buffer;
     noise.loop = true;
-    const band = ctx.createBiquadFilter();
-    band.type = 'bandpass';
-    band.frequency.value = voice.noiseHz[0] + 800;
-    band.Q.value = 7;
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.value = voice.noise;
-    // Induction noise pulses with the engine too, so it goes through the
-    // gate rather than around it.
-    noise.connect(band).connect(noiseGain).connect(gate);
+    const roar = ctx.createGain();
+    roar.gain.value = voice.roar * 0.5;
+    noise.connect(roar).connect(gate);
     noise.start();
 
-    // A gate that is shut most of the cycle throws away average level.
-    // mean((1-x)^k) over one cycle is 1/(k+1), so this is exactly what
-    // the gating costs and exactly what to give back.
-    this.pulseMean = (1 - pulse.depth) + pulse.depth / (pulse.sharp + 1);
+    // A gate shut most of the cycle throws away average level, and
+    // mean((1-x)^k) over a cycle is 1/(k+1) — exactly what to give back.
+    this.pulseMean = (1 - voice.pulse.depth) + voice.pulse.depth / (voice.pulse.sharp + 1);
     this.ctx = ctx;
-    this.nodes = { master, filter, oscillators, noise, band, noiseGain, growlOsc, pulseOsc };
+    this.nodes = { master, lowpass, subOsc, bodyOsc, buzzOsc, pulseOsc };
   }
 
-  /** Point the whole graph at one operating point.
-   *
-   *  setTargetAtTime, not setValueAtTime: stepping a frequency once per
-   *  animation frame clicks audibly, and a short time constant turns
-   *  sixty steps a second into a slide. */
-  set(rpm, throttle) {
+  /** Point the whole graph at one operating point. */
+  set(rpm, throttle, when = null) {
     if (!this.ctx) return;
-    const { master, filter, oscillators, band, growlOsc, pulseOsc } = this.nodes;
-    const now = this.ctx.currentTime;
-    // The sequences are written in Formula 1 revs; a voice that stops at
-    // 6 700 gets the same FRACTION of its own sweep.
+    const { master, lowpass, subOsc, bodyOsc, buzzOsc, pulseOsc } = this.nodes;
+    const now = when ?? this.ctx.currentTime;
     const own = voiceRpm(this.voice, rpm);
     const f0 = firingHz(own, this.voice.cylinders);
-    for (const { osc, ratio } of oscillators) {
-      osc.frequency.setTargetAtTime(Math.max(18, f0 * ratio), now, 0.035);
-    }
-    filter.frequency.setTargetAtTime(cutoffHz(own, throttle, this.voice), now, 0.05);
-    growlOsc.frequency.setTargetAtTime(
-      Math.max(8, f0 * (this.voice.growl?.ratio ?? 1)), now, 0.035,
-    );
-    // The gate fires at the combustion rate itself, not a harmonic of it.
-    pulseOsc.frequency.setTargetAtTime(Math.max(8, f0), now, 0.03);
-    const [base, slope] = this.voice.noiseHz;
-    band.frequency.setTargetAtTime(base + own * slope, now, 0.06);
-    master.gain.setTargetAtTime(
+    const half = halfOrderHz(own);
+    const ramp = (param, value, tau = 0.04) => {
+      if (when == null) param.setTargetAtTime(value, now, tau);
+      else param.linearRampToValueAtTime(value, now);
+    };
+    ramp(subOsc.frequency, Math.max(18, half));
+    ramp(bodyOsc.frequency, Math.max(24, half * 2));
+    ramp(buzzOsc.frequency, Math.max(30, f0));
+    ramp(pulseOsc.frequency, Math.max(8, f0), 0.03);
+    ramp(lowpass.frequency, cutoffHz(own, throttle, this.voice), 0.06);
+    ramp(
+      master.gain,
       (engineGain(own, throttle, this.voice) * this.voice.trim) / this.pulseMean,
-      now, 0.05,
+      0.05,
     );
   }
 
   /** Fade out and tear the graph down. */
   stop() {
-    if (!this.ctx) return;
+    if (!this.ctx || !this.owned) { this.ctx = null; this.nodes = null; return; }
     const { master } = this.nodes;
     const ctx = this.ctx;
     master.gain.setTargetAtTime(0, ctx.currentTime, 0.06);

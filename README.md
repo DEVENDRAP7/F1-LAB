@@ -113,9 +113,14 @@ load time rather than written into the copy.
   set, a shift point, or what a deployment mode is worth, so the speeds and
   revs are a plausible shape rather than a measurement, and nothing else on
   the site derives anything from them. The engine note is **synthesised in
-  the browser** (`src/lib/engineAudio.js`) — an oscillator stack gated at the
-  engine's own combustion rate, which is what makes it a series of bangs
-  rather than a held tone — a real
+  the browser** (`src/lib/engineAudio.js`): a sine at the half engine order
+  carrying the weight, a triangle at the crank rate carrying the pitch, a
+  quiet sawtooth at the firing rate for edge, brown noise for exhaust roar,
+  all gated at the combustion rate and passed through fixed resonances that
+  do *not* move with revs. `npm run audio:preview` renders every voice to a
+  WAV offline, driving the shipped graph through an `OfflineAudioContext` —
+  which is the only way anything about how it *sounds* can be checked rather
+  than argued about — a real
   recording would be somebody else's copyright and would cost more on its
   own than this site's entire initial-load budget. Four voices are offered:
   the 2026 V6, the naturally aspirated V8 that ran to 2013, and — both

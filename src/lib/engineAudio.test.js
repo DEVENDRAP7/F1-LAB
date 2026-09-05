@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  VOICES, cutoffHz, engineGain, firingHz, pulseCurve, voiceRpm,
+  VOICES, cutoffHz, engineGain, firingHz, halfOrderHz, pulseCurve, voiceRpm,
 } from './engineAudio.js';
 
 describe('firingHz', () => {
@@ -12,48 +12,105 @@ describe('firingHz', () => {
     expect(firingHz(12000, 8)).toBe(800);
     expect(firingHz(0, 6)).toBe(0);
   });
+});
 
-  it('rises with revs', () => {
-    expect(firingHz(15000)).toBeGreaterThan(firingHz(4000));
+describe('halfOrderHz', () => {
+  it('is the crank at half speed, and does not depend on cylinder count', () => {
+    // This is where an engine's weight lives. Four earlier versions
+    // built the whole spectrum UPWARD from the firing rate — about
+    // 600 Hz at demo revs — so nothing significant existed below 150 Hz
+    // and there was no bass to be had at any setting.
+    expect(halfOrderHz(12000)).toBe(100);
+    expect(halfOrderHz(12600)).toBe(105);
+    expect(halfOrderHz(6000)).toBe(50);
+  });
+
+  it('sits far below the firing rate at every rev the demos use', () => {
+    for (const rpm of [4200, 9000, 12600, 14850]) {
+      expect(halfOrderHz(rpm)).toBeLessThan(firingHz(rpm, 6) / 4);
+      expect(halfOrderHz(rpm)).toBeLessThan(260);
+    }
   });
 });
 
-describe('cutoffHz', () => {
-  it('opens with throttle at the same revs', () => {
-    expect(cutoffHz(9000, 1)).toBeGreaterThan(cutoffHz(9000, 0));
-  });
-
-  it('stays above the fundamental it has to pass', () => {
-    // A cutoff under the firing frequency would silence the note it is
-    // supposed to be shaping.
-    for (let rpm = 3000; rpm <= 15000; rpm += 500) {
-      expect(cutoffHz(rpm, 0), `${rpm} rpm closed throttle`)
-        .toBeGreaterThan(firingHz(rpm));
-    }
-  });
-
-  it('is capped by the voice, so the top end cannot turn into a whistle', () => {
+describe('the voices', () => {
+  it('makes the half-order sub the loudest layer, or near it', () => {
+    // The bass has to be the biggest thing in the mix, not a garnish on
+    // top of a firing-rate buzz. That inversion is what "no bass at all"
+    // meant, and it survived four rounds of rebalancing harmonics.
     for (const voice of Object.values(VOICES)) {
-      // The floor that keeps the filter above the fundamental can lift
-      // it past the ceiling; short of that, the ceiling holds.
-      const capped = Math.max(firingHz(voice.redline, voice.cylinders) * 1.6, voice.ceiling);
-      expect(cutoffHz(voice.redline, 1, voice), voice.id).toBeLessThanOrEqual(capped);
+      expect(voice.sub, voice.id).toBeGreaterThanOrEqual(voice.body);
+      expect(voice.sub, voice.id).toBeGreaterThan(voice.buzz * 2);
     }
   });
-});
 
-describe('engineGain', () => {
-  it('is audible at idle and never full scale', () => {
-    expect(engineGain(4000, 0.1)).toBeGreaterThan(0.1);
-    expect(engineGain(15000, 1)).toBeLessThanOrEqual(0.9);
+  it('keeps the firing buzz quiet', () => {
+    // A sawtooth at the firing rate is the edge of the sound, not the
+    // sound. Loud, and detuned against copies of itself, it is a
+    // supersaw — which is exactly what four earlier versions were.
+    for (const voice of Object.values(VOICES)) {
+      expect(voice.buzz, voice.id).toBeLessThan(0.4);
+    }
+  });
+
+  it('gives every voice fixed resonances that do not move with revs', () => {
+    // The part that makes a sound belong to a physical object: an
+    // exhaust and a body shell ring at their own frequencies whatever
+    // the engine does. A spectrum where every feature slides together
+    // is the definition of synthetic.
+    for (const voice of Object.values(VOICES)) {
+      expect(voice.formants.length, voice.id).toBeGreaterThanOrEqual(2);
+      const [lowest] = voice.formants[0];
+      expect(lowest, `${voice.id} lowest resonance`).toBeLessThan(220);
+      let previous = 0;
+      for (const [hz, q, gain] of voice.formants) {
+        expect(hz, voice.id).toBeGreaterThan(previous);
+        expect(q, voice.id).toBeGreaterThan(1);
+        expect(gain, voice.id).toBeGreaterThan(0);
+        previous = hz;
+      }
+    }
+  });
+
+  it('gates every voice at its combustion rate', () => {
+    for (const voice of Object.values(VOICES)) {
+      expect(voice.pulse.depth, voice.id).toBeGreaterThan(0.3);
+      expect(voice.pulse.sharp, voice.id).toBeGreaterThan(1);
+    }
+  });
+
+  it('keeps every ceiling low enough to be a roar and not a buzz', () => {
+    for (const voice of Object.values(VOICES)) {
+      expect(voice.ceiling, voice.id).toBeLessThanOrEqual(5400);
+    }
+    // The road engines stay darker than the racing ones.
+    expect(VOICES.w16.ceiling).toBeLessThan(VOICES.v6.ceiling);
+    expect(VOICES.v8road.ceiling).toBeLessThan(VOICES.v8.ceiling);
+  });
+
+  it('gives every voice real low-shelf weight', () => {
+    for (const voice of Object.values(VOICES)) {
+      expect(voice.shelf.gain, voice.id).toBeGreaterThan(6);
+      expect(voice.shelf.hz, voice.id).toBeLessThanOrEqual(220);
+    }
+  });
+
+  it('leaves headroom: no voice is trimmed to clip', () => {
+    // Rendered offline, the first pass at these levels peaked at 1.0 on
+    // three of four voices and sat in the limiter the whole run.
+    for (const voice of Object.values(VOICES)) {
+      expect(voice.trim, voice.id).toBeLessThan(0.5);
+    }
+  });
+
+  it('says out loud that the W16 and the road V8 are not Formula 1 engines', () => {
+    expect(VOICES.w16.note).toMatch(/not a formula 1 engine/i);
+    expect(VOICES.v8road.note).toMatch(/not a formula 1 engine/i);
   });
 });
 
-describe('voices', () => {
+describe('voiceRpm', () => {
   it('maps a demo rev sweep onto each engine’s own range', () => {
-    // The sequences are written in Formula 1 revs. Handing 12 600 to an
-    // engine that stops at 6 700 has to land inside its range, not three
-    // times past its limiter.
     for (const voice of Object.values(VOICES)) {
       expect(voiceRpm(voice, VOICES.v6.idle)).toBeCloseTo(voice.idle, 5);
       expect(voiceRpm(voice, VOICES.v6.redline)).toBeCloseTo(voice.redline, 5);
@@ -65,197 +122,55 @@ describe('voices', () => {
     }
   });
 
-  it('never lets a voice’s filter close under its own fundamental', () => {
-    // The W16 has a 3 000 Hz ceiling and sixteen cylinders; a flat cap
-    // would have silenced the note it is supposed to be shaping.
-    for (const voice of Object.values(VOICES)) {
-      for (let rpm = voice.idle; rpm <= voice.redline; rpm += 200) {
-        expect(cutoffHz(rpm, 0, voice), `${voice.id} @${rpm}`)
-          .toBeGreaterThan(firingHz(rpm, voice.cylinders));
-      }
-    }
-  });
-
-  it('keeps the road engines’ spectral weight lower than the racing ones', () => {
-    // Compared by centre of mass rather than by summing the bands
-    // either side of the fundamental: every voice carries sub-octave
-    // weight now, and the W16 also carries an inharmonic 1.5 order for
-    // roughness, which counted as "high" and made the old comparison
-    // meaningless.
-    const centre = (v) => v.partials.reduce((a, p) => a + p.ratio * p.gain, 0)
-      / v.partials.reduce((a, p) => a + p.gain, 0);
-    expect(centre(VOICES.w16)).toBeLessThan(centre(VOICES.v6));
-    expect(centre(VOICES.v8road)).toBeLessThan(centre(VOICES.v8));
-  });
-
-  it('says out loud that the W16 is not a Formula 1 engine', () => {
-    expect(VOICES.w16.note).toMatch(/not a formula 1 engine/i);
-  });
-});
-
-describe('voice character', () => {
-  const loudest = (v) => v.partials.reduce((a, p) => (p.gain > a.gain ? p : a));
-
-  it('never lets a partial above the fundamental be the loudest', () => {
-    // Perceived pitch follows the strongest partial, so putting the
-    // second harmonic on top raises the note an octave. That was done
-    // deliberately once and it is what "too high pitched" meant: an
-    // engine's fundamental is its firing rate, and it should be the
-    // loudest thing in the sound.
-    for (const voice of Object.values(VOICES)) {
-      expect(loudest(voice).ratio, voice.id).toBeLessThanOrEqual(1);
-    }
-  });
-
-  it('gates every voice at its combustion rate', () => {
-    // The piece that was missing through three earlier attempts. A stack
-    // of continuous oscillators through a filter is a synthesiser pad by
-    // definition; an engine is discrete bangs that merge into a tone. No
-    // voice is allowed to be ungated.
-    for (const voice of Object.values(VOICES)) {
-      expect(voice.pulse?.depth, voice.id).toBeGreaterThan(0.3);
-      expect(voice.pulse.sharp, voice.id).toBeGreaterThan(1);
-    }
-  });
-
-  it('shapes a pulse that starts open and decays shut', () => {
-    const curve = pulseCurve(5, 512);
-    expect(curve[0]).toBeCloseTo(1, 6);
-    expect(curve[curve.length - 1]).toBeCloseTo(0, 6);
-    for (let i = 1; i < curve.length; i += 1) {
-      expect(curve[i]).toBeLessThanOrEqual(curve[i - 1]);
-    }
-    // Sharper means a shorter bang: more of the cycle spent near zero.
-    const soft = pulseCurve(2, 512);
-    const sharp = pulseCurve(9, 512);
-    const area = (c) => c.reduce((a, v) => a + v, 0);
-    expect(area(sharp)).toBeLessThan(area(soft));
-  });
-
-  it('keeps the firing rate audible on the W16 without making it dominant', () => {
-    // Two corrections live in this one assertion.
-    //
-    // The first cut sounded electric, and I read that as "the sub-octave
-    // is too strong" and moved the energy up to the firing rate. That
-    // was the wrong diagnosis: what made it a synth was SMOOTHNESS — a
-    // static filter over a sparse clean spectrum — and moving the
-    // energy up took the weight out with the drone, which is the
-    // opposite complaint.
-    //
-    // Roughness now comes from the swept cutoff, the inharmonic order
-    // and the noise, so the weight is allowed back down low. The
-    // requirement is not that the firing rate dominates, only that it
-    // stays loud enough to hear as combustion under the drone.
-    const w16 = VOICES.w16;
-    const fire = w16.partials.find((p) => p.ratio === 1).gain;
-    expect(loudest(w16).ratio).toBeLessThan(1);
-    expect(fire / loudest(w16).gain).toBeGreaterThanOrEqual(0.6);
-  });
-
-  it('gives the W16 weight below 200 Hz, which partials alone cannot', () => {
-    // At this engine's revs the quarter-order is the only partial down
-    // in the region a big engine is felt in, so the shelf does the rest.
-    expect(VOICES.w16.shelf.gain).toBeGreaterThan(6);
-    expect(VOICES.w16.shelf.hz).toBeLessThanOrEqual(200);
-    expect(Math.min(...VOICES.w16.partials.map((p) => p.ratio))).toBeLessThanOrEqual(0.25);
-  });
-
-  it('keeps the road engines darker than the racing ones', () => {
-    // They are low-revving; if either filter ever opens further than a
-    // racing engine's, something has gone wrong again.
-    for (const road of [VOICES.w16, VOICES.v8road]) {
-      expect(road.ceiling, road.id).toBeLessThan(VOICES.v6.ceiling);
-      expect(road.ceiling, road.id).toBeLessThan(VOICES.v8.ceiling);
-      expect(road.noiseHz[0], road.id).toBeLessThan(VOICES.v6.noiseHz[0]);
-    }
-  });
-
-  it('gives EVERY voice weight below 200 Hz', () => {
-    // This is the defect that produced "why is each sound high pitched".
-    // Measured off the real graph, the V6 and the V8 both had exactly
-    // zero energy under 250 Hz: their lowest partial was the half-order,
-    // which at these revs is already above the region an engine is felt
-    // in. Nothing could be rebalanced because there was nothing there.
-    // So every voice now carries a sub-fundamental partial and a low
-    // shelf, and neither is optional.
-    for (const voice of Object.values(VOICES)) {
-      const lowest = Math.min(...voice.partials.map((p) => p.ratio));
-      expect(lowest, `${voice.id} lowest partial`).toBeLessThanOrEqual(0.25);
-      expect(voice.shelf?.gain, `${voice.id} shelf`).toBeGreaterThan(0);
-      expect(voice.shelf.hz, `${voice.id} shelf`).toBeLessThanOrEqual(220);
-    }
-  });
-
-  it('burbles on the cross-plane V8 and not on the flat-plane one', () => {
-    // A road V8's banks fire unevenly, which lands energy on half and
-    // three-quarter orders. A Formula 1 V8 fires evenly and makes a
-    // clean harmonic series — no fractional orders at all. Putting them
-    // on the racing voice would be a lie about the engine, so the test
-    // holds both halves of the distinction.
-    // Above the fundamental and not a whole order: 0.75 and 1.5. The
-    // 0.25 sub-bass every voice now carries is NOT this — it is weight,
-    // and counting it made this test claim the racing V8 burbles.
-    const fractional = (v) => v.partials
-      .filter((p) => p.ratio > 0.5 && p.ratio % 1 !== 0).length;
-    expect(fractional(VOICES.v8road)).toBeGreaterThan(0);
-    expect(fractional(VOICES.v8)).toBe(0);
-    expect(VOICES.v8road.redline).toBeLessThan(VOICES.v8.redline / 2);
-  });
-
-  it('gives the W16 inharmonic content, because a chord is not an engine', () => {
-    const inharmonic = (v) => v.partials.some((p) => p.ratio % 1 !== 0 && p.ratio > 1);
-    expect(inharmonic(VOICES.w16)).toBe(true);
-  });
-
-  it('sweeps every voice’s filter at its own firing rate', () => {
-    // A static lowpass over a steady tone is a synthesiser. The chug
-    // comes from the cutoff moving with the power pulses, so no voice
-    // is allowed to have no growl at all.
-    for (const voice of Object.values(VOICES)) {
-      expect(voice.growl?.depth, voice.id).toBeGreaterThan(0);
-      expect(voice.growl.ratio, voice.id).toBeGreaterThan(0);
-    }
-    // The big low-revving engine is the one you feel each pulse from.
-    expect(VOICES.w16.growl.depth).toBeGreaterThan(VOICES.v6.growl.depth);
-    expect(VOICES.w16.growl.depth).toBeGreaterThan(VOICES.v8.growl.depth);
-  });
-
   it('screams higher on the V8 than on the V6, at the same point in a lap', () => {
-    // Eight cylinders to 18 000 against six to 15 000. This is the
-    // whole reason people remember the V8s as the loud ones, and it has
-    // to survive the rev mapping rather than only being true on paper.
     for (const demoRpm of [6000, 9000, 12600]) {
       const v8 = firingHz(voiceRpm(VOICES.v8, demoRpm), VOICES.v8.cylinders);
       const v6 = firingHz(voiceRpm(VOICES.v6, demoRpm), VOICES.v6.cylinders);
       expect(v8, `@${demoRpm}`).toBeGreaterThan(v6 * 1.3);
     }
   });
+});
 
-  it('opens each filter far enough to pass its own top order', () => {
-    // A partial above the cutoff is a partial you cannot hear.
+describe('cutoffHz', () => {
+  it('opens with throttle at the same revs, and is capped by the voice', () => {
+    expect(cutoffHz(9000, 1, VOICES.v6)).toBeGreaterThan(cutoffHz(9000, 0, VOICES.v6));
     for (const voice of Object.values(VOICES)) {
-      const top = Math.max(...voice.partials.map((p) => p.ratio));
-      const rpm = voice.redline * 0.85;
-      expect(cutoffHz(rpm, 1, voice), voice.id)
-        .toBeGreaterThan(firingHz(rpm, voice.cylinders) * top * 0.75);
+      expect(cutoffHz(voice.redline, 1, voice), voice.id)
+        .toBeLessThanOrEqual(voice.ceiling);
     }
   });
 
-  it('is loudest on the racing engines', () => {
-    expect(VOICES.v6.trim).toBeGreaterThan(VOICES.w16.trim);
-    expect(VOICES.v8.trim).toBeGreaterThan(VOICES.w16.trim);
+  it('never closes below the half-order it has to pass', () => {
+    // The sub is the loudest layer; filtering it out would take the bass
+    // with it and put this back where it started.
+    for (const voice of Object.values(VOICES)) {
+      for (let rpm = voice.idle; rpm <= voice.redline; rpm += 200) {
+        expect(cutoffHz(rpm, 0, voice), `${voice.id} @${rpm}`)
+          .toBeGreaterThan(halfOrderHz(rpm) * 2);
+      }
+    }
   });
 });
 
-describe('level', () => {
-  it('cannot drive the graph into clipping, even with every partial in phase', () => {
-    // The worst case is every detuned oscillator lining up. A limiter
-    // catches what gets past this, but the arithmetic should not need
-    // it: oscillator gains are scaled by 0.18 in the graph.
-    for (const voice of Object.values(VOICES)) {
-      const sum = voice.partials.reduce((a, p) => a + p.gain, 0) * 0.18 + voice.noise;
-      const peak = sum * engineGain(voice.redline, 1, voice) * voice.trim;
-      expect(peak, voice.id).toBeLessThan(1);
+describe('engineGain', () => {
+  it('is audible at idle and never full scale', () => {
+    expect(engineGain(4000, 0.1, VOICES.v6)).toBeGreaterThan(0.1);
+    expect(engineGain(15000, 1, VOICES.v6)).toBeLessThanOrEqual(0.9);
+  });
+});
+
+describe('pulseCurve', () => {
+  it('starts open and decays shut', () => {
+    const curve = pulseCurve(4, 512);
+    expect(curve[0]).toBeCloseTo(1, 6);
+    expect(curve[curve.length - 1]).toBeCloseTo(0, 6);
+    for (let i = 1; i < curve.length; i += 1) {
+      expect(curve[i]).toBeLessThanOrEqual(curve[i - 1]);
     }
+  });
+
+  it('spends more of the cycle shut the sharper it is', () => {
+    const area = (c) => c.reduce((a, v) => a + v, 0);
+    expect(area(pulseCurve(9, 512))).toBeLessThan(area(pulseCurve(2, 512)));
   });
 });

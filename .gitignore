@@ -37,3 +37,4 @@ pipeline/.cache/
 scripts/model/.preview.html
 scripts/model/preview/
 scripts/model/donor/scene.bin
+scripts/audio/*.wav
