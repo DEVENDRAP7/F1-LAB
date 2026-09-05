@@ -145,12 +145,22 @@ for (const [route, expected] of [
 ]) {
   await deep.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
   await deep.waitForTimeout(1400);
-  const selects = await deep.$$eval('select', (nodes) => nodes.map((n) => n.value));
-  if (expected.round && selects[0] !== expected.round) {
-    problems.push(`deep ${route}: round select is ${selects[0]}, expected ${expected.round}`);
+  // Find each control by the label it sits in, not by its position in the
+  // document. Reading selects[0] and selects[1] worked until the steering
+  // wheel above the pickers on /aero-rig grew an engine-voice select, at
+  // which point this reported the round picker as "v6" — a broken check,
+  // not a broken page, and the kind that gets ignored once it cries wolf.
+  const selects = await deep.$$eval('label', (nodes) => Object.fromEntries(
+    nodes.flatMap((n) => {
+      const el = n.querySelector('select');
+      return el ? [[n.textContent.trim().split(/\s/)[0].toLowerCase(), el.value]] : [];
+    }),
+  ));
+  if (expected.round && selects.round !== expected.round) {
+    problems.push(`deep ${route}: round select is ${selects.round}, expected ${expected.round}`);
   }
-  if (expected.session && selects[1] !== expected.session) {
-    problems.push(`deep ${route}: session select is ${selects[1]}, expected ${expected.session}`);
+  if (expected.session && selects.session !== expected.session) {
+    problems.push(`deep ${route}: session select is ${selects.session}, expected ${expected.session}`);
   }
   const hash = await deep.evaluate(() => window.location.hash);
   if (expected.round && !hash.includes(`round=${expected.round}`)) {

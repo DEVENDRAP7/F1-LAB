@@ -17,6 +17,7 @@ const PORT = 4501;
 const TYPES = {
   '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
   '.glb': 'model/gltf-binary', '.json': 'application/json',
+  '.wasm': 'application/wasm',
 };
 const server = http.createServer((req, res) => {
   const p = decodeURIComponent(req.url.split('?')[0]);
@@ -38,6 +39,7 @@ const page = `<!doctype html><html><head><meta charset="utf-8"><style>
 }}</script></head><body><script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 const W = 1200, H = 760;
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -75,9 +77,20 @@ const VIEWS = {
 camera.position.set(...VIEWS[view]);
 camera.lookAt(0, 0.42, 0);
 
+// The shipped model is Draco-compressed, so the loader needs the
+// decoder or it refuses the file outright.
+const draco = new DRACOLoader();
+draco.setDecoderPath('/node_modules/three/examples/jsm/libs/draco/');
 const loader = new GLTFLoader();
+loader.setDRACOLoader(draco);
 loader.load(MODEL, (gltf) => {
   scene.add(gltf.scene);
+  // ?only=<part> hides everything else, which is the only practical way
+  // to see what a single segmentation bucket actually caught.
+  const only = params.get('only');
+  if (only) gltf.scene.traverse((o) => {
+    if (o.isMesh) o.visible = o.name.replace(/[._]\\d+$/, '') === only;
+  });
   const names = [];
   gltf.scene.traverse((o) => { if (o.isMesh) names.push(o.name); });
   window.__names = names;
@@ -101,7 +114,8 @@ for (const view of ['q', 'side', 'front', 'top']) {
   const errs = [];
   tab.on('pageerror', (e) => errs.push(e.message));
   const model = process.argv[2] ? `/public/models/2026/${process.argv[2]}` : '/public/models/2026/car.glb';
-  await tab.goto(`http://localhost:${PORT}/scripts/model/.preview.html?view=${view}&model=${model}`);
+  const only = process.argv[4] ? `&only=${process.argv[4]}` : '';
+  await tab.goto(`http://localhost:${PORT}/scripts/model/.preview.html?view=${view}&model=${model}${only}`);
   await tab.waitForFunction('window.__ready === true', { timeout: 60000 });
   const err = await tab.evaluate(() => window.__error);
   if (err) { console.error('load error:', err); process.exitCode = 1; }

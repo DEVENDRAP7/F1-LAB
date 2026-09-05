@@ -94,7 +94,7 @@ export const PARTS = {
   suspension: {
     name: 'Suspension',
     text: 'Aerodynamic as well as mechanical: the arms sit in the flow and are shaped for '
-      + 'it. Ride height is where floor performance is won, and none of it is published. Wishbones share their space with the wheels and the bodywork, so this part is only approximately separated from them.',
+      + 'it. Ride height is where floor performance is won, and none of it is published. What is highlighted is the members in the gap between the tub side and the wheel at each axle; the ends buried inside either are part of those meshes and cannot be pulled back out.',
     verdict: ['r', 'nothing published to measure it with'],
   },
 };

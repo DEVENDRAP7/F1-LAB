@@ -35,6 +35,7 @@ const browser = {
   performance: 'readonly',
   getComputedStyle: 'readonly',
   structuredClone: 'readonly',
+  OfflineAudioContext: 'readonly',
 };
 
 const node = {

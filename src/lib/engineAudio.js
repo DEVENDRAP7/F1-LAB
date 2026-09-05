@@ -69,7 +69,7 @@ export function firingHz(rpm, cylinders = 6) {
  *  This is where an engine's weight lives, and building the spectrum
  *  upward from the firing rate instead of downward from here is why
  *  four earlier versions had no bass at all. */
-export function halfOrderHz(rpm, cylinders = 6) {
+export function halfOrderHz(rpm) {
   return rpm / 120;
 }
 

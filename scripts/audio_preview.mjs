@@ -87,8 +87,6 @@ const rendered = await page.evaluate(async ({ sweep, port }) => {
       }
       return Math.sqrt(acc / pcm.length);
     };
-    // Spectrum of the loudest stretch, for the numbers.
-    const an = new OfflineAudioContext(1, 8192, rate);
     let rms = 0;
     for (let i = 0; i < pcm.length; i++) rms += pcm[i] * pcm[i];
     rms = Math.sqrt(rms / pcm.length);

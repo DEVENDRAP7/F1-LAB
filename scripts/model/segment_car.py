@@ -32,9 +32,10 @@ Two parts are approximations and are marked as such in the page copy:
              fixed mainplane, so the flap is taken as the upper-rear
              band of the front wing. It is close, not exact.
 
-  suspension Wishbones share their space with wheels and bodywork and
-             cannot be told apart by position alone. What is captured is
-             the members outboard of the body at each axle.
+  suspension Wishbones share their space with wheels and bodywork, so
+             what is captured is the members in the gap between the tub
+             side and the wheel at each axle station. Pushrod and
+             steering-arm ends buried inside either are not recoverable.
 """
 import json
 import math
@@ -162,13 +163,31 @@ def part_of(x, y, z):
     if 480 <= x <= 1520 and y > 620:
         return "halo"
 
-    # Sidepods: bodywork outboard of the survival cell.
-    if az > 330 and 420 <= x <= 3150:
-        return "sidepod"
-
-    # Suspension: members outboard of the body at either axle.
-    if az > 300:
+    # Suspension: wishbones and pushrods, in the gap between the body
+    # side and the wheel, at the TWO AXLE STATIONS and nowhere else.
+    #
+    # This used to be a fall-through — "anything outboard of 300 that
+    # nothing else claimed" — and it caught three things that are not
+    # suspension. Rendered on its own the bucket held the front and rear
+    # wishbones plus a barge board, a turning vane and a deflector
+    # halfway down the car.
+    #
+    # They came from a 30 mm sliver. The sidepod rule claimed |z| > 330
+    # and this one caught |z| > 300, so a three-centimetre band ran the
+    # entire length of the car with nothing else able to take it: 4 660
+    # vertices of it at x 800-1100 alone, which is sidepod flank. The
+    # sliver is closed below by moving the sidepod threshold to 300, and
+    # this rule is positive rather than a catch-all.
+    #
+    # Bounds measured off the donor: the wheels take |z| > 560, the tub
+    # side is around 260, and the members run y 150-560 at both axles.
+    if 250 < az < 580 and 150 < y < 560 and (-560 <= x <= 460 or 2700 <= x <= 3620):
         return "suspension"
+
+    # Sidepods: bodywork outboard of the survival cell. Tested AFTER
+    # suspension, because the rear wishbones sit inside this x range.
+    if az > 300 and 420 <= x <= 3150:
+        return "sidepod"
 
     # Everything left on the centreline. Ahead of the firewall that is
     # the nose and survival cell; behind it, it is the engine bay, and
