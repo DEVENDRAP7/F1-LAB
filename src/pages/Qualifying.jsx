@@ -24,6 +24,27 @@ const SEGMENTS = [
   { key: 'q3S', label: 'Q3' },
 ];
 
+/* The timing screen's own colour language, computed rather than assumed:
+ * purple is the fastest time set in that segment, green is a driver's
+ * own best of their three. Both come straight out of the published
+ * segment times — nothing here is fitted or inferred. */
+function segmentBests(results) {
+  const best = {};
+  for (const s of SEGMENTS) {
+    const times = results.map((r) => r[s.key]).filter((t) => typeof t === 'number');
+    if (times.length > 0) best[s.key] = Math.min(...times);
+  }
+  return best;
+}
+
+function timingClass(row, key, bests) {
+  const t = row[key];
+  if (typeof t !== 'number') return '';
+  if (bests[key] != null && t === bests[key]) return 'is-best';
+  const own = SEGMENTS.map((s) => row[s.key]).filter((v) => typeof v === 'number');
+  return own.length > 1 && t === Math.min(...own) ? 'is-personal' : '';
+}
+
 export default function Qualifying() {
   const [doc, setDoc] = useState({ status: 'loading', data: null });
   const [season, setSeason] = useState(null);
@@ -63,6 +84,8 @@ export default function Qualifying() {
     if (!doc.data || !round) return null;
     return doc.data.rounds.find((r) => String(r.round) === round) ?? null;
   }, [doc.data, round]);
+
+  const bests = useMemo(() => (grid ? segmentBests(grid.results) : {}), [grid]);
 
   if (doc.status === 'loading') {
     return <EmptyState title="Loading…" reason="Fetching public/data/2026/qualifying.json." />;
@@ -179,6 +202,11 @@ export default function Qualifying() {
             Every segment time the source carries. A blank is a session that driver set no
             time in, which is not a slow one.
           </p>
+          <p className="timing-key">
+            <span className="timing-chip is-best">purple</span> fastest in that segment ·{' '}
+            <span className="timing-chip is-personal">green</span> that driver&rsquo;s own
+            best of the three
+          </p>
         </div>
 
         <div className="controls-row">
@@ -220,7 +248,13 @@ export default function Qualifying() {
                     <td>{row.constructorName}</td>
                     {SEGMENTS.map((s) => (
                       <td key={s.key} className="tabular">
-                        {row[s.key] ? formatLapTime(row[s.key]) : '—'}
+                        {row[s.key] ? (
+                          <span className={`timing ${timingClass(row, s.key, bests)}`}>
+                            {formatLapTime(row[s.key])}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
                       </td>
                     ))}
                   </tr>

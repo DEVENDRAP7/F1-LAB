@@ -6,6 +6,7 @@ import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 import { formatDelta, formatLapTime } from '../lib/formatTime.js';
 import { Method } from '../components/Disclosure.jsx';
+import TrackFlag from '../components/TrackFlag.jsx';
 
 // M7 — Driver Error Review.
 //
@@ -144,17 +145,19 @@ export default function ErrorReview() {
       </div>
 
       {pastRounds.length > 0 && (
-        <label className="field">
-          Round{' '}
-          <select value={round} onChange={(e) => setRound(e.target.value)}>
-            <option value="">—</option>
-            {pastRounds.map((r) => (
-              <option key={r.round} value={r.round}>
-                {r.round} · {r.raceName}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="controls-row">
+          <label className="field">
+            Round{' '}
+            <select value={round} onChange={(e) => setRound(e.target.value)}>
+              <option value="">—</option>
+              {pastRounds.map((r) => (
+                <option key={r.round} value={r.round}>
+                  {r.round} · {r.raceName}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       )}
 
       {review.status === 'loading' && (
@@ -214,6 +217,7 @@ export default function ErrorReview() {
                     {noted.map((r, i) => (
                       <li key={`${r.lap}-${i}`}>
                         {r.lap ? <span className="mono">L{r.lap} </span> : null}
+                        {r.flag ? <TrackFlag flag={r.flag} swatchOnly /> : null}
                         {r.message}
                       </li>
                     ))}
@@ -234,6 +238,7 @@ export default function ErrorReview() {
                       {informational.map((r, i) => (
                         <li key={`${r.lap}-${i}`}>
                           {r.lap ? <span className="mono">L{r.lap} </span> : null}
+                          {r.flag ? <TrackFlag flag={r.flag} swatchOnly /> : null}
                           {r.message}
                         </li>
                       ))}
@@ -291,10 +296,11 @@ export default function ErrorReview() {
                                 <span className="legend-fullname">nothing</span>
                               ) : (
                                 f.trackFlags.map((entry, i) => (
-                                  <span key={`${entry.flag}-${i}`} className="track-flag">
-                                    <span className="mono">{entry.flag}</span>
-                                    {entry.sector ? ` · sector ${entry.sector}` : ''}
-                                  </span>
+                                  <TrackFlag
+                                    key={`${entry.flag}-${i}`}
+                                    flag={entry.flag}
+                                    detail={entry.sector ? `sector ${entry.sector}` : null}
+                                  />
                                 ))
                               )}
                             </td>

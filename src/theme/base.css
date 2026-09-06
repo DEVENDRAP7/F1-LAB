@@ -1713,6 +1713,59 @@ tbody tr.is-on {
   background: var(--accent-glow);
 }
 
+/* ---------- timing screen ----------
+ *
+ * Purple for the session best, green for a personal best. It is a CELL
+ * FILL with its own ink rather than coloured text, which is how a real
+ * timing screen reads and also the only version that survives both
+ * themes: the purple that clears 4.5:1 on the dark panel is 3.69:1 on a
+ * white one, so coloured text cannot be legible in both. As a fill with
+ * white ink it is 5.95:1 (purple) and 5.40:1 (green) in either mode.
+ *
+ * The header row names the segment and the key above the table names the
+ * colours, so the fill is a second reading of something already stated
+ * in text — never the only signal.
+ */
+.timing {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--r-sm);
+}
+
+.timing.is-best {
+  background: var(--time-best);
+  color: var(--time-best-ink);
+  font-weight: 700;
+}
+
+.timing.is-personal {
+  background: var(--time-personal);
+  color: var(--time-personal-ink);
+}
+
+.timing-key {
+  margin: var(--s-2) 0 0;
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+
+.timing-chip {
+  display: inline-block;
+  padding: 0.02rem 0.4rem;
+  border-radius: var(--r-sm);
+  font-weight: 700;
+}
+
+.timing-chip.is-best {
+  background: var(--time-best);
+  color: var(--time-best-ink);
+}
+
+.timing-chip.is-personal {
+  background: var(--time-personal);
+  color: var(--time-personal-ink);
+}
+
 /* ---------- qualifying head-to-head ---------- */
 
 .h2h-list {
@@ -1848,13 +1901,49 @@ tbody tr.is-on {
 
 /* A published track flag beside a flagged lap: the reason column, and
    the whole point of the row being read carefully rather than quickly. */
+/* A race-control flag chip: the flag, then its name. The name is never
+   dropped — see src/components/TrackFlag.jsx on why the colour cannot
+   carry this on its own. */
 .track-flag {
-  background: var(--bg-3);
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: var(--t-xs);
+  margin: 0 0.3rem 0.2rem 0;
+  padding: 0.1rem 0.5rem 0.1rem 0.28rem;
+  vertical-align: middle;
+}
+
+/* Two-tone flags are drawn split, not blended: a black-and-white flag is
+   not grey. The hard stop at 50% is the whole point. */
+.flag-swatch {
+  width: 15px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--f1) 0 50%, var(--f2) 50% 100%);
+  /* Yellow, white and orange fall under 3:1 on a light surface and black
+     falls under it on a dark one, so the edge is not decoration. */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--line);
+}
+
+.flag-swatch.is-inline {
   display: inline-block;
-  font-size: 0.74rem;
-  margin: 0 0.25rem 0.2rem 0;
-  padding: 0.1rem 0.4rem;
+  margin-right: 0.35rem;
+  vertical-align: -1px;
+}
+
+.flag-swatch.is-unknown {
+  background: repeating-linear-gradient(
+    45deg, var(--ink-2) 0 2px, transparent 2px 4px
+  );
+}
+
+.flag-detail {
+  color: var(--ink-2);
 }
 
 /* ---------- home ---------- */

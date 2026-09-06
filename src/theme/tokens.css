@@ -113,9 +113,54 @@
      only, no hue shift, so the value the colour carries is unchanged. */
   --fill-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 62%);
 
+  /* ---------- the sport's own colour language ----------
+   *
+   * Three sets here, and none of them is anybody's branding: they are
+   * the signals the sport publishes and every viewer already reads.
+   * Team liveries and rights-holder marks stay out (docs/SPEC.md rule 5,
+   * DISCLAIMER.md) — a driver's series colour is assigned by selection
+   * slot and has nothing to do with their team.
+   *
+   * TIMING. Purple is the session best, green a personal best, yellow
+   * neither. Used as a CELL FILL with its own ink rather than as
+   * coloured text, which is both how a real timing screen looks and the
+   * only way to keep 4.5:1 — the purple that reads on black is 3.69:1 on
+   * white, so a coloured-text version cannot be legible in both themes.
+   */
+  --time-best: #7b2ff2;
+  --time-best-ink: #ffffff;
+  --time-personal: #107a43;
+  --time-personal-ink: #ffffff;
+
+  /* Sector/timing steps for use as text. Stepped per mode below. */
   --sector-green: #16c172;
   --sector-yellow: #e8c547;
   --sector-purple: #b558f6;
+
+  /* FLAGS. The colours race control actually waves, and unlike every
+   * other token here they do NOT change with the theme: a yellow flag is
+   * yellow on a white page too. Same reasoning as the steering wheel —
+   * it is an object, not a UI surface.
+   *
+   * Each is drawn as a swatch beside the flag's name, never as the only
+   * signal, and that is not a nicety: measured with the dataviz
+   * validator, red↔orange is ΔE 12.2 under normal vision and 8.1 under
+   * deuteranopia, and any step that separates them collapses orange into
+   * yellow instead (17.1 from red, but 7.8 from yellow). The sport's own
+   * signal set puts red, orange and yellow adjacent in hue, so no
+   * palette can pull them apart — the label carries the meaning and the
+   * colour only recalls it.
+   *
+   * Yellow, white and orange fall under 3:1 on a light surface and black
+   * falls under it on a dark one, so every swatch carries a hairline
+   * border. A real flag has an edge too. */
+  --flag-yellow: #f5d000;
+  --flag-red: #e00d0d;
+  --flag-green: #00a650;
+  --flag-blue: #0f7fe0;
+  --flag-white: #f4f6fa;
+  --flag-black: #14161c;
+  --flag-orange: #ff7a00;
 
   /* The sport's own compound bands. Used ONLY where a real compound was
    * matched from the stint feed — never to decorate a stint whose
@@ -141,7 +186,9 @@
   --status-good: #0ca30c;
   --status-warning: #fab219;
   --status-serious: #ec835a;
-  --status-critical: #d03b3b;
+  /* Was #d03b3b, which is 3.80:1 on the panel — under the 4.5 that text
+     this size needs. Same hue, one step lighter, 5.04:1. */
+  --status-critical: #d96060;
 
   /* Podium. Sport semantics — finishing position, not team identity,
    * and deliberately not any team's colours (docs/SPEC.md: no liveries). */
@@ -298,6 +345,23 @@
       inset 0 1px 2px rgba(16, 24, 40, 0.14),
       inset 0 -1px 0 rgba(255, 255, 255, 0.7);
     --fill-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 62%);
+
+    /* ---------- reserved ramps, stepped for this surface ----------
+     *
+     * These had no light-mode steps at all: one set of values, defined
+     * against the dark panel and then used as TEXT on a white one. Six
+     * of the seven failed WCAG 4.5:1 here — the sector yellow read at
+     * 1.68:1, which is a label nobody can see. Each is the same hue
+     * walked down to a passing step (measured, not eyeballed; all land
+     * at 5.0:1 or better on #ffffff). */
+    --status-good: #097f09;
+    --status-warning: #936503;
+    --status-serious: #c04616;
+    --status-critical: #ce3333;
+
+    --sector-green: #0e7f4b;
+    --sector-yellow: #856c11;
+    --sector-purple: #a12af4;
 
     --pos-1: #b8860b;
     --pos-2: #6b7689;
