@@ -79,7 +79,7 @@ const region = view.startsWith('front') ? 'front' : 'rear';
 const DIRS = {
   'front-3q': [-0.66, 0.40, 0.64],
   'rear-3q': [0.66, 0.40, 0.64],
-  'rear-front45': [-0.707, 0.30, 0.707],
+  'rear-front45': [-0.80, 0.52, 0.55],
 };
 const top = view.endsWith('-top');
 const PARTS = { front: ['frontWing', 'frontFlap'], rear: ['rearWing', 'rearFlap'] };
