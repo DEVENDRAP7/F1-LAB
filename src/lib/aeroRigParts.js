@@ -14,17 +14,19 @@ export const VERDICT_LABEL = { m: 'measured', s: 'schematic', r: 'refused' };
 export const PARTS = {
   frontWing: {
     name: 'Front wing',
-    text: 'Narrower for 2026, with a two-element movable flap. It sets the air up for '
-      + 'everything behind it — a change here is felt at the floor and the rear wing too.',
+    text: 'Sets the air up for everything behind it — a change here is felt at the floor '
+      + 'and the rear wing too. Three stacked elements in this model, the upper two of '
+      + 'which move.',
     verdict: ['s', 'shape from a third party’s concept model'],
   },
   frontFlap: {
     name: 'Front flap · movable',
-    text: 'The element that moves between modes: loaded in Z, flattened in X. Both wings '
-      + 'move in 2026, which is what makes it more than a rebadged DRS. The donor model '
-      + 'does not label its elements, so the movable one is found by measurement: the '
-      + 'wing’s mass sits at 100-150 mm, thins to almost nothing at 200-250, and '
-      + 'returns at 250-300. That gap is the slot, and what moves is the element above it.',
+    text: 'The two upper elements, which move together: loaded in Z, flattened in X. The '
+      + 'donor does not label its elements, so they are found by surface rather than by '
+      + 'height — an element is a smooth skin, and the slots between them are where that '
+      + 'skin stops. Two earlier versions looked for them by height band instead, and '
+      + 'both cut through the bodywork: the elements rise as they sweep outboard, so a '
+      + 'band stripes across all three at once.',
     verdict: ['s', 'shape from a concept model; no flap angle is published'],
   },
   nose: {
@@ -66,16 +68,18 @@ export const PARTS = {
   },
   rearWing: {
     name: 'Rear wing',
-    text: 'Two elements for 2026, and the beam wing is gone. It trims the balance the '
-      + 'floor sets, and it is what most obviously costs top speed. The endplate carries '
-      + 'the slots and louvres that let pressure bleed across it, and an outward gurney '
-      + 'along its trailing edge.',
+    text: 'Trims the balance the floor sets, and it is what most obviously costs top '
+      + 'speed. Two elements in this model, both of which move; the endplate carries the '
+      + 'slots that let pressure bleed across it. Published summaries describe a '
+      + 'three-element 2026 rear wing, so this shape is its artist’s reading of the rules '
+      + 'rather than the rules themselves.',
     verdict: ['s', 'shape from a third party’s concept model'],
   },
   rearFlap: {
     name: 'Rear flap · movable',
-    text: 'The other half of active aero. Flattening it buys straight-line speed; how much '
-      + 'it buys is not published anywhere this rig can reach.',
+    text: 'The other half of active aero: both elements, moving together. Flattening them '
+      + 'buys straight-line speed; how much it buys is not published anywhere this rig can '
+      + 'reach, and neither is the angle they travel through.',
     verdict: ['r', 'no mode delta is published'],
   },
   diffuser: {

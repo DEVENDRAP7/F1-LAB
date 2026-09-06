@@ -425,7 +425,12 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
   // nose cone — any more and the nose visibly tore off. With the flap
   // properly isolated it can take the same rotation as the rear, which
   // is what makes the change legible from the side.
-  const MODE_ANGLE = { Z: { front: 0, rear: 0 }, X: { front: 0.36, rear: 0.34 } };
+  // How far the elements travel between modes. Not a published figure —
+  // no team states a flap angle — so this is chosen to read clearly, and
+  // the page says so. It came down from 0.36/0.34 after the reference
+  // photographs: the real change is modest, and the element stays inside
+  // its endplate rather than swinging clear of the car.
+  const MODE_ANGLE = { Z: { front: 0, rear: 0 }, X: { front: 0.24, rear: 0.28 } };
   let flapNow = { front: MODE_ANGLE.Z.front, rear: MODE_ANGLE.Z.rear };
 
   /* ---------------- render loop ---------------- */

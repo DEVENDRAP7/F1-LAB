@@ -28,9 +28,11 @@ x -100 and the rear near x 3200 (both where half-width peaks at the
 -- what this cannot recover -------------------------------------------
 Two parts are approximations and are marked as such in the page copy:
 
-  frontFlap  The donor does not separate the movable elements from the
-             fixed mainplane, so the flap is taken as the upper-rear
-             band of the front wing. It is close, not exact.
+  frontFlap  The donor does not label its elements, so they are found
+             by surface: see split_movable_elements(). What moves is the
+             upper two of the three the model carries. Which elements a
+             real 2026 car moves is a regulation fact this project has
+             no primary source for — see config/regulations_2026.json.
 
   suspension Wishbones share their space with wheels and bodywork, so
              what is captured is the members in the gap between the tub
@@ -102,24 +104,12 @@ def part_of(x, y, z):
 
     # Front wing assembly, which the donor ends at x -420.
     if x < -420:
-        # The movable flap is the UPPER ELEMENT of the stack, and it is
-        # found by height and span together.
-        #
-        # The first rule was "above 250 mm and inboard of the endplates",
-        # which sounds like the upper element and is not: the nose cone
-        # runs the whole length of this region and is far taller than the
-        # wing, so that rule handed the nose's entire underside to the
-        # flap. In X-mode the nose then swung up and out of the car.
-        #
-        # Profiling the region separates them cleanly. Everything wide
-        # (|z| > 320) is wing: 22k vertices at 100-150 mm is the fixed
-        # mainplane, then a GAP at 200-250 mm — the slot — then 13k more
-        # at 250-300 mm, which is the element above the slot. Everything
-        # narrow (|z| < 220) at that height is nose. So the flap is a
-        # band in height AND a span wide enough not to be the nose,
-        # inboard of endplates that reach |z| 913.
-        if 240 <= y <= 360 and 240 < az < 830:
-            return "frontFlap"
+        # The movable elements are NOT separated here. Two attempts
+        # tried to find them by height band and both cut through the
+        # bodywork instead: the elements rise as they sweep outboard, so
+        # a horizontal band stripes across all three at once — rendered,
+        # it is unmistakable. split_movable_elements() below does it by
+        # surface, after this coarse split.
         # The nose cone runs the full length of this region on the
         # centreline, above the wing's elements. Calling it "front wing"
         # was harmless to look at and wrong to click.
@@ -133,14 +123,8 @@ def part_of(x, y, z):
     # the colour check as a tan panel standing vertically behind the
     # rear wheel.
     if x > 3460 and y > 330:
-        # The FLAP is only the element spanning BETWEEN the endplates.
-        # Taking everything above y 720 put the top of each endplate in
-        # it as well, and rotating that for X-mode tore the endplates in
-        # half: their upper corners swung away with the flap and left a
-        # hole where the wing had been. The rear wing reaches |z| 575 at
-        # its tips, so 470 keeps the endplates out of the moving part.
-        if y > 700 and az < 470:
-            return "rearFlap"
+        # As with the front, the movable elements are separated by
+        # surface rather than by height — see split_movable_elements().
         return "rearWing"
 
     # Diffuser and rear crash structure: everything low behind the axle.
@@ -196,6 +180,172 @@ def part_of(x, y, z):
     return "nose" if x < 1500 else "airbox"
 
 
+# ---------- finding the movable elements ----------
+#
+# Both wings' movable elements are separated by SURFACE, not by a box.
+#
+# A box cannot do it. The elements rise as they sweep outboard, so any
+# height band stripes across all of them at once — render the wing
+# coloured by height band and every element is striped through every
+# colour. Two versions of this file tried a band anyway; the front one
+# was not on a wing element at all, it was a slice through the nose and
+# endplate fairing, and in X-mode it swung up out of the bodywork and
+# left a hole.
+#
+# What does work: each element is a smooth surface, and the gaps between
+# them are gaps in space rather than creases, but the elements only touch
+# each other THROUGH the endplate. Drop the endplate and grow regions
+# across smooth edges, and the elements fall apart on their own.
+#
+# Measured on the donor: the split is identical at 25, 35 and 45 degrees,
+# which is what says it is finding real geometry rather than a threshold.
+CREASE_DEG = 35.0
+
+# Where the endplate starts, per end. Growing across it bridges every
+# element into one region — with the endplate in, the front returned a
+# single region per side covering the whole wing.
+ENDPLATE_Z = {"front": 630, "rear": 470}
+
+# A region has to be big enough to be an element, wide enough to be a
+# span element rather than a footplate (the front carries a strake only
+# 61 mm across), and long and thick enough to be an aerofoil rather than
+# a trailing-edge strip (the rear's is 13 mm of chord and 3 mm deep, and
+# it is 7 400 faces, so face count alone does not catch it).
+MIN_FACES = 400
+MIN_SPAN = 250
+MIN_CHORD = 60
+MIN_THICK = 20
+
+# An aerofoil's upper and lower skins meet at its leading and trailing
+# edges, and those are creases too — so each element arrives as two or
+# three regions rather than one, and ranking them by height picks two
+# skins of the SAME element. Regions whose extents overlap this much on
+# all three axes are the same element and are merged before ranking.
+# All three axes matter: the front's two flap elements overlap 71% in
+# chord and would merge on x alone, but only 43% in height.
+SAME_ELEMENT = 0.6
+
+
+def split_movable_elements(mesh, poly_ids, end):
+    """The two movable elements at one end, as polygon indices.
+
+    Returns (movable, fixed). Ranking is by mean height among candidate
+    regions, which picks the upper two at both ends — the front's two
+    flap elements above the mainplane, and the rear's two above the
+    fixed structure.
+    """
+    cos_max = math.cos(math.radians(CREASE_DEG))
+    zmax = ENDPLATE_Z[end]
+
+    def coords(i):
+        poly = mesh.polygons[i]
+        n = len(poly.vertices)
+        cx = cy = cz = 0.0
+        for vi in poly.vertices:
+            co = mesh.vertices[vi].co
+            cx += co.x; cy += co.y; cz += co.z
+        return cx / n, -cy / n, cz / n
+
+    grow = [i for i in poly_ids if abs(coords(i)[2]) < zmax]
+    parent = {i: i for i in grow}
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    edges = {}
+    for i in grow:
+        for ek in mesh.polygons[i].edge_keys:
+            edges.setdefault(ek, []).append(i)
+    for shared in edges.values():
+        if len(shared) != 2:
+            continue
+        a, b = shared
+        if mesh.polygons[a].normal.dot(mesh.polygons[b].normal) >= cos_max:
+            ra, rb = find(a), find(b)
+            if ra != rb:
+                parent[ra] = rb
+
+    regions = {}
+    for i in grow:
+        regions.setdefault(find(i), []).append(i)
+
+    def extent(faces):
+        pts = [coords(i) for i in faces]
+        xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+        zs = [abs(p[2]) for p in pts]
+        return ((min(xs), max(xs)), (min(ys), max(ys)), (min(zs), max(zs)),
+                sum(ys) / len(ys))
+
+    cands = []
+    for faces in regions.values():
+        if len(faces) < MIN_FACES:
+            continue
+        bx, by, bz, mean_y = extent(faces)
+        if bz[1] - bz[0] < MIN_SPAN or bx[1] - bx[0] < MIN_CHORD or by[1] - by[0] < MIN_THICK:
+            continue
+        cands.append([list(faces), bx, by, bz, mean_y])
+
+    def overlaps(a, b):
+        # Measured against the LARGER extent, not the smaller. Against
+        # the smaller, the front's upper element and the element below it
+        # overlap 81% in height and merge, because the smaller box is
+        # nested inside the bigger one — which is true of a skin and of a
+        # neighbour alike, so it cannot tell them apart.
+        for i in (1, 2, 3):
+            lo = max(a[i][0], b[i][0])
+            hi = min(a[i][1], b[i][1])
+            bigger = max(a[i][1] - a[i][0], b[i][1] - b[i][0]) or 1.0
+            if (hi - lo) / bigger < SAME_ELEMENT:
+                return False
+        return True
+
+    # Union-find on the ORIGINAL boxes. Growing a box as it absorbs
+    # regions let it reach the next element and chain: the front came out
+    # as one element covering the whole wing.
+    link = list(range(len(cands)))
+
+    def root(a):
+        while link[a] != a:
+            link[a] = link[link[a]]
+            a = link[a]
+        return a
+
+    for i in range(len(cands)):
+        for j in range(i + 1, len(cands)):
+            if overlaps(cands[i], cands[j]):
+                ri, rj = root(i), root(j)
+                if ri != rj:
+                    link[ri] = rj
+
+    clusters = {}
+    for i, c in enumerate(cands):
+        clusters.setdefault(root(i), []).extend(c[0])
+    merged = []
+    for faces in clusters.values():
+        bx, by, bz, mean_y = extent(faces)
+        merged.append([faces, bx, by, bz, mean_y])
+
+    ranked = [(m[4], m[0]) for m in merged]
+    ranked.sort(key=lambda r: -r[0])
+
+    print("  %s: %d regions, %d candidates, %d elements after merge"
+          % (end, len(regions), len(cands), len(ranked)))
+    for mean_y, faces in ranked[:6]:
+        pts = [coords(i) for i in faces]
+        xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+        zs = [abs(p[2]) for p in pts]
+        print("    mean y %5.0f  %6d faces  x %6.0f..%6.0f  y %5.0f..%5.0f  |z| %4.0f..%4.0f"
+              % (mean_y, len(faces), min(xs), max(xs), min(ys), max(ys), min(zs), max(zs)))
+
+    movable = set()
+    for _, faces in ranked[:2]:
+        movable.update(faces)
+    return movable, [i for i in poly_ids if i not in movable]
+
+
 def main():
     if not os.path.exists(DONOR):
         print("donor model not found at %s" % DONOR)
@@ -229,6 +379,19 @@ def main():
         n = len(poly.vertices)
         key = part_of(cx / n, -cy / n, cz / n)
         buckets.setdefault(key, []).append(poly.index)
+
+    # Refine each wing into its fixed structure and its movable
+    # elements. This runs on the joined mesh, before the split into
+    # objects, because face adjacency is what it needs.
+    print("finding movable elements by surface:")
+    for end, source, flap in (("front", "frontWing", "frontFlap"),
+                              ("rear", "rearWing", "rearFlap")):
+        if source not in buckets:
+            continue
+        movable, fixed = split_movable_elements(mesh, buckets[source], end)
+        if movable:
+            buckets[flap] = sorted(movable)
+            buckets[source] = fixed
 
     print("polygons per part:")
     for key in sorted(buckets, key=lambda k: -len(buckets[k])):

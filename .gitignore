@@ -42,3 +42,4 @@ scripts/model/.wingviews.html
 scripts/model/preview/
 scripts/model/donor/scene.bin
 scripts/audio/*.wav
+scripts/model/.tryrule.html

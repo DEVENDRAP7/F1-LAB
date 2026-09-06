@@ -21,9 +21,22 @@ the commit that added `flaps.mjs` and `wingviews.mjs`: the front
 endplate fairing rather than a wing element at all, and the rear element
 detaches from its endplate as it rotates.
 
-Still outstanding before this is implemented:
+Implemented. split_movable_elements() in segment_car.py finds the
+elements by surface — grow regions across smooth edges, stop at creases,
+and drop the endplate first so the elements stop being bridged through
+it. The two highest-mean regions at each end are the movable ones, which
+lands on exactly what is marked here.
 
-  - Reference for a real 2026 active-aero change, to be supplied.
+A reference for a real active-aero change was supplied and is NOT stored
+here: it is a photograph of a car in team livery, and SPEC.md rule 5 and
+DISCLAIMER.md keep liveries and logos out of this repo. What it settled:
+the element rotates about a spanwise axis at its forward attachment, the
+trailing edge lifts, the slot below it opens, and the travel is modest —
+the element stays inside its endplate throughout. The mode angles came
+down from 0.36/0.34 rad to 0.24/0.28 because of it.
+
+Still outstanding:
+
   - A primary regulations source. Search results attributing to the FIA
     give the front wing three elements with a two-element active flap
     and the rear wing three elements with the beam wing removed — which

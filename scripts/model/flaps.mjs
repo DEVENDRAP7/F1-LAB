@@ -1,6 +1,6 @@
 // Render the movable elements close up, in both aero modes.
 //
-//   node scripts/model/flaps.mjs
+//   node scripts/model/flaps.mjs [car-debug.glb]
 //
 // The Aero Rig's active-aero mode rotates whatever the segmentation put
 // in frontFlap and rearFlap. Whether that is one element, three, or half
@@ -68,7 +68,7 @@ const draco = new DRACOLoader();
 draco.setDecoderPath('/node_modules/three/examples/jsm/libs/draco/');
 const loader = new GLTFLoader();
 loader.setDRACOLoader(draco);
-loader.load('/public/models/2026/car.glb', (gltf) => {
+loader.load(params.get('model') ?? '/public/models/2026/car.glb', (gltf) => {
   const meshes = [];
   gltf.scene.traverse((o) => { if (o.isMesh) meshes.push(o); });
   for (const mesh of meshes) {
@@ -79,7 +79,10 @@ loader.load('/public/models/2026/car.glb', (gltf) => {
       color: pivot ? 0xff3b30 : 0x9aa3b2,
       roughness: pivot ? 0.35 : 0.75,
       transparent: !pivot,
-      opacity: pivot ? 1 : 0.9,
+      // Faint, not merely translucent: the flap sits inside the wing and
+      // at 0.9 the surrounding bodywork hid it completely.
+      opacity: pivot ? 1 : 0.14,
+      depthWrite: !!pivot,
     });
     if (!pivot) { car.add(mesh); continue; }
     const box = new THREE.Box3().setFromObject(mesh);
@@ -109,7 +112,8 @@ fs.mkdirSync(out, { recursive: true });
 for (const end of ['front', 'rear']) {
   for (const [name, angle] of [['Z', 0], ['X', end === 'front' ? 0.36 : 0.34]]) {
     const tab = await browser.newPage({ viewport: { width: 1300, height: 620 } });
-    await tab.goto(`http://localhost:${PORT}/scripts/model/.flaps.html?end=${end}&angle=${angle}`);
+    const model = process.argv[2] ? `&model=/public/models/2026/${process.argv[2]}` : '';
+    await tab.goto(`http://localhost:${PORT}/scripts/model/.flaps.html?end=${end}&angle=${angle}${model}`);
     await tab.waitForFunction('window.__ready === true', { timeout: 60000 });
     const err = await tab.evaluate(() => window.__error);
     if (err) { console.error('load error:', err); process.exitCode = 1; }
