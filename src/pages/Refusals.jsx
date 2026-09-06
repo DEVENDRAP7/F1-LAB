@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
-import { Limitations } from '../components/Disclosure.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 
 // The ledger of everything this site declined to publish.
 //
@@ -59,12 +59,13 @@ export default function Refusals() {
       </header>
 
       <div className="warning-banner" role="note">
-        <strong>This page is not an apology.</strong> A dashboard that cannot say no fills
-        every gap with something plausible, and a reader has no way to tell which numbers
-        those are. Everything below was computable — a race total, a compound, a
-        degradation slope, an elevation profile — and was left out because it did not clear
-        the bar the module states. The counts sit beside what was published, so the ratio
-        is visible rather than implied.
+        <strong>This page is not an apology.</strong> Everything below was computable and
+        was left out because it did not clear the bar the module states.
+        <Method label="Why a refusal ledger exists">
+          A dashboard that cannot say no fills every gap with something plausible, and a
+          reader has no way to tell which numbers those are. The counts sit beside what was
+          published, so the ratio is visible rather than implied.
+        </Method>
       </div>
 
       {groups.map((group) => (

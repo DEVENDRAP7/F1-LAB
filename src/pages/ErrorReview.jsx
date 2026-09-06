@@ -133,11 +133,14 @@ export default function ErrorReview() {
       </header>
 
       <div className="warning-banner" role="note">
-        <strong>A flag is not a verdict.</strong> Recorded events are official race-control
-        messages, quoted as published. Flagged laps are this site's own observation that a
-        lap was slower than the same driver's median green-flag lap in the same race — and
-        traffic, track conditions and a pit-wall instruction all produce that signature just
-        as readily as a driver error does. The cause is not identified anywhere on this page.
+        <strong>A flag is not a verdict.</strong> The cause is not identified anywhere on
+        this page.
+        <Method label="What the two lists are">
+          Recorded events are official race-control messages, quoted as published. Flagged
+          laps are this site's own observation that a lap was slower than the same driver's
+          median green-flag lap in the same race — and traffic, track conditions and a
+          pit-wall instruction all produce that signature just as readily as a driver error.
+        </Method>
       </div>
 
       {pastRounds.length > 0 && (

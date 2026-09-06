@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cssToken } from '../theme/palette.js';
 import { ENVELOPE_BIN_KPH } from '../lib/aero.js';
+import { Method } from './Disclosure.jsx';
 
 // Lateral g against speed — the shape that shows aerodynamic grip
 // arriving. Each point is one speed band's 95th-percentile lateral g, so
@@ -151,11 +152,14 @@ export default function EnvelopeChart({ series, height = 300 }) {
           </span>
         ))}
       </div>
-      <p className="chart-caption">
+      {/* Labelled specifically: the panel that hosts this chart carries its
+          own "how this is computed", and two identical triggers a line apart
+          read as the same control drawn twice. */}
+      <Method label="How each point is placed">
         Each point is the 95th percentile of lateral g among samples in a 20 km/h band, and a
         band with fewer than eight samples is left out rather than drawn thin — so a line can
         have gaps, and a gap means the lap spent no meaningful time at that speed.
-      </p>
+      </Method>
     </div>
   );
 }

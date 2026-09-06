@@ -120,10 +120,12 @@ export default function Sprint() {
 
       <div className="warning-banner" role="note">
         <strong>Places changed is not overtakes.</strong> It is |finish − grid| over the
-        drivers classified in each race. A place can move at a pit stop, at a retirement
-        ahead, or in a penalty applied after the flag, and no source here publishes an
-        overtake feed to tell those apart. The lap count of each race sits beside it rather
-        than being divided into it.
+        drivers classified in each race.
+        <Method label="What can move a place">
+          A pit stop, a retirement ahead, or a penalty applied after the flag — and no source
+          here publishes an overtake feed to tell those apart. The lap count of each race
+          sits beside it rather than being divided into it.
+        </Method>
       </div>
 
       <section className="panel">
@@ -165,13 +167,16 @@ export default function Sprint() {
         </div>
 
         {summary.sprintMeanPlacesChanged != null && summary.raceMeanPlacesChanged != null && (
-          <p className="chart-caption">
-            The sprint changed {shorter ? 'fewer' : 'more'} places than the grand prix on
-            these weekends. That is a difference between two races of different lengths and
-            different grids, not evidence about either format: the lap counts are in the
-            table below, and nothing here separates the length of a race from anything else
-            about it.
-          </p>
+          <>
+            <p className="chart-caption">
+              The sprint changed {shorter ? 'fewer' : 'more'} places than the grand prix.
+            </p>
+            <Method label="Why that is not evidence about the format">
+              Two races of different lengths and different grids. The lap counts are in the
+              table below, and nothing here separates the length of a race from anything
+              else about it.
+            </Method>
+          </>
         )}
       </section>
 

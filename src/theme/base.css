@@ -190,8 +190,8 @@
      over the content it is about to replace, so glass here puts a
      headline and a stat tile straight through the link labels — which
      is exactly what the first cut of this did. */
-  background: var(--bg-2);
-  box-shadow: var(--elev-3), inset 0 1px 0 var(--glass-rim);
+  background: var(--surface-2);
+  box-shadow: var(--elev-3);
 }
 
 .nav-item {
@@ -334,9 +334,7 @@ tbody tr:hover {
    another card with nothing in it. */
 .empty-state {
   border: 1px dashed var(--line-strong);
-  background: var(--glass-tint);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  background: var(--surface-1);
   border-radius: 14px;
   padding: 2rem;
   max-width: 42rem;
@@ -356,33 +354,70 @@ tbody tr:hover {
 }
 
 .warning-banner {
-  background: color-mix(in srgb, var(--warn) 14%, var(--glass-tint-strong));
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  background: color-mix(in srgb, var(--warn) 14%, var(--surface-2));
   border: 1px solid transparent;
   border-left: 3px solid var(--warn);
   border-radius: 10px;
-  padding: 0.8rem 1rem;
-  margin-bottom: 1rem;
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-4);
   color: var(--ink-0);
-  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
+  font-size: var(--t-md);
+  line-height: 1.6;
+  box-shadow: var(--elev-1);
+}
+
+/* A disclosure inside a banner sits on a tinted surface, so it drops the
+   rule it would otherwise draw against a panel. */
+.warning-banner .disclosure {
+  border-top: none;
+  margin-top: var(--s-1);
+}
+
+.warning-banner .disclosure > summary {
+  padding-bottom: 0;
 }
 
 .generated-at {
   color: var(--ink-2);
-  font-size: 0.85rem;
+  font-size: var(--t-sm);
   text-align: left;
 }
 
+/* The round/session pickers.
+ *
+ * These sat loose in the page, so on a 4000px page — which Race
+ * Strategy is — changing round meant scrolling back to the top to find
+ * the control and back down to see the effect. They are chrome, not
+ * content, so they now stick under the header and are drawn as a strip
+ * rather than as three bare labels floating on the background.
+ *
+ * Every page has exactly one of these, which is what makes a bare
+ * element selector safe here: two would stack and cover each other. */
 .controls-row {
+  position: sticky;
+  top: var(--bar-h);
+  z-index: 10;
   display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: var(--s-4) var(--s-5);
   flex-wrap: wrap;
+  margin: 0 0 var(--s-5);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  font-size: var(--t-md);
+}
+
+.controls-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--ink-1);
 }
 
 .controls-row select {
-  background: var(--glass-tint-strong);
+  background: var(--surface-2);
   color: var(--ink-0);
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -416,7 +451,7 @@ tbody tr:hover {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0.34rem 0.8rem;
-  background: var(--glass-tint-strong);
+  background: var(--surface-2);
   color: var(--ink-1);
   cursor: pointer;
   font-weight: 600;
@@ -509,8 +544,8 @@ tbody tr:hover {
 
 .page-head {
   position: relative;
-  margin-bottom: 1.5rem;
-  padding-left: 0.95rem;
+  margin-bottom: var(--s-5);
+  padding-left: var(--s-4);
 }
 
 /* A pseudo-element rather than border-image: border-image needs every
@@ -526,11 +561,11 @@ tbody tr:hover {
 }
 
 .page-head h1 {
-  margin: 0 0 0.3rem;
+  margin: 0 0 var(--s-2);
   font-weight: 700;
-  font-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.3rem);
-  letter-spacing: -0.01em;
-  line-height: 1.1;
+  font-size: var(--t-display);
+  letter-spacing: -0.015em;
+  line-height: 1.08;
   /* The title is the one place the accent gradient sits on type: it
      names the page and encodes nothing. Both transparent properties are
      needed — `color` alone leaves WebKit painting its own fill and the
@@ -545,60 +580,36 @@ tbody tr:hover {
 .page-sub {
   margin: 0;
   color: var(--ink-1);
-  /* A line of prose across the full 1500px shell is about 190
-     characters — roughly three times a comfortable measure. */
-  max-width: 72ch;
+  font-size: var(--t-lg);
+  line-height: 1.55;
+  max-width: var(--measure);
 }
 
-/* The primary surface. Tinted glass over the page's own light, lit
-   along the top edge, shaded along the bottom, with a two-part shadow
-   under it. The border-radius goes up: a 4px corner on a 1000px pane
-   reads as a cut edge, and glass has thickness. */
+/* The primary surface.
+ *
+ * It used to carry six layers at once: a border, a 14px radius, a
+ * translucent tint, a backdrop blur, three shadows, a specular
+ * highlight in one corner and an accent hairline along the top. Each
+ * was defensible alone. Eight of them down a page is a stack of
+ * identical decorated boxes with the charts as the quiet part, and the
+ * blur is a full-surface filter recomputed on every scroll for a tint
+ * that resolves to a flat colour anyway.
+ *
+ * What is left is a hairline, an opaque surface one step off the page,
+ * and a contact shadow. The accent tick on the heading is the landmark
+ * now — one small mark rather than a whole frame. */
 .panel {
   position: relative;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--glass-tint);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  padding: 1.15rem 1.4rem 1.4rem;
-  margin-bottom: 1.5rem;
-  box-shadow:
-    var(--elev-2),
-    inset 0 1px 0 var(--glass-rim),
-    inset 0 -1px 0 var(--glass-underside);
-  overflow: hidden;
-}
-
-/* The specular: a soft highlight in the top-left corner, where the
-   light in the background field is coming from. It is what stops all
-   the panels down a page reading as one repeated stamp — each one
-   catches the light in the same place, which is how a real material
-   behaves. */
-.panel::after {
-  content: '';
-  position: absolute;
-  inset: 0 auto auto 0;
-  width: 60%;
-  height: 130px;
-  pointer-events: none;
-  background: radial-gradient(120% 100% at 0% 0%, var(--glass-rim-strong), transparent 68%);
-  opacity: 0.6;
-}
-
-/* A hairline of accent along the top edge, over the white rim: the rim
-   gives the edge its thickness, this gives it its colour. */
-.panel::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 1px;
-  z-index: 1;
-  background: linear-gradient(90deg, var(--accent-edge), transparent 55%);
+  border-radius: var(--r-lg);
+  background: var(--surface-1);
+  padding: var(--s-4) var(--s-5) var(--s-5);
+  margin-bottom: var(--s-5);
+  box-shadow: var(--elev-1);
 }
 
 .panel-head {
-  margin-bottom: 1rem;
+  margin-bottom: var(--s-4);
 }
 
 /* Some panels carry a bare h2 rather than a .panel-head wrapper, and
@@ -606,15 +617,15 @@ tbody tr:hover {
    difference in markup showing up as a difference in design. */
 .panel > h2,
 .panel-head h2 {
-  margin: 0 0 0.3rem;
-  font-size: 0.95rem;
+  margin: 0 0 var(--s-2);
+  font-size: var(--t-sm);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--ink-0);
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: var(--s-2);
 }
 
 /* A short accent tick before every panel title — cheap, consistent, and
@@ -629,12 +640,23 @@ tbody tr:hover {
   flex: 0 0 auto;
 }
 
+/* One rule for every block of running text on the site. The measure and
+   the leading are set HERE and nowhere else — four later sections used
+   to exist to re-set them. */
+.panel-note,
+.chart-caption,
+.figure-note,
+.empty-state-reason,
+.reason-list,
+.disclosure-body {
+  line-height: 1.6;
+  max-width: var(--measure);
+}
+
 .panel-note {
   margin: 0;
   color: var(--ink-1);
-  font-size: 0.85rem;
-  line-height: 1.5;
-  max-width: 62ch;
+  font-size: var(--t-md);
 }
 
 /* ---------- disclosure ----------
@@ -749,11 +771,9 @@ tbody tr:hover {
 }
 
 .panel-limitations ul {
-  margin: 0.5rem 0 0.75rem;
+  margin: var(--s-2) 0 var(--s-3);
   padding-left: 1.1rem;
   color: var(--ink-1);
-  line-height: 1.6;
-  max-width: 76ch;
 }
 
 .panel-limitations h2 {
@@ -1191,7 +1211,8 @@ tr.is-muted td {
   }
 
   .controls-row {
-    gap: 0.75rem;
+    gap: var(--s-3);
+    padding: var(--s-2) var(--s-3);
   }
 
   .controls-row select {
@@ -1269,7 +1290,7 @@ tr.is-muted td {
      rather than like a banner. */
   max-width: 32rem;
   padding: 0.8rem 0.9rem;
-  background: var(--glass-tint-strong);
+  background: var(--surface-2);
   overflow: hidden;
   box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
   transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
@@ -1483,9 +1504,7 @@ tr.is-muted td {
 .verified-note {
   border-left: 3px solid var(--status-good);
   padding: 0.65rem 0.95rem;
-  background: color-mix(in srgb, var(--status-good) 9%, var(--glass-tint));
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  background: color-mix(in srgb, var(--status-good) 9%, var(--surface-1));
   border-radius: 10px;
   box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
 }
@@ -1493,44 +1512,23 @@ tr.is-muted td {
 
 /* ---------- typographic air ---------- */
 
-/* Prose blocks were set at the same tight leading as table rows, which
-   on a page this explanatory made every note read as a solid block. */
-.panel-note,
-.page-sub,
-.chart-caption,
-.figure-note,
-.empty-state-reason,
-.reason-list {
-  line-height: 1.6;
-  max-width: 74ch;
-}
-
 /* A limitations list is the longest text on most of these pages and it
    was leaving half the panel empty on a wide screen. Two columns above
    the point where a single column stops being a comfortable measure. */
 @media (min-width: 1100px) {
-  /* .panel-limitations ul is listed too, and by name: it carries its own
-     76ch cap at a higher specificity, so widening .reason-list alone left
-     every limitations panel on the site still in one narrow column. */
-  .reason-list,
-  .panel-limitations ul {
+  .reason-list {
     columns: 2;
-    column-gap: 2.8rem;
+    column-gap: var(--s-6);
     max-width: none;
   }
 
-  .reason-list li,
-  .panel-limitations ul li {
+  .reason-list li {
     break-inside: avoid;
   }
 }
 
-.page-sub {
-  font-size: 1.02rem;
-}
-
 .driver-picker {
-  gap: 0.45rem;
+  gap: var(--s-2);
 }
 
 /* Compound bars carry a hairline outline so the hard band (a light
@@ -1876,7 +1874,7 @@ tbody tr.is-on {
 }
 
 .module-card {
-  background: var(--glass-tint-strong);
+  background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: 10px;
   color: inherit;
@@ -1928,7 +1926,7 @@ tbody tr.is-on {
 }
 
 .related-link {
-  background: var(--glass-tint-strong);
+  background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: 10px;
   box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
@@ -2055,20 +2053,10 @@ tbody tr.is-on {
    The opaque fallbacks are the same colours the glass resolves to, so
    nothing moves and nothing changes contrast — only the material. */
 @media (prefers-reduced-transparency: reduce) {
-  .app-bar,
-  .panel,
-  .empty-state,
-  .warning-banner,
-  .figure,
-  .module-card,
-  .related-link,
-  .controls-row select,
-  .driver-chip,
-  .mode-switch,
-  .rig-hint {
+  .app-bar {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background: var(--bg-2);
+    background: var(--surface-2);
   }
 
   .app-shell::after {
@@ -2197,9 +2185,7 @@ tbody tr.is-on {
   display: inline-flex;
   border: 1px solid var(--line-strong);
   border-radius: 7px;
-  background: var(--glass-tint-strong);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  background: var(--surface-2);
   overflow: hidden;
   box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
 }
@@ -2240,7 +2226,7 @@ tbody tr.is-on {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-2);
-  background: var(--glass-tint-strong);
+  background: var(--surface-2);
   padding: 0.35rem 0.6rem;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -2259,7 +2245,7 @@ tbody tr.is-on {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 0.5rem 1.4rem;
-  background: var(--glass-tint-strong);
+  background: var(--surface-2);
   border: 1px solid var(--line);
   border-top: none;
   border-radius: 0 0 10px 10px;

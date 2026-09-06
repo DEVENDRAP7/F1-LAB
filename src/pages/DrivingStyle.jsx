@@ -200,11 +200,14 @@ export default function DrivingStyle() {
       </header>
 
       <div className="warning-banner" role="note">
-        <strong>There is no better column here.</strong> Carrying more speed into a corner
-        is not superior to braking later and turning tighter — they are different ways round
-        the same piece of track, and which one is quicker depends on the corner, the car and
-        the tyre. Every figure is one lap, on that lap's fuel and tyre, from channels the
-        source publishes rather than anything fitted.
+        <strong>There is no better column here.</strong> These are different ways round the
+        same piece of track, not a ranking.
+        <Method label="Why not">
+          Carrying more speed into a corner is not superior to braking later and turning
+          tighter; which is quicker depends on the corner, the car and the tyre. Every figure
+          is one lap, on that lap's fuel and tyre, from channels the source publishes rather
+          than anything fitted.
+        </Method>
       </div>
 
       {pastRounds.length > 0 && (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cssToken } from '../theme/palette.js';
 import { formatDuration } from '../lib/formatTime.js';
+import { Method } from './Disclosure.jsx';
 
 // Where the model's runs landed, against the race that actually happened.
 //
@@ -98,11 +99,11 @@ export default function OutcomeChart({ totals, actualS, height = 200 }) {
         role="img"
         aria-label="Distribution of modelled race times, with the actual race time marked"
       />
-      <p className="chart-caption">
+      <Method label="Where the spread comes from">
         Each bar counts runs of the model that landed in that range of total race time. The
         spread comes from sampling each stint's degradation rate inside its fitted confidence
         interval and each stop inside the scatter of this driver's own measured stops.
-      </p>
+      </Method>
     </div>
   );
 }

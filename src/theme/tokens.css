@@ -70,6 +70,19 @@
    * what the eye reads as height — the first says "it is touching
    * here", the second says "it is above that".
    */
+  /* ---------- surfaces ----------
+   *
+   * Glass is now ONE element: the sticky header, which is the only
+   * surface content actually passes behind and therefore the only one
+   * where a blur describes anything real. Everywhere else it was a
+   * translucent tint over a fixed background — the same flat colour
+   * every time, computed the expensive way, on eight large elements a
+   * page. Panels are opaque now, and the data on them reads louder for
+   * it.
+   */
+  --surface-1: #101520;
+  --surface-2: #182031;
+
   --glass-tint: rgba(24, 32, 49, 0.72);
   --glass-tint-strong: rgba(30, 40, 62, 0.86);
   --glass-blur: blur(18px) saturate(135%);
@@ -187,7 +200,48 @@
   --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'IBM Plex Mono',
     'Cascadia Mono', Menlo, Consolas, monospace;
 
+  /* ---------- scales ----------
+   *
+   * There were about eleven font sizes on this site, each picked where
+   * it was needed, and no spacing scale at all. That is why four later
+   * sections of base.css exist only to re-set the line-height and
+   * measure of things an earlier rule had already set: with no scale to
+   * appeal to, every fix was a new rule rather than a corrected value.
+   *
+   * Type is a 1.15 ratio off a 15px body. Anything smaller than --t-xs
+   * is not a size, it is a mistake — 11px body copy fails contrast at
+   * these inks whatever the colour says.
+   */
+  --t-xs: 0.75rem;
+  --t-sm: 0.8125rem;
+  --t-md: 0.875rem;
+  --t-lg: 1rem;
+  --t-xl: 1.25rem;
+  --t-display: clamp(1.55rem, 1.1rem + 1.5vw, 2.15rem);
+
+  /* Space is a 4px grid. Every margin, gap and pad on the shell comes
+     from here, so vertical rhythm is a property of the system rather
+     than of whoever wrote the rule. */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+
+  /* One measure for prose, one for lists that run wide. Set once. */
+  --measure: 68ch;
+
+  /* The sticky header's height, so the toolbar under it knows where to
+     stop. Measured, not guessed: 0.55rem of padding either side of a
+     2.06rem trigger, plus the border. */
+  --bar-h: 52px;
+
   --radius: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
 }
 
 @media (prefers-color-scheme: light) {
@@ -221,6 +275,9 @@
        darker, the rim stays white but has less to catch, and the
        shadows are cool and much weaker — a hard black shadow on white
        reads as a sticker, not as glass. */
+    --surface-1: #ffffff;
+    --surface-2: #f5f7fb;
+
     --glass-tint: rgba(255, 255, 255, 0.78);
     --glass-tint-strong: rgba(255, 255, 255, 0.92);
     --glass-rim: rgba(255, 255, 255, 0.9);

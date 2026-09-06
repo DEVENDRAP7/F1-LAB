@@ -32,15 +32,20 @@ export default function Home() {
       grab('2026/refusals.json'),
     ]).then(([season, telemetry, refusals]) => {
       if (cancelled) return;
-      const today = new Date().toISOString().slice(0, 10);
-      const run = (season?.calendar ?? []).filter((r) => r.date <= today);
+      // Counted off what was actually exported, not off the calendar.
+      // The calendar knows a race has happened the moment its date
+      // passes; the pipeline does not run until afterwards. On a race
+      // Sunday this tile read "13 races run and ingested" over a tree
+      // holding twelve — a landing page overstating its own scale, on a
+      // site whose argument is that it does not do that.
+      const ingested = Object.keys(telemetry?.rounds ?? {});
       const sessions = Object.values(telemetry?.rounds ?? {})
         .flatMap((entry) => Object.values(entry))
         .filter((entry) => (entry.drivers?.length ?? 0) > 0);
       const whatif = (refusals?.groups ?? []).find((g) => g.module === 'What-If Engine');
 
       setStats({
-        rounds: run.length,
+        rounds: ingested.length,
         drivers: (season?.entryList ?? []).length,
         sessions: sessions.length,
         lines: sessions.reduce((total, entry) => total + entry.drivers.length, 0),
@@ -70,7 +75,7 @@ export default function Home() {
           <div className="figure">
             <p className="figure-label">Rounds</p>
             <p className="figure-value mono">{stats.rounds}</p>
-            <p className="figure-sample">races run and ingested</p>
+            <p className="figure-sample">races ingested and published</p>
           </div>
           <div className="figure">
             <p className="figure-label">Sessions with racing lines</p>

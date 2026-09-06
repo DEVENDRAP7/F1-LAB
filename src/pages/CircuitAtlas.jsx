@@ -54,10 +54,28 @@ export default function CircuitAtlas() {
         // Default to the most recent round that has run, unless the URL
         // already names a circuit on this calendar — a shared link should
         // land on the track it says, not on whatever is newest.
-        const run = season.calendar.filter((r) => r.date <= today);
+        //
+        // "Has run" comes off the calendar, and the calendar knows a race
+        // has happened before the pipeline has traced it: the page was
+        // landing on the newest calendar round, asking for a circuit file
+        // that did not exist yet, and opening on an empty state with a 404
+        // in the console. So the default walks back to the newest round
+        // that actually has geometry published.
         const known = new Set(season.calendar.map((r) => r.circuitId));
-        const newest = run.length > 0 ? run[run.length - 1].circuitId : '';
-        setSelected((current) => (known.has(current) ? current : newest));
+        // `selected` here is the value at first render — this effect runs
+        // once — which is exactly "did the URL name a circuit".
+        if (known.has(selected)) return;
+        const run = season.calendar.filter((r) => r.date <= today).reverse();
+        (async () => {
+          for (const round of run) {
+            const res = await fetch(dataPath(`circuits/${round.circuitId}.json`))
+              .catch(() => null);
+            if (res?.ok) {
+              if (!cancelled) setSelected(round.circuitId);
+              return;
+            }
+          }
+        })();
       })
       .catch(() => {
         if (!cancelled) setState({ status: 'empty', season: null });
@@ -278,9 +296,7 @@ export default function CircuitAtlas() {
           {circuitPitLoss && !circuitPitLoss.pitLoss.published && (
             <p className="chart-caption">
               <strong>No pit loss published for this circuit.</strong>{' '}
-              {circuitPitLoss.pitLoss.withheldReason}. Every stop this project measures is
-              the in-lap and out-lap running slower than that driver's own fitted pace, added
-              together — so it is what the stop cost, not the pit lane's own delta.
+              {circuitPitLoss.pitLoss.withheldReason}.
             </p>
           )}
 

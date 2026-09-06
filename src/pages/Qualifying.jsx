@@ -90,10 +90,13 @@ export default function Qualifying() {
       </header>
 
       <div className="warning-banner" role="note">
-        <strong>The car is the same; the session is not.</strong> A red flag, an out-lap in
-        traffic, or a track that improved after one driver's run all land in this count. It
-        says what happened over {doc.data.rounds.length} rounds, with the sample beside every
-        figure, and the gap always names the segment it was measured in.
+        <strong>The car is the same; the session is not.</strong> This says what happened
+        over {doc.data.rounds.length} rounds, not who is quicker.
+        <Method label="What lands in the count">
+          A red flag, an out-lap in traffic, or a track that improved after one driver's run.
+          The sample sits beside every figure, and the gap always names the segment it was
+          measured in.
+        </Method>
       </div>
 
       <section className="panel">

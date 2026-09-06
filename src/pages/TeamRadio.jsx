@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
-import { Limitations } from '../components/Disclosure.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 
@@ -94,12 +94,14 @@ export default function TeamRadio() {
 
       <div className="warning-banner" role="note">
         <strong>Nothing here is transcribed, and nothing is inferred.</strong> This page
-        records that a radio message exists, the lap it happened on, and where to hear it.
-        It does not say what was said: a transcript produced here would be this project's
-        paraphrase standing where a quotation belongs. It does not read tone, subject or
-        mood either. And these are <em>broadcast selections</em> — only a limited part of
-        the radio is released, so a driver with more clips is a driver television chose more
-        often, not a driver who said more.
+        records that a message exists, the lap it happened on, and where to hear it.
+        <Method label="And what it deliberately does not do">
+          It does not say what was said: a transcript produced here would be this project's
+          paraphrase standing where a quotation belongs. It does not read tone, subject or
+          mood. And these are <em>broadcast selections</em> — only a limited part of the
+          radio is released, so a driver with more clips is one television chose more often,
+          not one who said more.
+        </Method>
       </div>
 
       {races.length > 0 && (

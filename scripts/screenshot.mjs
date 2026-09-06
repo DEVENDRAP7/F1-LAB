@@ -48,10 +48,25 @@ await new Promise((r) => server.listen(PORT, r));
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const problems = [];
 
+/* Several pages open on "the newest round that actually has data" by
+   fetching rounds newest-first and stepping back past whatever 404s.
+   That is the intended behaviour — the calendar knows a race has
+   happened before the pipeline has ingested it — so those misses are
+   collected apart from real problems. Any other 404 (a chunk, an
+   asset, a data file a page committed to) still fails. */
+const probes = [];
+const isRoundProbe = (url) => /\/data\/(2026\/\d+|circuits)\//.test(url);
+const note = (name, res) => {
+  const line = `${name} HTTP ${res.status()} ${res.url()}`;
+  (res.status() === 404 && isRoundProbe(res.url()) ? probes : problems).push(line);
+};
+
 async function openStrategy(page, driverCount) {
-  page.on('console', (m) => m.type() === 'error' && problems.push(`console: ${m.text()}`));
+  page.on('console', (m) => m.type() === 'error'
+    && !m.text().includes('Failed to load resource')
+    && problems.push(`console: ${m.text()}`));
   page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
-  page.on('response', (r) => r.status() >= 400 && problems.push(`HTTP ${r.status()} ${r.url()}`));
+  page.on('response', (r) => r.status() >= 400 && note('strategy', r));
   await page.goto(`http://localhost:${PORT}${BASE}/#/strategy`, { waitUntil: 'networkidle' });
   // Round 12 is the newest race and the one with a matched compound set,
   // so the shot shows the tyre colouring rather than the fallback ramp.
@@ -101,10 +116,12 @@ for (const [route, name] of [['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/wh
 
 // Every route, so a page that regressed is not missed just because the
 // one under active development still renders.
-for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/circuits', 'circuits'], ['/lines', 'lines'], ['/upcoming', 'upcoming'], ['/errors', 'errors'], ['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/whatif', 'whatif'], ['/qualifying', 'qualifying'], ['/sprint', 'sprint'], ['/radio', 'radio'], ['/style', 'style'], ['/refusals', 'refusals']]) {
+for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/strategy', 'strategy-default'], ['/circuits', 'circuits'], ['/lines', 'lines'], ['/upcoming', 'upcoming'], ['/errors', 'errors'], ['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/whatif', 'whatif'], ['/qualifying', 'qualifying'], ['/sprint', 'sprint'], ['/radio', 'radio'], ['/style', 'style'], ['/refusals', 'refusals']]) {
   const p2 = await browser.newPage({ viewport: { width: 1280, height: 1000 }, colorScheme: 'dark' });
-  p2.on('response', (r) => r.status() >= 400 && problems.push(`${name} HTTP ${r.status()} ${r.url()}`));
-  p2.on('console', (m) => m.type() === 'error' && problems.push(`${name} console: ${m.text()}`));
+  p2.on('response', (r) => r.status() >= 400 && note(name, r));
+  p2.on('console', (m) => m.type() === 'error'
+    && !m.text().includes('Failed to load resource')
+    && problems.push(`${name} console: ${m.text()}`));
   p2.on('pageerror', (e) => problems.push(`${name} pageerror: ${e.message}`));
   await p2.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
   await p2.waitForTimeout(700);
@@ -116,7 +133,7 @@ for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/circuits',
 
 // Same routes at phone width — "no overflow" alone is not "looks good",
 // so these get eyeballed, not just measured.
-for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/circuits', 'circuits'], ['/lines', 'lines'], ['/upcoming', 'upcoming'], ['/errors', 'errors'], ['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/whatif', 'whatif'], ['/qualifying', 'qualifying'], ['/sprint', 'sprint'], ['/radio', 'radio'], ['/style', 'style'], ['/refusals', 'refusals']]) {
+for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/strategy', 'strategy-default'], ['/circuits', 'circuits'], ['/lines', 'lines'], ['/upcoming', 'upcoming'], ['/errors', 'errors'], ['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/whatif', 'whatif'], ['/qualifying', 'qualifying'], ['/sprint', 'sprint'], ['/radio', 'radio'], ['/style', 'style'], ['/refusals', 'refusals']]) {
   const m2 = await browser.newPage({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
   await m2.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
   await m2.waitForTimeout(700);
@@ -202,6 +219,9 @@ console.log('desktop:', JSON.stringify(desktopStats));
 console.log('mobile :', JSON.stringify(mobileStats),
   mobileStats.scrollW > mobileStats.clientW ? 'HORIZONTAL OVERFLOW' : 'no overflow');
 console.log('problems:', problems.length ? problems : 'none');
+if (probes.length) {
+  console.log(`round probes that 404'd (expected): ${probes.length}`);
+}
 console.log('wrote /tmp/strategy.png, /tmp/strategy-mobile.png, /tmp/strategy-light.png');
 
 await browser.close();

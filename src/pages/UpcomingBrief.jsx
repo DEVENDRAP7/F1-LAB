@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
+import { Method } from '../components/Disclosure.jsx';
 
 // M6 — Upcoming Race Brief. Everything on this page is a record of past
 // editions of the circuit the next round visits. Nothing here is a
@@ -91,10 +92,12 @@ export default function UpcomingBrief() {
 
       <div className="warning-banner" role="note">
         <strong>These are records, not forecasts.</strong> Every figure below counts what
-        happened at this circuit in earlier seasons. 2026 is the first year of a new set
-        of technical regulations, so the cars that set these numbers are not the cars
-        about to race — treat the priors as weak, and read the sample count under each
-        one before leaning on it.
+        happened at this circuit in earlier seasons.
+        <Method label="Why the priors are weak">
+          2026 is the first year of a new set of technical regulations, so the cars that set
+          these numbers are not the cars about to race. Read the sample count under each one
+          before leaning on it.
+        </Method>
       </div>
 
       {!history || history.editions === 0 ? (

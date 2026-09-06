@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatDelta } from '../lib/formatTime.js';
+import { Method } from './Disclosure.jsx';
 
 // M4 undercut/overcut ledger. Each row is one stop measured against one
 // rival who was close and had not yet stopped: how the gap stood before,
@@ -99,12 +100,12 @@ export default function UndercutLedger({ undercuts, excluded, driverFilter, code
       )}
 
       <div className="ledger-footnotes">
-        <p className="chart-caption">
+        <Method label="How to read the columns">
           Gap is the difference in elapsed race time, so positive means the stopper is
           ahead. <strong>Net</strong> is how that gap moved across the stop: positive means
           the stopper came out better off than they went in. It measures what happened, not
           what would have happened had they stayed out.
-        </p>
+        </Method>
         {neutralised.length > 0 && (
           <button
             type="button"

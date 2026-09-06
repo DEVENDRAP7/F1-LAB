@@ -141,11 +141,36 @@ export default function RaceStrategy() {
   // Open on the most recent race that has been run, the way the other
   // per-round pages do. Defaulting to round 1 meant the page opened on
   // the oldest race in the season by accident.
+  //
+  // "Has run" is a calendar fact and "has data" is a pipeline fact, and
+  // they disagree for as long as it takes the refresh workflow to run
+  // after a race. This page took the calendar's word for it, so on a
+  // race day /strategy opened on a round with no laps exported and
+  // showed its empty state — the module's front door, empty, on the one
+  // day most people would look at it. Every other page that picks a
+  // default already walks back; this one now does too.
   useEffect(() => {
-    if (season.status !== 'ready' || round) return;
+    if (season.status !== 'ready' || round) return undefined;
+    let cancelled = false;
     const today = new Date().toISOString().slice(0, 10);
-    const run = season.data.calendar.filter((r) => r.date <= today);
-    if (run.length > 0) setRound(String(run[run.length - 1].round));
+    const candidates = season.data.calendar
+      .filter((r) => r.date <= today)
+      .map((r) => r.round)
+      .reverse();
+
+    (async () => {
+      for (const candidate of candidates) {
+        const res = await fetch(dataPath(`2026/${candidate}/R/laps.json`)).catch(() => null);
+        if (res?.ok) {
+          if (!cancelled) setRound(String(candidate));
+          return;
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [season, round]);
 
   const degradationRows = useMemo(() => {
@@ -453,12 +478,12 @@ export default function RaceStrategy() {
                 </tbody>
               </table>
             </div>
-            <p className="chart-caption">
-              A negative trend means the driver got <em>faster</em> through the stint. That
-              is normal and is not evidence of tyres improving: the slope also contains
-              fuel burn and track evolution, which this source cannot separate from tyre
-              degradation. Read it as net pace change per lap, not as a degradation rate.
-            </p>
+            <Method label="Why a negative trend is normal">
+              A negative trend means the driver got <em>faster</em> through the stint, which
+              is not evidence of tyres improving: the slope also contains fuel burn and
+              track evolution, which this source cannot separate from tyre degradation. Read
+              it as net pace change per lap, not as a degradation rate.
+            </Method>
           </section>
 
           {raceConditions && (
@@ -517,17 +542,17 @@ export default function RaceStrategy() {
                       </p>
                     </div>
                   </div>
-                  <p className="chart-caption">
+                  <Method label="What the median hides">
                     A median across the whole race, so a race that started dry and finished
-                    wet has a figure describing neither half — which is why the range is
-                    published with it:{' '}
+                    wet has a figure describing neither half — which is why the range ships
+                    with it:{' '}
                     <span className="mono">
                       track {raceConditions.conditions.trackside.trackRange?.minC?.toFixed(0)}–
                       {raceConditions.conditions.trackside.trackRange?.maxC?.toFixed(0)}°C
                     </span>
-                    . No figure anywhere on this site is corrected for any of this; the
-                    conditions are stated so a reader can see what a number was measured in.
-                  </p>
+                    . No figure on this site is corrected for any of it; the conditions are
+                    stated so a reader can see what a number was measured in.
+                  </Method>
                 </>
               ) : (
                 <EmptyState
@@ -579,13 +604,13 @@ export default function RaceStrategy() {
                       </p>
                     </div>
                   </div>
-                  <p className="chart-caption">
+                  <Method label="How completeness is measured">
                     The publisher calls this feed incomplete, so rather than repeat that,
                     the page measures it. Each driver's net position change is known
                     independently — grid minus finish, from the official results — and the
-                    feed implies its own. The gap between two accounts of the same quantity
-                    is what the feed missed.
-                  </p>
+                    feed implies its own. The gap between the two accounts of the same
+                    quantity is what the feed missed.
+                  </Method>
                 </>
               ) : (
                 <EmptyState
