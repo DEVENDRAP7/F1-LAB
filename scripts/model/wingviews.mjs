@@ -73,6 +73,14 @@ scene.add(fill);
 const params = new URLSearchParams(location.search);
 const view = params.get('view');
 const region = view.startsWith('front') ? 'front' : 'rear';
+// A named direction per view. 'rear-front45' looks BACK at the rear wing
+// from ahead of it — 45 degrees in plan, which is the angle that shows
+// the slot gaps between the elements rather than the endplate.
+const DIRS = {
+  'front-3q': [-0.66, 0.40, 0.64],
+  'rear-3q': [0.66, 0.40, 0.64],
+  'rear-front45': [-0.707, 0.30, 0.707],
+};
 const top = view.endsWith('-top');
 const PARTS = { front: ['frontWing', 'frontFlap'], rear: ['rearWing', 'rearFlap'] };
 
@@ -105,7 +113,7 @@ loader.load('/public/models/2026/car.glb', (gltf) => {
     camera.position.set(mid.x, mid.y + dist, 0.0001);
     camera.up.set(1, 0, 0);
   } else {
-    const dir = new THREE.Vector3(region === 'front' ? -0.66 : 0.66, 0.40, 0.64).normalize();
+    const dir = new THREE.Vector3(...DIRS[view]).normalize();
     camera.position.copy(mid).addScaledVector(dir, dist);
     camera.up.set(0, 1, 0);
   }
@@ -120,7 +128,8 @@ fs.writeFileSync(path.join(ROOT, 'scripts/model/.wingviews.html'), page);
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const out = path.join(ROOT, 'scripts/model/preview');
 fs.mkdirSync(out, { recursive: true });
-for (const view of ['front-top', 'front-3q', 'rear-top', 'rear-3q']) {
+const only = process.argv[2];
+for (const view of (only ? [only] : ['front-top', 'front-3q', 'rear-top', 'rear-3q', 'rear-front45'])) {
   const tab = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   await tab.goto(`http://localhost:${PORT}/scripts/model/.wingviews.html?view=${view}`);
   await tab.waitForFunction('window.__ready === true', { timeout: 60000 });

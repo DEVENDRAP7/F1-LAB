@@ -34,7 +34,11 @@ pipeline/.cache/
 # Env
 .env
 .env.local
+# The render harnesses write their page out before driving it. Generated,
+# and one per harness.
 scripts/model/.preview.html
+scripts/model/.flaps.html
+scripts/model/.wingviews.html
 scripts/model/preview/
 scripts/model/donor/scene.bin
 scripts/audio/*.wav
