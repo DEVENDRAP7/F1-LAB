@@ -33,7 +33,7 @@ export const DEMOS = [
       + 'and four upshifts to the first corner.',
     duration: 15,
     frames: [
-      { t: 0.0, gear: 0, rpm: 4200, speed: 0, clutch: 1, throttle: 0.15, strategy: 6, engine: 2, override: false, mode: 'Z', caption: 'On the grid, on the warm-up setting: energy into the tyres and brakes. Neutral, clutch paddles pulled in.' },
+      { t: 0.0, gear: 0, rpm: 4200, speed: 0, clutch: 1, throttle: 0.15, strategy: 6, engine: 2, override: false, mode: 'OFF', caption: 'On the grid, on the warm-up setting: energy into the tyres and brakes. Neutral, clutch paddles pulled in.' },
       { t: 2.2, gear: 0, rpm: 4200, speed: 0, clutch: 1, throttle: 0.15 },
       { t: 2.6, gear: 1, rpm: 4600, speed: 0, clutch: 1, throttle: 0.2, strategy: 0, caption: 'First gear. The clutch is the only thing holding the car.' },
       { t: 3.4, gear: 1, rpm: 11400, speed: 0, clutch: 1, throttle: 1, caption: 'Lights out — revs up against the clutch.' },
@@ -59,20 +59,20 @@ export const DEMOS = [
   {
     id: 'overtake',
     name: 'Active aero · overtake',
-    blurb: 'Strategy to OVTK, the override pressed, and X-mode flattening both '
-      + 'wings down the straight — then Z-mode again for the braking zone.',
+    blurb: 'Strategy to OVTK, the override pressed, and active aero flattening both '
+      + 'wings down the straight — then loaded again for the braking zone.',
     duration: 17,
     frames: [
-      { t: 0.0, gear: 7, rpm: 13200, speed: 288, clutch: 0, throttle: 1, strategy: 0, engine: 2, override: false, mode: 'Z', caption: 'A second behind, in the dirty air, onto the straight.' },
+      { t: 0.0, gear: 7, rpm: 13200, speed: 288, clutch: 0, throttle: 1, strategy: 0, engine: 2, override: false, mode: 'OFF', caption: 'A second behind, in the dirty air, onto the straight.' },
       { t: 2.0, gear: 7, rpm: 13700, speed: 296 },
       { t: 2.6, gear: 7, rpm: 13900, speed: 299, strategy: 2, engine: 6, caption: 'Strategy to OVTK. One switch moves deployment, engine map and differential together.' },
       { t: 3.6, gear: 7, rpm: 14250, speed: 304, override: true, caption: 'Override pressed — a burst of extra electrical deployment. This is what replaced DRS as the overtaking tool.' },
-      { t: 4.4, gear: 7, rpm: 14700, speed: 312, mode: 'X', caption: 'X-mode. Both wings flatten: less downforce, and much less drag. Watch the car above.' },
+      { t: 4.4, gear: 7, rpm: 14700, speed: 312, mode: 'ON', caption: 'Active aero on. Both wings flatten: less downforce, and much less drag. Watch the car above.' },
       { t: 5.4, gear: 7, rpm: 14850, speed: 318 },
       { t: 5.7, gear: 8, rpm: 12400, speed: 322, caption: 'Eighth, on the limiter. The strip runs red and flashes before every upshift.' },
       { t: 7.6, gear: 8, rpm: 13900, speed: 339 },
       { t: 9.4, gear: 8, rpm: 14850, speed: 352, caption: 'Alongside, and the move is done before the braking board.' },
-      { t: 10.6, gear: 8, rpm: 14700, speed: 348, mode: 'Z', override: false, throttle: 1, caption: 'Z-mode. The wings load up again — a car cannot brake or turn on a flattened wing.' },
+      { t: 10.6, gear: 8, rpm: 14700, speed: 348, mode: 'OFF', override: false, throttle: 1, caption: 'Active aero off. The wings load up again — a car cannot brake or turn on a flattened wing.' },
       { t: 11.4, gear: 8, rpm: 12600, speed: 330, throttle: 0 },
       { t: 12.2, gear: 6, rpm: 12900, speed: 252, throttle: 0, caption: 'Hard on the brakes, downshifting through the box — the revs come back up on every downshift.' },
       { t: 13.0, gear: 4, rpm: 12400, speed: 168, throttle: 0 },

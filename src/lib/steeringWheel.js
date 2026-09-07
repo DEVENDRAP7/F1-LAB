@@ -263,7 +263,7 @@ export function atRevLimit(rpm, limit = REV_LIMIT) {
 export const STATUS_LAMPS = [
   { id: 'limiter', tone: 'c', text: 'pit lane limiter armed' },
   { id: 'override', tone: 'a', text: 'override deploying' },
-  { id: 'aero', tone: 'd', text: 'X-mode, wings flattened' },
+  { id: 'aero', tone: 'd', text: 'active aero on, wings flattened' },
   { id: 'neutral', tone: 'b', text: 'neutral selected' },
 ];
 
@@ -292,7 +292,7 @@ export const FIXTURES = [
     name: 'Status lamps',
     text: 'Four indicators either side of the screen, repeated so one is always in the '
       + 'driver’s eyeline whichever way the wheel is turned: pit limiter, override, '
-      + 'X-mode, and neutral. Each lights when you put this wheel into that state.',
+      + 'active aero, and neutral. Each lights when you put this wheel into that state.',
   },
   {
     id: 'shift',

@@ -52,7 +52,7 @@ describe('stateAt', () => {
         expect(s.speed, `${demo.id} @${t} speed`).toBeGreaterThanOrEqual(0);
         expect(s.throttle).toBeGreaterThanOrEqual(0);
         expect(s.throttle).toBeLessThanOrEqual(1);
-        expect(['Z', 'X']).toContain(s.mode);
+        expect(['OFF', 'ON']).toContain(s.mode);
       }
     }
   });
@@ -85,14 +85,14 @@ describe('stateAt', () => {
   });
 
   it('flattens the wings only while the override is on', () => {
-    // X-mode is a straight-line state. If the demo ever left the wings
+    // Aero on is a straight-line state. If the demo ever left the wings
     // flat into the braking zone it would be teaching the wrong thing.
     const demo = byId('overtake');
     for (let t = 0; t <= demo.duration; t += 0.1) {
       const s = stateAt(demo, t);
-      if (s.mode === 'X') expect(s.throttle, `@${t.toFixed(1)}`).toBeGreaterThan(0.5);
+      if (s.mode === 'ON') expect(s.throttle, `@${t.toFixed(1)}`).toBeGreaterThan(0.5);
     }
-    expect(stateAt(demo, demo.duration).mode).toBe('Z');
+    expect(stateAt(demo, demo.duration).mode).toBe('OFF');
   });
 
   it('puts the overtake back on the race strategy by the end', () => {

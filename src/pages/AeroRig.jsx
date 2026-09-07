@@ -25,14 +25,19 @@ import { useUrlSelection, useUrlState } from '../lib/urlState.js';
 
 const MAX_COMPARE = 3;
 
+// The regulations name these Z-mode and X-mode, but the switch said
+// "Z · loaded" over a car whose wings were flat and "X · flat" over one
+// whose wings were loaded — both labels on the wrong car, because the
+// donor's rest pose is the flattened one. Named for what the system is
+// doing instead, which needs no glossary either.
 const MODE_COPY = {
-  Z: {
-    label: 'Z-mode · loaded',
+  OFF: {
+    label: 'Active aero off · loaded',
     text: 'Both wings at their race angle: the load a driver corners with.',
   },
-  X: {
-    label: 'X-mode · flattened',
-    text: 'Both wings flattened for the straight — active aero trading load for top speed.',
+  ON: {
+    label: 'Active aero on · flattened',
+    text: 'Both wings flattened for the straight — trading load for top speed.',
   },
 };
 
@@ -43,7 +48,7 @@ export default function AeroRig() {
   const [session, setSession] = useUrlState('session', 'Q');
   const setSelection = useUrlSelection({ session: 'Q' });
   const [selected, setSelected] = useState([]);
-  const [mode, setMode] = useState('Z');
+  const [mode, setMode] = useState('OFF');
   const [selectedPart, setSelectedPart] = useState(null);
 
   useEffect(() => {
@@ -180,7 +185,7 @@ export default function AeroRig() {
             The flap angle changes and the ribbons follow it — turned hard by a loaded wing,
             passing straighter over a flattened one. That is a drawing, not a solution:
             there is no flow field here and the size of the difference is chosen to read
-            clearly rather than computed. No lap below is measured in X-mode, because the
+            clearly rather than computed. No lap below is measured with active aero on, because the
             sport does not publish which mode a car was in.
           </Method>
         </div>
@@ -189,11 +194,11 @@ export default function AeroRig() {
           <AeroRigViewport mode={mode} onPick={setSelectedPart} className="rig-canvas" />
           <div className="rig-hud">
             <div className="mode-switch" role="group" aria-label="Active-aero mode">
-              <button type="button" aria-pressed={mode === 'Z'} onClick={() => setMode('Z')}>
-                Z · loaded
+              <button type="button" aria-pressed={mode === 'OFF'} onClick={() => setMode('OFF')}>
+                Aero off · loaded
               </button>
-              <button type="button" aria-pressed={mode === 'X'} onClick={() => setMode('X')}>
-                X · flat
+              <button type="button" aria-pressed={mode === 'ON'} onClick={() => setMode('ON')}>
+                Aero on · flat
               </button>
             </div>
             <span className="rig-hint rig-hint-drag">drag to orbit · scroll to zoom</span>
@@ -239,7 +244,7 @@ export default function AeroRig() {
           <h2>The wheel in the driver's hands</h2>
           <p className="panel-note">
             Hover or tap any control. The <span className="mono">AERO</span> button is the
-            same Z-to-X switch as the one above the car.
+            same active-aero switch as the one above the car.
           </p>
           <Method label="How faithful this layout is">
             Every control here is one the real cars carry, several required by the

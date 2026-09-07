@@ -108,7 +108,7 @@ load time rather than written into the copy.
   the neutral button and the shift paddles drive the gear on the display,
   and two scripted sequences — a race start, and an overtake on active aero
   and the override — run the wheel and the car together, flattening the
-  wings on the model above as the wheel calls for X-mode. Those sequences
+  wings on the model above as the wheel calls for active aero. Those sequences
   are illustrative and say so on the page: nobody publishes a gear ratio
   set, a shift point, or what a deployment mode is worth, so the speeds and
   revs are a plausible shape rather than a measurement, and nothing else on

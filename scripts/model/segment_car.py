@@ -189,8 +189,8 @@ def part_of(x, y, z):
 # coloured by height band and every element is striped through every
 # colour. Two versions of this file tried a band anyway; the front one
 # was not on a wing element at all, it was a slice through the nose and
-# endplate fairing, and in X-mode it swung up out of the bodywork and
-# left a hole.
+# endplate fairing, and with the aero deployed it swung up out of the
+# bodywork and left a hole.
 #
 # What does work: each element is a smooth surface, and the gaps between
 # them are gaps in space rather than creases, but the elements only touch

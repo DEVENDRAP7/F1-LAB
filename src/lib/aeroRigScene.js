@@ -19,7 +19,7 @@ import { needsResize } from './canvasSize.js';
 // aeroRigParts.js for that — it only ever hands back the raw part key a
 // click landed on, through onPick.
 export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {} } = {}) {
-  let currentMode = 'Z';
+  let currentMode = 'OFF';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
@@ -271,9 +271,9 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
   }
 
   function updateFlow(t, flat) {
-    // `flat` is 0 in Z-mode and 1 in X-mode, eased by the same lerp the
-    // flaps use, so the flow settles as the wings move rather than
-    // snapping. A flattened wing turns the air far less, and showing
+    // `flat` is 1 when the wings are at rest and 0 when they are loaded,
+    // eased by the same lerp the flaps use, so the flow settles as the
+    // wings move rather than snapping. A flattened wing turns the air far less, and showing
     // that is the only thing the toggle can honestly say about drag —
     // the size of the difference here is drawn, not computed.
     const upwash = 0.42 * (1 - flat * 0.78);
@@ -410,28 +410,21 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
 
   /* ---------------- aero mode ---------------- */
 
-  // Angles are a drawing, not a specification. No published source gives a
-  // flap angle for either mode, so these are chosen to read clearly and the
-  // panel beside them says exactly that.
+  // Angles are a drawing, not a specification. No published source gives
+  // a flap angle for either state, so these are chosen to read clearly
+  // and the panel beside them says exactly that. They came down from
+  // 0.36/0.34 after reference photographs of a real active-aero change:
+  // the difference is modest, and the element stays inside its endplate
+  // rather than swinging clear of the car.
   //
-  // Z-mode is ZERO because the model arrives with its wings already at
-  // their loaded angle — the previous numbers were measured from a flat
-  // baseline, which was right for the lofted wings and swung this one's
-  // rear flap thirty-five degrees out of its own bodywork. X-mode is a
-  // positive rotation about z, which lifts each trailing edge and so
-  // flattens the element.
-  //
-  // The front was held at 0.26 while its flap bucket still contained the
-  // nose cone — any more and the nose visibly tore off. With the flap
-  // properly isolated it can take the same rotation as the rear, which
-  // is what makes the change legible from the side.
-  // How far the elements travel between modes. Not a published figure —
-  // no team states a flap angle — so this is chosen to read clearly, and
-  // the page says so. It came down from 0.36/0.34 after the reference
-  // photographs: the real change is modest, and the element stays inside
-  // its endplate rather than swinging clear of the car.
-  const MODE_ANGLE = { Z: { front: 0, rear: 0 }, X: { front: 0.24, rear: 0.28 } };
-  let flapNow = { front: MODE_ANGLE.Z.front, rear: MODE_ANGLE.Z.rear };
+  // ZERO rotation is aero ON, because the model's own rest pose is the
+  // FLAT one — the rotation loads the wings up rather than flattening
+  // them. An older comment here claimed the opposite and the two states
+  // were named accordingly, which put both labels on the wrong car: the
+  // one called "loaded" was the flat one. Trust the render, not the
+  // note.
+  const MODE_ANGLE = { ON: { front: 0, rear: 0 }, OFF: { front: 0.24, rear: 0.28 } };
+  let flapNow = { front: MODE_ANGLE.OFF.front, rear: MODE_ANGLE.OFF.rear };
 
   /* ---------------- render loop ---------------- */
 
@@ -476,7 +469,11 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
     frontFlapPivot.rotation.z = flapNow.front;
     rearFlapPivot.rotation.z = flapNow.rear;
 
-    if (!reduced) updateFlow(t, flapNow.rear / MODE_ANGLE.X.rear);
+    // Flow follows the WINGS, not the label: flat is 1 when the
+    // elements are at rest and 0 when they are loaded. Reading it off
+    // the angle rather than off the mode name is what keeps it correct
+    // through the swap above.
+    if (!reduced) updateFlow(t, 1 - flapNow.rear / MODE_ANGLE.OFF.rear);
     renderer.render(scene, camera);
     rafId = requestAnimationFrame(frame);
   }
@@ -515,7 +512,7 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
 
   return {
     setMode(mode) {
-      currentMode = mode === 'X' ? 'X' : 'Z';
+      currentMode = mode === 'ON' ? 'ON' : 'OFF';
     },
     dispose() {
       disposed = true;

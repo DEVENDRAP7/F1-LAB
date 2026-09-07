@@ -192,8 +192,8 @@ export default function SteeringWheel({ mode, onMode }) {
       setCaption(s.caption);
       setPositions((p) => (p.strategy === s.strategy && p.engine === s.engine
         ? p : { ...p, strategy: s.strategy, engine: s.engine }));
-      setPressed((p) => (!!p.override === !!s.override && !!p.aero === (s.mode === 'X')
-        ? p : { ...p, override: !!s.override, aero: s.mode === 'X' }));
+      setPressed((p) => (!!p.override === !!s.override && !!p.aero === (s.mode === 'ON')
+        ? p : { ...p, override: !!s.override, aero: s.mode === 'ON' }));
       onMode?.(s.mode);
       audio.current?.set(s.rpm, s.throttle);
       if (t >= script.duration) {
@@ -250,7 +250,7 @@ export default function SteeringWheel({ mode, onMode }) {
   // the wheel's AERO button has to follow, or the two disagree about
   // the state of the same car.
   useEffect(() => {
-    setPressed((p) => (!!p.aero === (mode === 'X') ? p : { ...p, aero: mode === 'X' }));
+    setPressed((p) => (!!p.aero === (mode === 'ON') ? p : { ...p, aero: mode === 'ON' }));
   }, [mode]);
 
   return (
@@ -454,7 +454,7 @@ export default function SteeringWheel({ mode, onMode }) {
             <tspan className="wheel-lcd-cap">ENB </tspan>{readout.braking}
           </text>
           <text className="wheel-lcd-row wheel-right" x={PAD_R} y="308">
-            <tspan className="wheel-lcd-cap">AERO </tspan>{pressed.aero ? 'X' : 'Z'}
+            <tspan className="wheel-lcd-cap">AERO </tspan>{pressed.aero ? 'ON' : 'OFF'}
           </text>
           {/* The bar fills with the engine map, so the screen carries a
               reading you can take in without parsing any text. */}
@@ -475,7 +475,7 @@ export default function SteeringWheel({ mode, onMode }) {
               className={`wheel-hit${shown === id ? ' is-on' : ''}${on ? ' is-lit' : ''}`}
               {...activate(id, () => {
                 if (b.id === 'neutral') { selectNeutral(); return; }
-                if (b.id === 'aero') onMode?.(pressed.aero ? 'Z' : 'X');
+                if (b.id === 'aero') onMode?.(pressed.aero ? 'OFF' : 'ON');
                 press(b.id);
               })}
             >
