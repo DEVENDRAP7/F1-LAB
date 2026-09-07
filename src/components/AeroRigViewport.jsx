@@ -41,7 +41,7 @@ export default function AeroRigViewport({ mode, onPick, className }) {
     <canvas
       ref={canvasRef}
       className={className}
-      aria-label="Interactive schematic of a 2026 Formula 1 car. Drag to orbit, scroll to zoom, click a part to inspect it."
+      aria-label="Interactive schematic of a 2026 Formula 1 car. Drag to orbit, scroll or pinch to zoom, tap a part to inspect it."
     />
   );
 }

@@ -201,7 +201,12 @@ export default function AeroRig() {
                 Aero on · flat
               </button>
             </div>
+            {/* "Scroll to zoom" is meaningless on a phone, and the hint
+                used to be hidden there entirely — so touch users were
+                told nothing at all. One span per input, each shown at
+                the width where its gesture exists. */}
             <span className="rig-hint rig-hint-drag">drag to orbit · scroll to zoom</span>
+            <span className="rig-hint rig-hint-touch">drag to orbit · pinch to zoom</span>
           </div>
         </div>
 

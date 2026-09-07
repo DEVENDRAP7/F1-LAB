@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { needsResize } from './canvasSize.js';
+import { pinchRadius, spread } from './pinch.js';
 
 // The car is a loaded model, not lofted geometry.
 //
@@ -338,14 +339,57 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
     );
   }
 
-  function onPointerDown(e) {
-    orbit.dragging = true;
-    orbit.lx = e.clientX;
-    orbit.ly = e.clientY;
-    orbit.moved = 0;
-    canvas.setPointerCapture(e.pointerId);
+  const ZOOM_MIN = 2.4;
+  const ZOOM_MAX = 15;
+
+  // Every pointer currently down, because a phone has no scroll wheel
+  // and zoom has to come from somewhere. One pointer orbits; two pinch.
+  // Tracking them in a map rather than with a single dragging flag is
+  // what stops a second finger yanking the orbit: before this, both
+  // fingers fed the same lx/ly and the car span away on touch-down.
+  const pointers = new Map();
+  let pinch = null;
+
+  function twoFingerSpread() {
+    const [a, b] = [...pointers.values()];
+    return spread(a, b);
   }
+
+  function beginOrbitFrom(p) {
+    orbit.lx = p.x;
+    orbit.ly = p.y;
+  }
+
+  function onPointerDown(e) {
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    canvas.setPointerCapture(e.pointerId);
+    if (pointers.size === 1) {
+      orbit.dragging = true;
+      orbit.moved = 0;
+      beginOrbitFrom({ x: e.clientX, y: e.clientY });
+    } else if (pointers.size === 2) {
+      // Anchor the gesture: radius comes from the start distance, not
+      // from an accumulated delta. See lib/pinch.js.
+      pinch = { dist: twoFingerSpread(), radius: goal.radius };
+      orbit.dragging = false;
+    }
+  }
+
   function onPointerMove(e) {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size >= 2) {
+      if (pinch) {
+        userFramed = true;
+        goal.radius = pinchRadius(pinch.radius, pinch.dist, twoFingerSpread(),
+          ZOOM_MIN, ZOOM_MAX);
+      }
+      // A pinch is never a tap, however little either finger travelled.
+      orbit.moved = Infinity;
+      return;
+    }
+
     if (!orbit.dragging) return;
     const dx = e.clientX - orbit.lx;
     const dy = e.clientY - orbit.ly;
@@ -355,19 +399,46 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
     orbit.lx = e.clientX;
     orbit.ly = e.clientY;
   }
+
   function onPointerUp(e) {
+    const wasDragging = orbit.dragging;
+    const moved = orbit.moved;
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+
+    if (pointers.size === 1) {
+      // One finger of a pinch lifted. Carry on orbiting from where the
+      // other one is, rather than from where the first one was — which
+      // would jump the camera by the width of the gesture.
+      const [only] = pointers.values();
+      beginOrbitFrom(only);
+      orbit.dragging = true;
+      orbit.moved = Infinity;
+      return;
+    }
+
     orbit.dragging = false;
     // A drag that barely moved is a click, and a click selects a part.
-    if (orbit.moved < 6) pick(e);
+    if (pointers.size === 0 && wasDragging && moved < 6) pick(e);
   }
+
+  function onPointerCancel(e) {
+    // The browser can take a touch away — a system gesture, a call. Left
+    // in the map, that pointer would keep the rig in a phantom pinch.
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+    if (pointers.size === 0) orbit.dragging = false;
+  }
+
   function onWheel(e) {
     e.preventDefault();
     userFramed = true;
-    goal.radius = Math.max(2.4, Math.min(15, goal.radius + e.deltaY * 0.006));
+    goal.radius = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, goal.radius + e.deltaY * 0.006));
   }
   canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointermove', onPointerMove);
   canvas.addEventListener('pointerup', onPointerUp);
+  canvas.addEventListener('pointercancel', onPointerCancel);
   canvas.addEventListener('wheel', onWheel, { passive: false });
 
   const ray = new THREE.Raycaster();
@@ -524,6 +595,7 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
       canvas.removeEventListener('pointerdown', onPointerDown);
       canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('pointercancel', onPointerCancel);
       canvas.removeEventListener('wheel', onWheel);
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();

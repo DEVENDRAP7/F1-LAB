@@ -2257,16 +2257,24 @@ tbody tr.is-on {
   touch-action: none;
 }
 
+/* Mode switch top-left, hint top-right, and the hint drops to the
+   BOTTOM once the row is too narrow to hold both — on a phone it wrapped
+   onto a second line and landed across the middle of the car. */
 .rig-hud {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  padding: clamp(0.85rem, 2vw, 1.5rem);
+  padding: clamp(0.7rem, 2vw, 1.5rem);
   display: flex;
   flex-wrap: wrap;
+  align-content: space-between;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.6rem;
+}
+
+.rig-hint {
+  margin-left: auto;
 }
 
 .mode-switch {
@@ -2306,6 +2314,12 @@ tbody tr.is-on {
 .mode-switch button:focus-visible {
   outline: 2px solid var(--accent-0);
   outline-offset: -2px;
+}
+
+/* One hint per input. The touch one is hidden by default and swapped in
+   at the width where the scroll wheel stops existing. */
+.rig-hint-touch {
+  display: none;
 }
 
 .rig-hint {
@@ -2419,6 +2433,18 @@ tbody tr.is-on {
 
   .rig-hint-drag {
     display: none;
+  }
+
+  .rig-hint-touch {
+    display: inline-block;
+  }
+
+  /* Full width so it sits on its own row against the bottom edge, clear
+     of the car rather than over it. */
+  .rig-hint-touch {
+    align-self: flex-end;
+    margin: auto 0 0;
+    font-size: 0.6rem;
   }
 }
 
