@@ -5,7 +5,7 @@
       "module": "What-If Engine",
       "rule": "A counterfactual is offered only where replaying the real strategy reproduces the real race time within 1%.",
       "published": 81,
-      "refused": 11,
+      "refused": 12,
       "entries": [
         {
           "scope": "Round 1 \u00b7 Australian Grand Prix",
@@ -14,6 +14,10 @@
         {
           "scope": "Round 12 \u00b7 Dutch Grand Prix",
           "reason": "the race was suspended \u2014 a lap of 1771s was run with the cars stationary, and no term in this model describes a red flag"
+        },
+        {
+          "scope": "Round 13 \u00b7 Italian Grand Prix",
+          "reason": "the race was suspended \u2014 a lap of 1958s was run with the cars stationary, and no term in this model describes a red flag"
         },
         {
           "scope": "Round 6 \u00b7 Monaco Grand Prix",
@@ -56,7 +60,7 @@
     {
       "module": "Racing Lines",
       "rule": "A line is published only where the position feed carries a lap that can be drawn. A session it does not gets a written refusal, not an empty page.",
-      "published": 88,
+      "published": 96,
       "refused": 2,
       "entries": [
         {
@@ -88,7 +92,7 @@
     {
       "module": "Tyre compounds",
       "rule": "A stint takes a compound only where the stint feed matches it by driver and lap overlap. A wrong compound colour is worse than none.",
-      "published": 723,
+      "published": 775,
       "refused": 30,
       "entries": [
         {
@@ -116,15 +120,15 @@
     {
       "module": "Degradation fits",
       "rule": "A fit is published as a trend only with enough laps behind it and enough explanatory power. Below that it ships with the reason it failed rather than as a confident slope.",
-      "published": 367,
-      "refused": 282,
+      "published": 381,
+      "refused": 298,
       "entries": [
         {
-          "scope": "225 fit(s)",
+          "scope": "239 fit(s)",
           "reason": "lap-to-lap scatter dominates the trend"
         },
         {
-          "scope": "57 fit(s)",
+          "scope": "59 fit(s)",
           "reason": "too few usable laps"
         }
       ]
@@ -133,7 +137,7 @@
       "module": "Pit loss",
       "rule": "A pit loss becomes a circuit constant only where enough drivers had a measurable racing stop and their figures agree.",
       "published": 4,
-      "refused": 8,
+      "refused": 9,
       "entries": [
         {
           "scope": "Round 1 \u00b7 Albert Park Grand Prix Circuit",
@@ -166,11 +170,15 @@
         {
           "scope": "Round 12 \u00b7 Circuit Park Zandvoort",
           "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        },
+        {
+          "scope": "Round 13 \u00b7 Autodromo Nazionale di Monza",
+          "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
         }
       ]
     }
   ],
-  "totalRefused": 335,
+  "totalRefused": 353,
   "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion.",
-  "generated_at": "2026-09-01T10:59:56Z"
+  "generated_at": "2026-09-07T07:15:38Z"
 }

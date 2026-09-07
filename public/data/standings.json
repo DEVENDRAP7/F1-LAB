@@ -4,15 +4,15 @@
       "driverCode": "ANT",
       "driverName": "Andrea Kimi Antonelli",
       "team": "Mercedes",
-      "points": 242.0,
-      "wins": 6,
+      "points": 267.0,
+      "wins": 7,
       "position": 1
     },
     {
       "driverCode": "RUS",
       "driverName": "George Russell",
       "team": "Mercedes",
-      "points": 183.0,
+      "points": 201.0,
       "wins": 2,
       "position": 2
     },
@@ -20,7 +20,7 @@
       "driverCode": "HAM",
       "driverName": "Lewis Hamilton",
       "team": "Ferrari",
-      "points": 183.0,
+      "points": 191.0,
       "wins": 1,
       "position": 3
     },
@@ -28,7 +28,7 @@
       "driverCode": "NOR",
       "driverName": "Lando Norris",
       "team": "McLaren",
-      "points": 159.0,
+      "points": 171.0,
       "wins": 2,
       "position": 4
     },
@@ -44,7 +44,7 @@
       "driverCode": "VER",
       "driverName": "Max Verstappen",
       "team": "Red Bull",
-      "points": 112.0,
+      "points": 127.0,
       "wins": 0,
       "position": 6
     },
@@ -52,7 +52,7 @@
       "driverCode": "PIA",
       "driverName": "Oscar Piastri",
       "team": "McLaren",
-      "points": 104.0,
+      "points": 116.0,
       "wins": 0,
       "position": 7
     },
@@ -60,7 +60,7 @@
       "driverCode": "HAD",
       "driverName": "Isack Hadjar",
       "team": "Red Bull",
-      "points": 68.0,
+      "points": 71.0,
       "wins": 0,
       "position": 8
     },
@@ -68,7 +68,7 @@
       "driverCode": "LAW",
       "driverName": "Liam Lawson",
       "team": "Red Bull",
-      "points": 49.0,
+      "points": 51.0,
       "wins": 0,
       "position": 9
     },
@@ -76,7 +76,7 @@
       "driverCode": "GAS",
       "driverName": "Pierre Gasly",
       "team": "Alpine F1 Team",
-      "points": 44.0,
+      "points": 41.0,
       "wins": 0,
       "position": 10
     },
@@ -84,7 +84,7 @@
       "driverCode": "LIN",
       "driverName": "Arvid Lindblad",
       "team": "RB F1 Team",
-      "points": 23.0,
+      "points": 29.0,
       "wins": 0,
       "position": 11
     },
@@ -92,7 +92,7 @@
       "driverCode": "COL",
       "driverName": "Franco Colapinto",
       "team": "Alpine F1 Team",
-      "points": 19.0,
+      "points": 21.0,
       "wins": 0,
       "position": 12
     },
@@ -156,7 +156,7 @@
       "driverCode": "TSU",
       "driverName": "Yuki Tsunoda",
       "team": "RB F1 Team",
-      "points": 0.0,
+      "points": 1.0,
       "wins": 0,
       "position": 20
     },
@@ -185,7 +185,7 @@
       "position": 23
     }
   ],
-  "generated_at": "2026-09-01T10:59:38Z",
+  "generated_at": "2026-09-07T07:15:35Z",
   "source_check": {
     "mismatch": false,
     "details": []
@@ -339,15 +339,15 @@
         "HAM": 90.0,
         "RUS": 88.0,
         "LEC": 75.0,
-        "PIA": 58.0,
+        "PIA": 60.0,
         "NOR": 58.0,
         "VER": 43.0,
-        "GAS": 35.0,
-        "HAD": 26.0,
-        "LAW": 24.0,
+        "HAD": 29.0,
+        "LAW": 26.0,
+        "GAS": 26.0,
         "BEA": 18.0,
         "COL": 15.0,
-        "LIN": 11.0,
+        "LIN": 13.0,
         "SAI": 6.0,
         "ALB": 5.0,
         "OCO": 3.0,
@@ -368,14 +368,14 @@
         "RUS": 106.0,
         "LEC": 75.0,
         "NOR": 73.0,
-        "PIA": 68.0,
+        "PIA": 70.0,
         "VER": 55.0,
-        "GAS": 41.0,
-        "HAD": 34.0,
-        "LAW": 28.0,
+        "HAD": 37.0,
+        "GAS": 32.0,
+        "LAW": 30.0,
         "BEA": 18.0,
         "COL": 16.0,
-        "LIN": 13.0,
+        "LIN": 15.0,
         "SAI": 6.0,
         "ALB": 5.0,
         "OCO": 3.0,
@@ -394,16 +394,16 @@
         "ANT": 171.0,
         "RUS": 131.0,
         "HAM": 125.0,
-        "PIA": 80.0,
+        "PIA": 82.0,
         "NOR": 79.0,
         "LEC": 79.0,
         "VER": 73.0,
-        "HAD": 42.0,
-        "GAS": 41.0,
-        "LAW": 30.0,
+        "HAD": 45.0,
+        "LAW": 32.0,
+        "GAS": 32.0,
         "BEA": 18.0,
         "COL": 16.0,
-        "LIN": 14.0,
+        "LIN": 16.0,
         "SAI": 6.0,
         "ALB": 5.0,
         "OCO": 3.0,
@@ -424,12 +424,12 @@
         "HAM": 147.0,
         "LEC": 108.0,
         "NOR": 97.0,
-        "PIA": 82.0,
+        "PIA": 84.0,
         "VER": 76.0,
-        "HAD": 52.0,
-        "GAS": 42.0,
-        "LAW": 39.0,
-        "LIN": 20.0,
+        "HAD": 55.0,
+        "LAW": 41.0,
+        "GAS": 33.0,
+        "LIN": 22.0,
         "BEA": 18.0,
         "COL": 18.0,
         "BOR": 6.0,
@@ -452,12 +452,12 @@
         "RUS": 154.0,
         "LEC": 126.0,
         "NOR": 103.0,
-        "PIA": 92.0,
+        "PIA": 94.0,
         "VER": 91.0,
-        "HAD": 60.0,
-        "GAS": 42.0,
-        "LAW": 39.0,
-        "LIN": 22.0,
+        "HAD": 63.0,
+        "LAW": 41.0,
+        "GAS": 33.0,
+        "LIN": 24.0,
         "COL": 19.0,
         "BEA": 18.0,
         "BOR": 10.0,
@@ -481,11 +481,11 @@
         "LEC": 138.0,
         "NOR": 128.0,
         "VER": 109.0,
-        "PIA": 92.0,
-        "HAD": 68.0,
-        "LAW": 43.0,
-        "GAS": 42.0,
-        "LIN": 23.0,
+        "PIA": 94.0,
+        "HAD": 71.0,
+        "LAW": 45.0,
+        "GAS": 33.0,
+        "LIN": 25.0,
         "COL": 19.0,
         "BEA": 18.0,
         "BOR": 10.0,
@@ -509,11 +509,11 @@
         "NOR": 159.0,
         "LEC": 155.0,
         "VER": 112.0,
-        "PIA": 104.0,
-        "HAD": 68.0,
-        "LAW": 49.0,
-        "GAS": 44.0,
-        "LIN": 23.0,
+        "PIA": 106.0,
+        "HAD": 71.0,
+        "LAW": 51.0,
+        "GAS": 35.0,
+        "LIN": 25.0,
         "COL": 19.0,
         "BEA": 18.0,
         "BOR": 10.0,
@@ -527,104 +527,133 @@
         "BOT": 0.0,
         "PER": 0.0
       }
+    },
+    {
+      "round": 13,
+      "raceName": "Italian Grand Prix",
+      "points": {
+        "ANT": 267.0,
+        "RUS": 201.0,
+        "HAM": 191.0,
+        "NOR": 171.0,
+        "LEC": 155.0,
+        "VER": 127.0,
+        "PIA": 116.0,
+        "HAD": 71.0,
+        "LAW": 51.0,
+        "GAS": 41.0,
+        "LIN": 29.0,
+        "COL": 21.0,
+        "BEA": 18.0,
+        "BOR": 10.0,
+        "HUL": 6.0,
+        "SAI": 6.0,
+        "ALB": 5.0,
+        "OCO": 3.0,
+        "ALO": 3.0,
+        "TSU": 1.0,
+        "STR": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0
+      }
     }
   ],
   "elimination": {
-    "remainingRounds": 11,
-    "remainingMaxPoints": 283,
-    "leaderPoints": 242.0,
+    "remainingRounds": 10,
+    "remainingMaxPoints": 258,
+    "leaderPoints": 267.0,
     "drivers": {
       "ANT": {
         "maxPossible": 525.0,
         "eliminated": false
       },
       "RUS": {
-        "maxPossible": 466.0,
+        "maxPossible": 459.0,
         "eliminated": false
       },
       "HAM": {
-        "maxPossible": 466.0,
+        "maxPossible": 449.0,
         "eliminated": false
       },
       "NOR": {
-        "maxPossible": 442.0,
+        "maxPossible": 429.0,
         "eliminated": false
       },
       "LEC": {
-        "maxPossible": 438.0,
+        "maxPossible": 413.0,
         "eliminated": false
       },
       "VER": {
-        "maxPossible": 395.0,
+        "maxPossible": 385.0,
         "eliminated": false
       },
       "PIA": {
-        "maxPossible": 387.0,
+        "maxPossible": 374.0,
         "eliminated": false
       },
       "HAD": {
-        "maxPossible": 351.0,
+        "maxPossible": 329.0,
         "eliminated": false
       },
       "LAW": {
-        "maxPossible": 332.0,
+        "maxPossible": 309.0,
         "eliminated": false
       },
       "GAS": {
-        "maxPossible": 327.0,
+        "maxPossible": 299.0,
         "eliminated": false
       },
       "LIN": {
-        "maxPossible": 306.0,
+        "maxPossible": 287.0,
         "eliminated": false
       },
       "COL": {
-        "maxPossible": 302.0,
+        "maxPossible": 279.0,
         "eliminated": false
       },
       "BEA": {
-        "maxPossible": 301.0,
+        "maxPossible": 276.0,
         "eliminated": false
       },
       "BOR": {
-        "maxPossible": 293.0,
+        "maxPossible": 268.0,
         "eliminated": false
       },
       "HUL": {
-        "maxPossible": 289.0,
-        "eliminated": false
+        "maxPossible": 264.0,
+        "eliminated": true
       },
       "SAI": {
-        "maxPossible": 289.0,
-        "eliminated": false
+        "maxPossible": 264.0,
+        "eliminated": true
       },
       "ALB": {
-        "maxPossible": 288.0,
-        "eliminated": false
+        "maxPossible": 263.0,
+        "eliminated": true
       },
       "OCO": {
-        "maxPossible": 286.0,
-        "eliminated": false
+        "maxPossible": 261.0,
+        "eliminated": true
       },
       "ALO": {
-        "maxPossible": 286.0,
-        "eliminated": false
+        "maxPossible": 261.0,
+        "eliminated": true
       },
       "TSU": {
-        "maxPossible": 283.0,
-        "eliminated": false
+        "maxPossible": 259.0,
+        "eliminated": true
       },
       "STR": {
-        "maxPossible": 283.0,
-        "eliminated": false
+        "maxPossible": 258.0,
+        "eliminated": true
       },
       "BOT": {
-        "maxPossible": 283.0,
-        "eliminated": false
+        "maxPossible": 258.0,
+        "eliminated": true
       },
       "PER": {
-        "maxPossible": 283.0,
-        "eliminated": false
+        "maxPossible": 258.0,
+        "eliminated": true
       }
     }
   }
