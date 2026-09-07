@@ -19,7 +19,7 @@ function percentile(sorted, p) {
   return sorted[i];
 }
 
-export default function LapTimeChart({ series, totalLaps, height = 300 }) {
+export default function LapTimeChart({ series, totalLaps, sessionBest = null, height = 300 }) {
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
   const [hoverLap, setHoverLap] = useState(null);
@@ -127,6 +127,46 @@ export default function LapTimeChart({ series, totalLaps, height = 300 }) {
       ctx.stroke();
     }
 
+    // The timing screen's own language: purple for the fastest lap of
+    // the race, green for a driver's own best. Both come straight out of
+    // the published lap times.
+    //
+    // Each marker gets a surface-coloured ring before its fill, and that
+    // ring is doing real work rather than decorating: measured with the
+    // dataviz validator, the timing purple against the purple SERIES
+    // colour is ΔE 14.9 under normal vision, under the 15 floor. A dot
+    // on a line of nearly its own colour needs a gap around it, which is
+    // what the ring is.
+    const surface = cssToken('--surface-1');
+    function marker(lap, timeS, fill) {
+      if (timeS == null || timeS < yMin || timeS > yMax) return;
+      const x = xAt(lap);
+      const y = yAt(timeS);
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = surface;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+
+    const bestFill = cssToken('--time-best');
+    const personalFill = cssToken('--time-personal');
+    for (const s of series) {
+      const own = s.points.reduce(
+        (b, p) => (p.timeS != null && (b == null || p.timeS < b.timeS) ? p : b), null,
+      );
+      if (!own) continue;
+      const isSession = sessionBest
+        && sessionBest.driverId === s.driverId
+        && sessionBest.lap === own.lap;
+      // The race's fastest lap is somebody's personal best too. Purple
+      // wins, the way it does on a timing screen.
+      marker(own.lap, own.timeS, isSession ? bestFill : personalFill);
+    }
+
     // Crosshair + 2px surface ring on the marks it touches.
     if (hoverLap != null) {
       ctx.strokeStyle = cssToken('--ink-2');
@@ -148,7 +188,7 @@ export default function LapTimeChart({ series, totalLaps, height = 300 }) {
         ctx.stroke();
       }
     }
-  }, [series, width, height, yMin, yMax, totalLaps, hoverLap]);
+  }, [series, width, height, yMin, yMax, totalLaps, hoverLap, sessionBest]);
 
   const lapFromPointer = (event) => {
     const rect = event.currentTarget.getBoundingClientRect();

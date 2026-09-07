@@ -127,6 +127,18 @@ export default function RaceStrategy() {
     }));
   }, [data, selected]);
 
+  // The fastest lap of the race, across the whole field rather than
+  // across the selection — that is what makes it the session best. If
+  // whoever set it is not selected, no purple appears, which is the
+  // honest outcome rather than promoting somebody else's lap.
+  const sessionBest = useMemo(() => {
+    if (!data) return null;
+    return data.laps.reduce(
+      (best, lap) => (lap.timeS != null && (best == null || lap.timeS < best.timeS) ? lap : best),
+      null,
+    );
+  }, [data]);
+
   // Only the compounds this race actually ran get a legend entry: a
   // fixed five-band key would advertise wets at a dry race.
   const compoundsShown = useMemo(() => {
@@ -352,7 +364,7 @@ export default function RaceStrategy() {
               />
             ) : (
               <>
-                <LapTimeChart series={lapSeries} totalLaps={data.totalLaps} />
+                <LapTimeChart series={lapSeries} totalLaps={data.totalLaps} sessionBest={sessionBest} />
                 <div className="chart-legend">
                   {lapSeries.map((s) => (
                     <span key={s.driverId} className="legend-item">
@@ -366,6 +378,25 @@ export default function RaceStrategy() {
                     </span>
                   ))}
                 </div>
+                {/* A reserved colour never travels alone — the marks are
+                    named here. The purple half only appears when the lap
+                    it refers to is actually plotted: the fastest lap is
+                    the FIELD's, so whoever set it is often not among the
+                    four selected, and a key for a mark that is not on the
+                    chart is worse than no key. */}
+                <p className="timing-key">
+                  {sessionBest && selected.includes(sessionBest.driverId) ? (
+                    <>
+                      <span className="timing-dot is-best" /> fastest lap of the race
+                      {` · ${driverCode(names, sessionBest.driverId)} on lap ${sessionBest.lap}`}
+                      {'  ·  '}
+                    </>
+                  ) : null}
+                  <span className="timing-dot is-personal" /> each driver&rsquo;s own best
+                  {sessionBest && !selected.includes(sessionBest.driverId)
+                    ? ` · the race's fastest lap was ${driverCode(names, sessionBest.driverId)}'s on lap ${sessionBest.lap}, not selected`
+                    : ''}
+                </p>
                 <button
                   type="button"
                   className="link-button"

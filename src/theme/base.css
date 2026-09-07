@@ -1749,6 +1749,28 @@ tbody tr.is-on {
   color: var(--ink-2);
 }
 
+/* The chart's markers, repeated at legend size. A ring of surface
+   between the dot and its border, matching how they are drawn on the
+   canvas — the ring is what keeps a purple marker legible on a purple
+   series line. */
+.timing-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  vertical-align: -1px;
+  margin-right: 0.15rem;
+  box-shadow: 0 0 0 2px var(--surface-1);
+}
+
+.timing-dot.is-best {
+  background: var(--time-best);
+}
+
+.timing-dot.is-personal {
+  background: var(--time-personal);
+}
+
 .timing-chip {
   display: inline-block;
   padding: 0.02rem 0.4rem;
