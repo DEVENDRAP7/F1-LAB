@@ -2955,3 +2955,80 @@ tbody tr.is-on {
   line-height: 1.5;
   color: var(--ink-2);
 }
+
+/* Touch targets.
+ *
+ * The whole site was laid out against a mouse pointer, which can hit a
+ * 28px chip and a 16px link in a table cell without thinking about it. A
+ * finger cannot: the contact patch is roughly 9 mm, and anything under
+ * about 44px gets mis-tapped often enough to feel broken rather than
+ * small. Measured at 390px, every interactive control on the site was
+ * under that — nav triggers at 30px, driver chips at 28, the round
+ * pickers at 29, and the radio table's link to the source clip at 16.
+ *
+ * Raised here rather than in the base rules because the desktop layout
+ * is dense on purpose and a 44px floor would loosen tables and chip rows
+ * that read better tight. `pointer: coarse` is the question actually
+ * being asked — is a finger doing the pointing — rather than a width
+ * breakpoint, which gets the answer wrong for a touchscreen laptop and
+ * for a narrow window on a desktop. */
+@media (pointer: coarse) {
+  .nav-trigger,
+  .brand {
+    min-height: 44px;
+  }
+
+  .driver-chip {
+    min-height: 44px;
+    padding-block: 0.5rem;
+  }
+
+  /* A select is replaced by the platform's own picker, so the tappable
+     area is the control itself and there is nothing inside it to pad. */
+  select,
+  input[type='range'],
+  input[type='number'],
+  input[type='text'] {
+    min-height: 44px;
+  }
+
+  /* A link sitting in a table cell is the hardest target on the site:
+     one line of text tall, and surrounded by other rows. Padding the
+     cell would move every column, so the link becomes the block and
+     takes the height itself. */
+  td > a,
+  td > button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Summaries open the disclosures that most of the site's method now
+     lives behind, so they are load-bearing controls, not labels. */
+  details.disclosure > summary {
+    min-height: 44px;
+  }
+}
+
+@media (pointer: coarse) {
+  /* The strategy editor's own buttons — they add and remove pit stops,
+     which is the whole interaction on that panel. */
+  .ghost-button {
+    min-height: 44px;
+  }
+
+  /* A link that is the only tappable thing in a stat tile. */
+  .figure-sample a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* The model's licence attribution. It is fine print by intent and
+     three links share one line, so it gets as much height as it can
+     take without becoming a paragraph. */
+  .rig-credit a {
+    display: inline-block;
+    padding-block: 0.55rem;
+  }
+}
