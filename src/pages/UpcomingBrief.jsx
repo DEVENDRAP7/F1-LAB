@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import { Method } from '../components/Disclosure.jsx';
+import TableScroll from '../components/TableScroll.jsx';
 
 // M6 — Upcoming Race Brief. Everything on this page is a record of past
 // editions of the circuit the next round visits. Nothing here is a
@@ -181,7 +182,7 @@ export default function UpcomingBrief() {
                 disagree is a weaker claim than one number suggests.
               </p>
             </div>
-            <div className="table-scroll table-compact">
+            <TableScroll className="table-compact">
               <table>
                 <thead>
                   <tr>
@@ -206,7 +207,7 @@ export default function UpcomingBrief() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </section>
 
           <section className="panel">

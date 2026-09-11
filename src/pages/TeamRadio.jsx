@@ -5,6 +5,7 @@ import RelatedLinks from '../components/RelatedLinks.jsx';
 import { Limitations, Method } from '../components/Disclosure.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
+import TableScroll from '../components/TableScroll.jsx';
 
 // Broadcast team radio — who was on it, when, and a link to the clip.
 //
@@ -173,7 +174,7 @@ export default function TeamRadio() {
               </p>
             </div>
 
-            <div className="table-scroll table-wide is-full">
+            <TableScroll wide className="is-full">
               <table>
                 <caption className="visually-hidden">
                   {race.raceName}: broadcast radio clips in time order
@@ -203,7 +204,7 @@ export default function TeamRadio() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
             <p className="chart-caption">
               Every link goes to the clip where its publisher serves it. No audio is copied
               into this site.

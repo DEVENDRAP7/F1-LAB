@@ -53,6 +53,12 @@ const PADDLES = [
 // not below first, it is off to one side, which is exactly why a real
 // car needs a separate button for it and why the down paddle stops at 1.
 const TOP_GEAR = 8;
+/* The hit target each control gets, in the diagram's own user units.
+   Measured nearest-neighbour spacing across the buttons is 64-80 units,
+   so 60 is the largest square that cannot reach into the control next
+   door. Paired with the 680px minimum render width in the CSS, it lands
+   at 45 device pixels. */
+const HIT_UNITS = 60;
 
 // What the display shows for speed when the wheel is being worked by
 // hand rather than by a demo. Indicative, and the panel says so: no
@@ -145,6 +151,34 @@ export default function SteeringWheel({ mode, onMode }) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); setPinned(id); }
     },
   });
+
+
+  /* An invisible hit target, centred on a control that is drawn smaller
+   * than a finger.
+   *
+   * The buttons on this wheel are 40-52 user units across because it is
+   * a scale drawing of a real wheel, whose buttons really are about
+   * that size relative to the rim. Measured at 390px the diagram
+   * rendered 334px wide, which put every hotspot at 22-30px — below the
+   * 44px a finger needs, and not fixable by drawing bigger buttons
+   * without making the wheel wrong.
+   *
+   * Two things together fix it. This rect gives each control 60 units of
+   * hit area — the largest square that does not reach its nearest
+   * neighbour's centre, so a tap can be wrong but never steals the
+   * button next door — and the CSS gives the diagram a minimum render
+   * width of 680px on a coarse pointer, at which 60 units is 45px.
+   * Below that width the wheel pans, like any other drawing too detailed
+   * to shrink. */
+  const hitTarget = (cx, cy, w = HIT_UNITS, h = HIT_UNITS) => (
+    <rect
+      className="wheel-target"
+      x={cx - w / 2}
+      y={cy - h / 2}
+      width={w}
+      height={h}
+    />
+  );
 
   const press = (id) => setPressed((p) => ({ ...p, [id]: !p[id] }));
 
@@ -479,6 +513,12 @@ export default function SteeringWheel({ mode, onMode }) {
                 press(b.id);
               })}
             >
+              {hitTarget(
+                b.x,
+                b.kind === 'rocker' ? b.y : b.y,
+                b.kind === 'rocker' ? Math.max(HIT_UNITS, b.w) : HIT_UNITS,
+                b.kind === 'rocker' ? Math.max(HIT_UNITS, b.h) : HIT_UNITS,
+              )}
               {b.kind === 'rocker' ? (
                 <>
                   <rect

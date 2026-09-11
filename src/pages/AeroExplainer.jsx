@@ -21,6 +21,7 @@ import { Limitations, Method } from '../components/Disclosure.jsx';
 import { detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 import { GRIP_LIMITED_TOLERANCE_PCT, cornerModel, impliedGripG } from '../lib/cornerModel.js';
 import { COAST_MIN_SPEED_KPH, dragFit } from '../lib/drag.js';
+import TableScroll from '../components/TableScroll.jsx';
 
 // M8 — Aero Explainer, the measurable half.
 //
@@ -398,7 +399,7 @@ export default function AeroExplainer() {
                       release in the middle treated as one turn rather than two. The
                       numbering does not carry across drivers.
                     </Method>
-                    <div className="table-scroll table-wide">
+                    <TableScroll wide>
                       <table>
                         <thead>
                           <tr>
@@ -434,7 +435,7 @@ export default function AeroExplainer() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </TableScroll>
                   </>
                 )}
               </>
@@ -534,7 +535,7 @@ export default function AeroExplainer() {
                 )}
               </div>
 
-              <div className="table-scroll table-wide is-full">
+              <TableScroll wide className="is-full">
                 <caption className="visually-hidden">
                   Each detected turn against the model at {gripG.toFixed(2)}g
                 </caption>
@@ -583,7 +584,7 @@ export default function AeroExplainer() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
 
               <Method label="How to read this table">
                 <p>

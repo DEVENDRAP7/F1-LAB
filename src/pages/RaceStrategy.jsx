@@ -11,6 +11,7 @@ import { formatLapTime } from '../lib/formatTime.js';
 import { driverCode, driverIndex, driverName } from '../lib/driverNames.js';
 import { circuitForRound, isSprintRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
+import TableScroll from '../components/TableScroll.jsx';
 
 const COMPOUND_TOKEN = {
   SOFT: 'soft',
@@ -406,7 +407,7 @@ export default function RaceStrategy() {
                   {showTable ? 'Hide' : 'Show'} lap times as a table
                 </button>
                 {showTable && (
-                  <div className="table-scroll">
+                  <TableScroll>
                     <table>
                       <caption className="visually-hidden">
                         Lap times per lap for the selected drivers
@@ -434,7 +435,7 @@ export default function RaceStrategy() {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </TableScroll>
                 )}
               </>
             )}
@@ -472,7 +473,7 @@ export default function RaceStrategy() {
                 either way.
               </p>
             </div>
-            <div className="table-scroll">
+            <TableScroll>
               <table>
                 <thead>
                   <tr>
@@ -508,7 +509,7 @@ export default function RaceStrategy() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
             <Method label="Why a negative trend is normal">
               A negative trend means the driver got <em>faster</em> through the stint, which
               is not evidence of tyres improving: the slope also contains fuel burn and

@@ -4,6 +4,7 @@ import { MAX_SERIES, seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
 import ProgressionChart from '../components/ProgressionChart.jsx';
 import { Method } from '../components/Disclosure.jsx';
+import TableScroll from '../components/TableScroll.jsx';
 
 // M2 — Season Ledger. Standings are computed by the pipeline and
 // cross-checked against the API at export time (docs/SPEC.md); this page
@@ -190,7 +191,7 @@ export default function SeasonLedger() {
             cross-check above is what says the two agree.
           </p>
         </div>
-        <div className="table-scroll is-full">
+        <TableScroll className="is-full">
           <table className="ledger-table">
         <thead>
           <tr>
@@ -244,7 +245,7 @@ export default function SeasonLedger() {
           ))}
           </tbody>
           </table>
-        </div>
+        </TableScroll>
       </section>
     </section>
   );

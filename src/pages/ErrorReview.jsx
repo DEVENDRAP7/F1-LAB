@@ -5,8 +5,18 @@ import RelatedLinks from '../components/RelatedLinks.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 import { formatDelta, formatLapTime } from '../lib/formatTime.js';
-import { Limitations, Method } from '../components/Disclosure.jsx';
+import { Disclosure, Limitations, Method } from '../components/Disclosure.jsx';
+import {
+  dismiss as dismissFlag,
+  flagKey,
+  load as loadDismissed,
+  partition,
+  restore as restoreFlag,
+  restoreAll,
+  save as saveDismissed,
+} from '../lib/dismissed.js';
 import TrackFlag from '../components/TrackFlag.jsx';
+import TableScroll from '../components/TableScroll.jsx';
 
 // M7 — Driver Error Review.
 //
@@ -31,6 +41,11 @@ export default function ErrorReview() {
   const [round, setRound] = useUrlState('round');
   const [review, setReview] = useState({ status: 'idle', data: null });
   const [driver, setDriver] = useUrlState('driver');
+  // A reader's own dismissals, per SPEC ground rule 4. Flagged laps only:
+  // the recorded race-control rows are somebody else's published record,
+  // not this project's opinion, so they are not the reader's to wave off.
+  const [dismissed, setDismissed] = useState(() => loadDismissed());
+  const [storageWorks, setStorageWorks] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -122,6 +137,15 @@ export default function ErrorReview() {
   const flagged = [...(entry?.flagged ?? [])].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || a.lap - b.lap,
   );
+  const { showing, hidden } = partition(flagged, dismissed, round, driver);
+
+  // Every write goes through here so a refused write is noticed once
+  // rather than silently on each dismissal: the change still applies to
+  // this visit, it just will not outlive it, and the reader is told.
+  function commit(next) {
+    setDismissed(next);
+    setStorageWorks(saveDismissed(next));
+  }
 
   return (
     <section className="page">
@@ -267,8 +291,12 @@ export default function ErrorReview() {
                   <p className="panel-note">
                     No lap ran far enough off this driver's own pace to flag.
                   </p>
+                ) : showing.length === 0 ? (
+                  <p className="panel-note">
+                    Every flagged lap here has been put away.
+                  </p>
                 ) : (
-                  <div className="table-scroll table-wide">
+                  <TableScroll wide>
                     <table>
                       <thead>
                         <tr>
@@ -278,10 +306,13 @@ export default function ErrorReview() {
                           <th scope="col" className="tabular">Estimated loss</th>
                           <th scope="col">Severity</th>
                           <th scope="col">Published on this lap</th>
+                          <th scope="col" className="col-dismiss">
+                            <span className="visually-hidden">Put this flag away</span>
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {flagged.map((f) => (
+                        {showing.map((f) => (
                           <tr key={f.lap}>
                             <td className="tabular">{f.lap}</td>
                             <td className="tabular">{formatLapTime(f.lapTimeS)}</td>
@@ -303,11 +334,80 @@ export default function ErrorReview() {
                                 ))
                               )}
                             </td>
+                            <td>
+                              {/* An icon, not the word: this is a sixth
+                                  column on an already wide table, and
+                                  "Dismiss" spelled out five times down a
+                                  page is text nobody reads. */}
+                              <button
+                                type="button"
+                                className="dismiss-flag"
+                                title={`Put the lap ${f.lap} flag away`}
+                                onClick={() =>
+                                  commit(dismissFlag(dismissed, flagKey(round, driver, f.lap)))}
+                              >
+                                <svg viewBox="0 0 12 12" aria-hidden="true">
+                                  <path
+                                    d="M3 3l6 6M9 3l-6 6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.6"
+                                    strokeLinecap="round"
+                                  />
+                                </svg>
+                                <span className="visually-hidden">
+                                  Put the lap {f.lap} flag away
+                                </span>
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </TableScroll>
+                )}
+
+                {/* A dismissal you cannot undo is a deletion, and this page
+                    does not get to delete what the pipeline found. So what
+                    was put away stays listed, with its count, and comes
+                    back one lap at a time or all at once. */}
+                {hidden.length > 0 && (
+                  <Disclosure summary="Put away" count={hidden.length}>
+                    <ul className="reason-list">
+                      {hidden.map((f) => (
+                        <li key={f.lap}>
+                          <span className="mono">L{f.lap}</span>{' '}
+                          <span className={`tag tag-${f.severity}`}>{f.severity}</span>{' '}
+                          {formatDelta(f.estimatedLossS)} off their median
+                          <button
+                            type="button"
+                            className="ghost-button"
+                            onClick={() =>
+                              commit(restoreFlag(dismissed, flagKey(round, driver, f.lap)))}
+                          >
+                            Restore
+                            <span className="visually-hidden">
+                              {' '}the flag on lap {f.lap}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      onClick={() => commit(restoreAll(dismissed, round, driver))}
+                    >
+                      Restore all {hidden.length}
+                    </button>
+                  </Disclosure>
+                )}
+
+                {!storageWorks && (
+                  <p className="panel-note">
+                    This browser would not save the dismissal, so it applies to this
+                    visit only.
+                  </p>
                 )}
               </section>
             </>

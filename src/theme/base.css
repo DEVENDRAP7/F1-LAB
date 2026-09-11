@@ -3032,3 +3032,203 @@ tbody tr.is-on {
     padding-block: 0.55rem;
   }
 }
+
+/* Putting a flag away.
+ *
+ * SPEC ground rule 4 makes a flag dismissable, which means the control
+ * sits on every flagged row — six of them down a race. So it is an icon
+ * and not the word "Dismiss" repeated six times, and it stays quiet
+ * until the row is hovered or it takes focus: a destructive-looking
+ * control shouting on every row reads as a page full of warnings. */
+.dismiss-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 120ms ease, color 120ms ease, border-color 120ms ease,
+    background 120ms ease;
+}
+
+.dismiss-flag svg {
+  width: 12px;
+  height: 12px;
+}
+
+tr:hover .dismiss-flag,
+.dismiss-flag:focus-visible {
+  opacity: 1;
+  color: var(--ink-0);
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+
+/* Never let the icon column claim width from the data. */
+.col-dismiss {
+  width: 1%;
+}
+
+/* A put-away flag keeps its figures — a reader deciding whether to bring
+   it back needs the same numbers that made them wave it off. */
+.reason-list .ghost-button {
+  margin-left: 0.6rem;
+}
+
+@media (pointer: coarse) {
+  /* The floor applies here too: a 26px × on a table row is the hardest
+     thing on the page to hit. */
+  .dismiss-flag {
+    width: 44px;
+    height: 44px;
+    opacity: 1;
+  }
+}
+
+/* The edge fades on a table wider than its container.
+ *
+ * Measured at 390px, sixteen tables on this site were hiding between 18
+ * and 482 pixels of their own content behind a hard edge that looked
+ * like the end of the table. The fade says there is more that way, at
+ * whichever edge actually has more — see TableScroll.jsx, which measures
+ * it rather than assuming, because the same table overflows on a phone
+ * and fits on a laptop.
+ *
+ * The wrapper owns the fades and the inner element owns the scrolling,
+ * because a pseudo-element on the scroller scrolls away with the
+ * content it is meant to be marking. */
+.table-scroll-wrap {
+  position: relative;
+  /* The wrapper has to contain the scroller as tightly as the scroller
+     contains the table. Without this the table's layout overflow
+     propagates past a `position: relative` box with visible overflow and
+     the whole document scrolls sideways on a phone — which is the exact
+     bug the fades were added to prevent, reintroduced one level up. */
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.table-scroll-wrap::before,
+.table-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2.5rem;
+  opacity: 0;
+  /* An affordance that swallows the swipe dismissing it is worse than
+     no affordance. */
+  pointer-events: none;
+  transition: opacity 140ms ease;
+  z-index: 1;
+  /* The fade sits inside the scroller's own rounded border. */
+  border-radius: 10px;
+}
+
+/* The solid end has to match what the scroller is actually sitting on,
+   or the fade reads as a vignette painted over the table rather than the
+   table dissolving into its own edge. The scroller's background is
+   --bg-1 at 55% over the panel, so that is what is mixed here. */
+.table-scroll-wrap::before,
+.table-scroll-wrap::after {
+  --fade-to: color-mix(in srgb, var(--bg-1) 78%, var(--surface-2));
+}
+
+.table-scroll-wrap::before {
+  left: 1px;
+  background: linear-gradient(to right, var(--fade-to), transparent 85%);
+}
+
+.table-scroll-wrap::after {
+  right: 1px;
+  background: linear-gradient(to left, var(--fade-to), transparent 85%);
+}
+
+.table-scroll-wrap.has-left::before,
+.table-scroll-wrap.has-right::after {
+  opacity: 0.92;
+}
+
+/* The scroller takes focus so it can be scrolled with a keyboard, which
+   means it needs a visible ring when it does. */
+.table-scroll:focus-visible {
+  outline: 2px solid var(--accent-0);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table-scroll-wrap::before,
+  .table-scroll-wrap::after {
+    transition: none;
+  }
+}
+
+/* The steering wheel's own hit targets.
+ *
+ * Invisible, under the drawn shapes, and the thing that actually
+ * receives the tap. `fill: transparent` rather than `fill: none`,
+ * because `none` is not hit-tested — the rect would be there and catch
+ * nothing. */
+.wheel-target {
+  fill: transparent;
+  pointer-events: all;
+}
+
+@media (pointer: coarse) {
+  /* Measured: at 390px the wheel rendered 334px wide, putting every
+     hotspot at 22-30px. The buttons are 40-52 user units across in a
+     900-unit drawing and their centres are 64 units apart, so a 44px
+     target needs 119 units — nearly twice the space there is. The
+     drawing cannot give a finger what it needs at that size, so below
+     680px it stops shrinking and pans instead: at 680px the scale is
+     0.756 and a 60-unit target is 45px.
+
+     The wheel is a scale drawing of a real object; a reader panning a
+     detailed drawing is ordinary, a reader missing the button they
+     aimed at is not. */
+  .wheel-svg {
+    min-width: 680px;
+  }
+
+  .wheel-layout {
+    /* The pan lives here, and reuses the same edge fades as the tables
+       so the affordance is the one thing a reader has already learned
+       on every other page. */
+    overflow-x: auto;
+  }
+}
+
+/* A tile whose number has not arrived.
+ *
+ * It exists to hold the space the real tile will take, so the page does
+ * not grow a row of stats under the reader's thumb. It is deliberately
+ * plain — a dim, empty tile, not a shimmer: a pulsing skeleton on a page
+ * whose data arrives in under 200ms is animation for its own sake, and
+ * this site has a reduced-motion rule it would have to respect anyway. */
+.figure.is-skeleton {
+  opacity: 0.38;
+}
+
+.figure.is-skeleton .figure-label,
+.figure.is-skeleton .figure-value {
+  /* Give the empty lines the width they would have had, so the tile is
+     the right height and reads as a tile rather than an empty box. */
+  background: var(--line);
+  border-radius: var(--r-sm);
+  color: transparent;
+}
+
+.figure.is-skeleton .figure-label {
+  width: 55%;
+}
+
+.figure.is-skeleton .figure-value {
+  width: 35%;
+}

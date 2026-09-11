@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatDelta } from '../lib/formatTime.js';
 import { Method } from './Disclosure.jsx';
+import TableScroll from './TableScroll.jsx';
 
 // M4 undercut/overcut ledger. Each row is one stop measured against one
 // rival who was close and had not yet stopped: how the gap stood before,
@@ -56,7 +57,7 @@ export default function UndercutLedger({ undercuts, excluded, driverFilter, code
           slowed — use the toggle below to see them, flagged as such.
         </p>
       ) : (
-      <div className="table-scroll">
+      <TableScroll>
         <table>
           <caption className="visually-hidden">
             Net time gained or lost per pit stop against rivals who stopped later
@@ -96,7 +97,7 @@ export default function UndercutLedger({ undercuts, excluded, driverFilter, code
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       )}
 
       <div className="ledger-footnotes">

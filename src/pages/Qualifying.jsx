@@ -8,6 +8,7 @@ import { formatLapTime } from '../lib/formatTime.js';
 import { driverIndex, driverCode, driverName } from '../lib/driverNames.js';
 import { seriesColor } from '../theme/palette.js';
 import { Limitations, Method } from '../components/Disclosure.jsx';
+import TableScroll from '../components/TableScroll.jsx';
 
 // Team-mate qualifying, which is the one comparison in this sport where
 // the car is held constant.
@@ -219,7 +220,7 @@ export default function Qualifying() {
         </div>
 
         {grid && (
-          <div className="table-scroll">
+          <TableScroll>
             <table>
               <thead>
                 <tr>
@@ -257,7 +258,7 @@ export default function Qualifying() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         )}
       </section>
 

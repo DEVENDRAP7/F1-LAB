@@ -12,6 +12,7 @@ import { drivingStyle, STYLE_METRICS } from '../lib/style.js';
 import { sessionCost } from '../lib/sessionCost.js';
 import { seriesColor } from '../theme/palette.js';
 import { formatLapTime } from '../lib/formatTime.js';
+import TableScroll from '../components/TableScroll.jsx';
 
 // Driving style — how a lap was driven, which is a different question
 // from how quick it was.
@@ -316,7 +317,7 @@ export default function DrivingStyle() {
                   cost fell, not as a second measurement of how large it was.
                 </Method>
               </div>
-              <div className="table-scroll table-wide">
+              <TableScroll wide>
                 <table>
                   <thead>
                     <tr>
@@ -364,7 +365,7 @@ export default function DrivingStyle() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
               <p className="panel-note">
                 Not a fuel-and-tyre figure: the gap also contains engine mode, traffic and a
                 circuit that rubbered in across the weekend, and nothing here separates them.

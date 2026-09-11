@@ -11,6 +11,7 @@ import { sensitivity } from '../lib/sensitivity.js';
 import { formatDuration, formatDelta } from '../lib/formatTime.js';
 import { driverIndex, driverCode, driverName } from '../lib/driverNames.js';
 import { Limitations, Method } from '../components/Disclosure.jsx';
+import TableScroll from '../components/TableScroll.jsx';
 
 // M5 — the What-If engine.
 //
@@ -450,7 +451,7 @@ export default function WhatIf() {
               that decides the answer.
             </p>
           </div>
-          <div className="table-scroll table-wide">
+          <TableScroll wide>
             <table>
               <thead>
                 <tr>
@@ -471,7 +472,7 @@ export default function WhatIf() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         </section>
       )}
 

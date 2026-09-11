@@ -24,6 +24,7 @@ import { useUrlSelection, useUrlState } from '../lib/urlState.js';
 import TelemetryTrace from '../components/TelemetryTrace.jsx';
 import TrackMap from '../components/TrackMap.jsx';
 import { Method } from '../components/Disclosure.jsx';
+import TableScroll from '../components/TableScroll.jsx';
 
 // M3 — Racing Lines. Real driven lines only, decoded from the pipeline's
 // Int16 .bin exports; the crosshair index is the single piece of shared
@@ -561,7 +562,7 @@ export default function RacingLines() {
                       have to stay apart across every pair at once, and only three do.
                     </p>
                   )}
-                  <div className="table-scroll table-wide">
+                  <TableScroll wide>
                     <table>
                       <thead>
                         <tr>
@@ -600,7 +601,7 @@ export default function RacingLines() {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </TableScroll>
                 </>
               )}
             </section>
@@ -620,7 +621,7 @@ export default function RacingLines() {
                   those — so they are numbered in the order this lap meets them.
                 </Method>
               </div>
-              <div className="table-scroll table-wide">
+              <TableScroll wide>
                 <table>
                   <thead>
                     <tr>
@@ -650,7 +651,7 @@ export default function RacingLines() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
             </section>
           )}
 

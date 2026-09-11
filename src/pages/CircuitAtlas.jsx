@@ -11,6 +11,7 @@ import { describeTurns, detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 import TelemetryTrace from '../components/TelemetryTrace.jsx';
 import { seriesColor } from '../theme/palette.js';
 import { Limitations, Method } from '../components/Disclosure.jsx';
+import TableScroll from '../components/TableScroll.jsx';
 
 // M1 — Circuit Atlas. The outline is a real driven lap: the position
 // trace of the fastest race lap, in metres, thinned but not smoothed.
@@ -377,7 +378,7 @@ export default function CircuitAtlas() {
                   </p>
                 </Method>
               </div>
-              <div className="table-scroll table-wide">
+              <TableScroll wide>
                 <table>
                   <thead>
                     <tr>
@@ -409,7 +410,7 @@ export default function CircuitAtlas() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
             </>
           )}
 
@@ -430,7 +431,7 @@ export default function CircuitAtlas() {
         </section>
       )}
 
-      <div className="table-scroll is-full">
+      <TableScroll className="is-full">
         <table>
           <caption className="visually-hidden">{state.season.year} race calendar</caption>
           <thead>
@@ -457,7 +458,7 @@ export default function CircuitAtlas() {
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
 
       <RelatedLinks
         context="Each link opens on the round run at this circuit rather than its own default."

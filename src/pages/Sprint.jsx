@@ -6,6 +6,7 @@ import { Limitations, Method } from '../components/Disclosure.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 import { seriesColor } from '../theme/palette.js';
+import TableScroll from '../components/TableScroll.jsx';
 
 // Sprint weekends — the second race of the weekend, which the rest of
 // this site does not show.
@@ -231,7 +232,7 @@ export default function Sprint() {
               <p className="panel-note">{weekend.rankAgreement.withheldReason}</p>
             )}
 
-            <div className="table-scroll table-wide is-full">
+            <TableScroll wide className="is-full">
               <table>
                 <caption className="visually-hidden">
                   {weekend.raceName}: sprint and grand prix results side by side
@@ -285,7 +286,7 @@ export default function Sprint() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
             <p className="chart-caption">
               Δ is places changed from that race's own grid. A pit-lane start has no grid
               slot in this feed and shows no Δ.
