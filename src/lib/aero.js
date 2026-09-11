@@ -51,6 +51,92 @@ export const CURVATURE_MIN_HALF_WINDOW_M = 16;
 export const CURVATURE_FIXES_PER_HALF_WINDOW = 1.5;
 export const SOURCE_FIX_HZ = 3.7;
 
+/* The radius below which the curvature fit stops being a measurement.
+ *
+ * The fit is a parabola, u = At² + Bt + C, over a window that reaches
+ * `curvatureHalfWindowM` either side of the sample. That works while the
+ * arc inside the window stays shallow. Once the corner's radius drops
+ * below the half-window the arc turns through more than a radian across
+ * the fit, which a parabola cannot represent at all — and since the path
+ * has been resampled to a uniform 2 m grid from fixes that are metres
+ * apart, what the fit is actually describing there is the interpolation
+ * between two position fixes, not the corner.
+ *
+ * Measured on the published laps: 17 of 253 detected turns came back
+ * over 6g and one Monza turn came back at 14.5g, which is about three
+ * times what the same lap's own envelope says the car did. Its implied
+ * radius is 7.7 m against a 16 m half-window.
+ *
+ * There is no new constant here and no figure recalled from anywhere:
+ * the bound is the window the fit already uses, which is itself derived
+ * from the feed's own sample rate. */
+export function curvatureHalfWindowM(speedMps) {
+  return Math.max(
+    CURVATURE_MIN_HALF_WINDOW_M,
+    CURVATURE_FIXES_PER_HALF_WINDOW * (speedMps / SOURCE_FIX_HZ),
+  );
+}
+
+/**
+ * Whether a fitted curvature describes the corner or the sampling.
+ *
+ * `curvature` is 1/metres, `speedMps` the speed at the same sample.
+ */
+export function curvatureIsResolved(curvature, speedMps) {
+  const k = Math.abs(curvature);
+  // A straight is perfectly well resolved; it is tightness that breaks
+  // the fit, not flatness.
+  if (!Number.isFinite(k) || k === 0) return true;
+  if (!Number.isFinite(speedMps) || speedMps <= 0) return false;
+  return 1 / k >= curvatureHalfWindowM(speedMps);
+}
+
+/* A step in the speed channel, as opposed to the car braking.
+ *
+ * This is what was actually producing the impossible corner loads, and
+ * it is worth stating precisely because the number below looks like a
+ * threshold and is not really behaving as one.
+ *
+ * The position path and the speed channel are published on the same 2 m
+ * grid, but they come from different feeds at different rates, so in a
+ * heavy braking zone the speed can sit on one value while the geometry
+ * is already turning, then catch up in a single sample. At Monza's first
+ * chicane the speed held 308 km/h across about 60 m in which the path
+ * turned 40 degrees, then dropped to 122. Multiply a real 40 m radius by
+ * a stale 308 km/h and the fit reports 18.5g.
+ *
+ * Measured over all 255,531 published samples, the implied longitudinal
+ * g between adjacent samples is bimodal with nothing in the middle: the
+ * 99.9th percentile is 6.6g, which is the car braking, and the 99.99th
+ * is 38.4g, which is the channel stepping. Anything from about 8 to 30
+ * picks out exactly the same samples — 0.03% of them — so this is a gap
+ * in the data rather than a line drawn through it.
+ */
+export const SPEED_STEP_G = 10;
+
+/** Implied longitudinal g between this sample and the next, on a closed lap. */
+export function speedStepG(speedKph, i, ds = 2) {
+  const n = speedKph.length;
+  const a = speedKph[i] / 3.6;
+  const b = speedKph[(i + 1) % n] / 3.6;
+  return Math.abs((b * b - a * a) / (2 * ds)) / G;
+}
+
+/** Whether the speed anywhere near `i` steps rather than being measured. */
+export function speedStepsNear(speedKph, i, halfWindowSamples, ds = 2) {
+  const n = speedKph.length;
+  for (let k = -halfWindowSamples; k <= halfWindowSamples; k += 1) {
+    if (speedStepG(speedKph, (i + k + n) % n, ds) > SPEED_STEP_G) return true;
+  }
+  return false;
+}
+
+/** The lateral g a given speed and the fit's own resolution allow. */
+export function resolvedLateralGCeiling(speedMps) {
+  if (!Number.isFinite(speedMps) || speedMps <= 0) return 0;
+  return (speedMps * speedMps) / (curvatureHalfWindowM(speedMps) * G);
+}
+
 // Speed is published on the same fixes, so its derivative is smoothed
 // over a window too, though a narrower one: speed is interpolated
 // linearly and does not get differentiated twice.

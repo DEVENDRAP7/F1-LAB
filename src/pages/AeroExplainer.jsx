@@ -408,6 +408,11 @@ export default function AeroExplainer() {
                       <span className="mono">{TURN_DEFAULTS.minLengthM}m</span>, with a brief
                       release in the middle treated as one turn rather than two. The
                       numbering does not carry across drivers.
+                      {' '}A load reads <em>withheld</em> where the corner is tighter than
+                      the curvature fit can resolve: the fit is a parabola over a window
+                      several position fixes wide, and below a radius about that size it
+                      is describing the interpolation between two fixes rather than the
+                      corner. Hover one to see what it read and what the limit was.
                     </Method>
                     <TableScroll wide>
                       <table>
@@ -438,7 +443,16 @@ export default function AeroExplainer() {
                                 {Math.round(turn.minSpeedKph)} km/h
                               </td>
                               <td className="tabular">
-                                {turn.sustainedLateralG.toFixed(1)}g
+                                {turn.loadResolved ? (
+                                  `${turn.sustainedLateralG.toFixed(1)}g`
+                                ) : (
+                                  <span
+                                    className="withheld"
+                                    title={`The fit read ${turn.unresolvedLateralG.toFixed(1)}g here and it is not published, because ${turn.loadWithheldReason}.`}
+                                  >
+                                    withheld
+                                  </span>
+                                )}
                               </td>
                               <td className="tabular">{turn.lengthM} m</td>
                             </tr>

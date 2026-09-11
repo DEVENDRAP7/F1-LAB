@@ -3389,3 +3389,15 @@ tr:hover .dismiss-flag,
       linear-gradient(to left, rgba(0, 0, 0, 0.5), transparent);
   }
 }
+
+/* A figure the fit could not stand behind.
+ *
+ * Quiet and italic rather than an alarm colour: it is not an error, it
+ * is this project declining to publish a number — the same decision the
+ * refusal ledger records, made in a table cell. */
+.withheld {
+  font-style: italic;
+  color: var(--ink-2);
+  cursor: help;
+  border-bottom: 1px dotted var(--line);
+}

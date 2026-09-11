@@ -15,13 +15,21 @@ function lapWith({ radiusM, cornerAngle = Math.PI, straightM = 400, cornerSpeed 
   let cx = 0;
   let cy = 0;
 
-  const pushStraight = (metres, v) => {
+  // The straight ends by braking down to the corner speed over its last
+  // third, rather than the speed jumping between two samples. A jump is
+  // not something a car can do, and the detector now says so — it is the
+  // signature of the speed channel stepping, which is what produced an
+  // 18.5g corner at Monza. A fixture that jumps would be testing the
+  // detector against an input it is built to reject.
+  const pushStraight = (metres, v, brakeTo = v) => {
+    const brakeFrom = metres * (2 / 3);
     for (let d = 0; d < metres; d += ds) {
       cx += Math.cos(heading) * ds;
       cy += Math.sin(heading) * ds;
       x.push(cx);
       y.push(cy);
-      speed.push(v);
+      const t = d <= brakeFrom ? 0 : (d - brakeFrom) / (metres - brakeFrom);
+      speed.push(v + (brakeTo - v) * t);
     }
   };
 
@@ -39,9 +47,9 @@ function lapWith({ radiusM, cornerAngle = Math.PI, straightM = 400, cornerSpeed 
     }
   };
 
-  pushStraight(straightM, straightSpeed);
+  pushStraight(straightM, straightSpeed, cornerSpeed);
   pushArc(cornerAngle, cornerSpeed);
-  pushStraight(straightM, straightSpeed);
+  pushStraight(straightM, straightSpeed, cornerSpeed);
   pushArc(cornerAngle, cornerSpeed);
   return { x, y, speed };
 }
@@ -174,5 +182,61 @@ describe('describeTurns', () => {
     );
     // On the brakes at 95, turn starts at 2: seven samples across the line.
     expect(turn.brakingDistanceM).toBe(14);
+  });
+});
+
+describe('withholding a load the fit cannot stand behind', () => {
+  it('publishes a corner the fit can resolve', () => {
+    const turns = detectTurns(accelerationTrace(lapWith({ radiusM: 100, cornerSpeed: 150 })));
+    for (const turn of turns) {
+      expect(turn.loadResolved).toBe(true);
+      expect(turn.sustainedLateralG).toBeGreaterThan(0);
+      expect(turn.unresolvedLateralG).toBeNull();
+      expect(turn.loadWithheldReason).toBeNull();
+    }
+  });
+
+  it('withholds a corner tighter than the fit window, and says why', () => {
+    // 12 m radius at 150 km/h: the fit reaches about 17 m either side, so
+    // the parabola is spanning more of the corner than it can describe.
+    const turns = detectTurns(accelerationTrace(lapWith({ radiusM: 12, cornerSpeed: 150 })));
+    expect(turns.length).toBeGreaterThan(0);
+    for (const turn of turns) {
+      expect(turn.loadResolved).toBe(false);
+      expect(turn.sustainedLateralG).toBeNull();
+      // The figure is kept so the page can say what was withheld.
+      expect(turn.unresolvedLateralG).toBeGreaterThan(0);
+      expect(turn.loadWithheldReason).toMatch(/tighter than/);
+    }
+  });
+
+  it('withholds where the speed channel steps rather than the car braking', () => {
+    // The same resolvable corner, but the speed arrives in one jump —
+    // the Monza signature: real geometry, stale speed.
+    const lap = lapWith({ radiusM: 100, cornerSpeed: 150 });
+    const clean = detectTurns(accelerationTrace(lap));
+    expect(clean[0].loadResolved).toBe(true);
+
+    // Hold the straight's speed across the first corner's apex and let it
+    // drop in one sample, which is what the real channel does under
+    // braking.
+    const apex = clean[0].apexIndex;
+    const stepped = {
+      ...lap,
+      speed: lap.speed.map((v, i) => (i >= apex - 6 && i <= apex + 6 ? 300 : v)),
+    };
+    const turns = detectTurns(accelerationTrace(stepped));
+    const affected = turns.filter((t) => !t.loadResolved);
+    expect(affected.length).toBeGreaterThan(0);
+    expect(affected[0].loadWithheldReason).toMatch(/steps/);
+  });
+
+  it('never publishes a figure it has also marked unresolved', () => {
+    for (const radius of [8, 12, 30, 60, 100, 400]) {
+      for (const turn of detectTurns(accelerationTrace(lapWith({ radiusM: radius })))) {
+        // Exactly one of the two is set, always.
+        expect(turn.sustainedLateralG === null).toBe(turn.unresolvedLateralG !== null);
+      }
+    }
   });
 });

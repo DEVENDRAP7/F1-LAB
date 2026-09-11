@@ -1,3 +1,5 @@
+import { curvatureHalfWindowM, speedStepsNear } from './aero.js';
+
 // Turn detection from the driven line.
 //
 // These are NOT the circuit's official corner numbers. No source this
@@ -60,7 +62,7 @@ export function detectTurns(trace, ds = 2, options = {}) {
     smoothing = SMOOTHING,
   } = options;
 
-  const { lateralG, speedKph } = trace;
+  const { lateralG, speedKph, curvature } = trace;
   const n = lateralG.length;
   if (n === 0) return [];
 
@@ -133,13 +135,57 @@ export function detectTurns(trace, ds = 2, options = {}) {
     loads.sort((a, b) => a - b);
     const sustained = loads[Math.min(loads.length - 1, Math.floor(TURN_LOAD_PERCENTILE * loads.length))];
 
+    // Whether this turn's load is a measurement or an artefact.
+    //
+    // Lateral g is v²κ, so it needs the speed and the geometry at a
+    // sample to belong to each other, and in a braking zone they do not
+    // always: the two channels come from different feeds, and the speed
+    // can hold one value while the path is already turning, then catch
+    // up in a single sample. Monza's first chicane held 308 km/h across
+    // 60 m in which the path turned 40 degrees — a real 40 m radius
+    // multiplied by a stale straight-line speed, reported as 18.5g.
+    //
+    // Two independent ways for the pairing to be wrong, both checked
+    // against the sample at the apex and the window the fit used:
+    //
+    //   the speed steps   the channel jumps rather than the car braking
+    //   the fit overruns  the corner is tighter than the parabola's own
+    //                     window, so it is describing the interpolation
+    //                     between two position fixes
+    //
+    // The figure is withheld rather than capped. A capped number is a
+    // number this project made up, and a reader could not tell it from a
+    // measured one.
+    const apexSpeedMps = speedKph[apex] / 3.6;
+    const halfWindowM = curvatureHalfWindowM(apexSpeedMps);
+    const halfWindowSamples = Math.max(1, Math.round(halfWindowM / ds));
+    const stepped = speedStepsNear(speedKph, apex, halfWindowSamples, ds);
+    // The radius the fit actually returned at the apex, against the
+    // window it had to work with — not a radius implied backwards out of
+    // the quoted figure, which is a percentile of a smoothed channel and
+    // does not describe any one sample.
+    const apexCurvature = Math.abs(curvature?.[apex] ?? 0);
+    const apexRadiusM = apexCurvature > 0 ? 1 / apexCurvature : Infinity;
+    const overruns = apexRadiusM < halfWindowM;
+    const loadResolved = !stepped && !overruns;
+    const loadWithheldReason = stepped
+      ? 'the speed channel steps here rather than the car braking, so the speed and the geometry at this point do not belong to each other'
+      : overruns
+        ? 'the corner is tighter than the curvature fit\'s own window, so the fit describes the interpolation between two position fixes rather than the corner'
+        : null;
+
     turns.push({
       number: turns.length + 1,
       startIndex: run.indices[0],
       endIndex: run.indices[run.indices.length - 1],
       apexIndex: apex,
       lengthM,
-      sustainedLateralG: sustained,
+      sustainedLateralG: loadResolved ? sustained : null,
+      // Kept so a reader can be told what was withheld and why, rather
+      // than shown an empty cell with no account of it.
+      loadResolved,
+      unresolvedLateralG: loadResolved ? null : sustained,
+      loadWithheldReason,
       minSpeedKph: minSpeed,
       entrySpeedKph: speedKph[run.indices[0]],
       exitSpeedKph: speedKph[run.indices[run.indices.length - 1]],

@@ -347,6 +347,25 @@ substantive ones:
   only a move is. Reserving a guessed height for a whole panel was tried
   and made What-If measurably worse, because a reserved block that is
   then removed is its own shift.
+- **A corner's load is withheld where the two channels disagree, and the
+  figures that survive still have a tail.** Lateral g is v²κ, so it needs
+  the speed and the geometry at a sample to belong to each other. In a
+  braking zone they sometimes do not: the feeds arrive at different rates,
+  and the speed can hold one value while the path is already turning. At
+  Monza's first chicane the speed held 308 km/h across 60 m in which the
+  path turned 40 degrees, and a real 40 m radius times a stale straight-line
+  speed was published as 14.5g. Two checks now withhold a turn's load — the
+  speed stepping rather than the car braking, and the corner being tighter
+  than the curvature fit's own window — which takes out 47 of 1,010 detected
+  turns (4.7%) and the whole impossible top of the distribution. The step
+  test is not a tuned threshold: measured over all 255,531 samples, the
+  implied longitudinal g between neighbours is bimodal, 6.6g at the 99.9th
+  percentile and 38.4g at the 99.99th, and anything from 8 to 30 selects the
+  same samples. What remains is a tail: published loads now top out near
+  10g where the car does about 5 to 6, from corners just above the
+  resolution bound where the fit is degraded rather than invalid. Removing
+  those needs a figure for what the car can actually pull, which is a
+  regulation constant this project has no source for.
 - **No DRS zones.** The feed carries a DRS channel, but turning its
   integer codes into "the flap was open here" needs a mapping this
   project has no verified source for — the same rule that keeps corner
