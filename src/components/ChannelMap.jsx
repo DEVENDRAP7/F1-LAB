@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { fitBox } from '../lib/trackFit.js';
 import { cssToken } from '../theme/palette.js';
 
 // The driven line, coloured by one channel of it — cornering load,
@@ -129,23 +130,19 @@ export default function ChannelMap({
     return { minX, maxX, minY, maxY };
   }, [points]);
 
-  const size = Math.min(width, height);
-
-  const project = useMemo(() => {
-    if (!bounds) return null;
-    const spanX = bounds.maxX - bounds.minX || 1;
-    const spanY = bounds.maxY - bounds.minY || 1;
-    const scale = Math.min((size - PAD * 2) / spanX, (size - PAD * 2) / spanY);
-    // Centred rather than corner-anchored, so a circuit that is much
-    // wider than it is tall does not sit against one edge.
-    const offsetX = (size - spanX * scale) / 2;
-    const offsetY = (size - spanY * scale) / 2;
-    return ([x, y]) => [
-      offsetX + (x - bounds.minX) * scale,
-      // Screen y grows downward; the position frame does not.
-      size - offsetY - (y - bounds.minY) * scale,
-    ];
-  }, [bounds, size]);
+  // The canvas takes the track's proportions instead of being square.
+  // A square canvas meant a tall circuit was drawn at about half the
+  // size the panel allowed, with the rest of the width empty — see
+  // lib/trackFit.js, which the SVG track map uses for the same reason.
+  // The long side is whatever the panel gives us, capped at the height
+  // this component was asked for.
+  const box = useMemo(
+    () => fitBox(bounds, { long: Math.min(width, height), pad: PAD }),
+    [bounds, width, height],
+  );
+  const boxW = box?.width ?? 0;
+  const boxH = box?.height ?? 0;
+  const project = box?.project ?? null;
 
   const bands = bandEdges.length + 1;
   const shaded = useMemo(
@@ -157,11 +154,11 @@ export default function ChannelMap({
     const canvas = canvasRef.current;
     if (!canvas || !project || !points || points.length < 2) return;
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
+    canvas.width = boxW * dpr;
+    canvas.height = boxH * dpr;
     const ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, size, size);
+    ctx.clearRect(0, 0, boxW, boxH);
 
     const colors = bandColors ?? rampFor(bands);
     ctx.lineWidth = 5;
@@ -216,14 +213,14 @@ export default function ChannelMap({
       ctx.arc(hx, hy, 6, 0, Math.PI * 2);
       ctx.stroke();
     }
-  }, [points, shaded, bandEdges, bands, bandColors, project, size, hover, turns, highlight]);
+  }, [points, shaded, bandEdges, bands, bandColors, project, boxW, boxH, hover, turns, highlight]);
 
   if (!bounds || !points || points.length < 2) return null;
 
   const nearestTo = (event) => {
     const rect = event.currentTarget.getBoundingClientRect();
-    const px = ((event.clientX - rect.left) / rect.width) * size;
-    const py = ((event.clientY - rect.top) / rect.height) * size;
+    const px = ((event.clientX - rect.left) / rect.width) * boxW;
+    const py = ((event.clientY - rect.top) / rect.height) * boxH;
     let best = null;
     let bestDistance = Infinity;
     for (let i = 0; i < points.length; i += 1) {
@@ -243,7 +240,7 @@ export default function ChannelMap({
     <div className="gripmap-wrap" ref={wrapRef}>
       <canvas
         ref={canvasRef}
-        style={{ width: size, height: size, touchAction: 'none' }}
+        style={{ width: boxW, height: boxH, touchAction: 'none' }}
         role="img"
         aria-label={`Driven lap coloured by ${label}, low to high`}
         onPointerMove={(e) => setHover(nearestTo(e))}

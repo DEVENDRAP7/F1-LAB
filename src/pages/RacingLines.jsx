@@ -464,8 +464,7 @@ export default function RacingLines() {
                   marker={
                     crosshair < mapLines[0].points.length ? mapLines[0].points[crosshair] : null
                   }
-                  width={520}
-                  height={520}
+                  long={520}
                 />
               ) : (
                 <ChannelMap

@@ -9,24 +9,23 @@
 // lib/racingLine.js's decoded x/y channels.
 // `marker` is an optional [x, y] in metres — the crosshair's position on
 // the map, driven by the same index the telemetry traces use.
-export default function TrackMap({ outline, corners = [], lines = [], marker = null, width = 640, height = 640 }) {
+import { extentOf, fitBox } from '../lib/trackFit.js';
+
+export default function TrackMap({ outline, corners = [], lines = [], marker = null, long = 640 }) {
   if (!outline || outline.length === 0) {
     return null;
   }
 
-  const xs = outline.map((p) => p[0]);
-  const ys = outline.map((p) => p[1]);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-  const pad = 40;
-  const scale = Math.min((width - pad * 2) / (maxX - minX), (height - pad * 2) / (maxY - minY));
-
-  const project = ([x, y]) => [
-    pad + (x - minX) * scale,
-    height - pad - (y - minY) * scale,
-  ];
+  // The box takes the track's proportions rather than a fixed square —
+  // see lib/trackFit.js. The extent covers the driven lines and the
+  // crosshair too, because a lap that runs wide of the outline is
+  // exactly the bit worth seeing and must not be cropped.
+  const box = fitBox(
+    extentOf(outline, ...lines.map((l) => l.points), marker ? [marker] : []),
+    { long },
+  );
+  if (!box) return null;
+  const { width, height, project } = box;
 
   const outlinePath = outline
     .map(project)

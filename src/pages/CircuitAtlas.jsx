@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
@@ -186,6 +186,40 @@ export default function CircuitAtlas() {
     return state.season.calendar.filter((r) => r.date <= today);
   }, [state.season]);
 
+  // The rounds with no outline, because nobody has driven them yet.
+  //
+  // These used to be left out of the picker entirely, which meant the
+  // atlas showed thirteen circuits and said nothing at all about the
+  // other ten — the reader had to count the calendar to notice, and
+  // could only guess whether the missing ones were broken or pending.
+  // An outline here is one real driven lap, so a circuit that has not
+  // been raced cannot have one; that is a fact about the season, not a
+  // gap in the pipeline, and it belongs on the page.
+  // Bring the selected circuit into view in the picker.
+  //
+  // Below 640px the picker is one scrollable row, and with every round
+  // of the season in it that row is about 5,200px wide. Arriving at
+  // Monza and being shown Albert Park is the row telling you nothing
+  // about where you are. scrollLeft is set directly rather than calling
+  // scrollIntoView, which would also scroll the page itself.
+  const pickerRef = useRef(null);
+  useEffect(() => {
+    const picker = pickerRef.current;
+    if (!picker) return;
+    const chip = picker.querySelector('.is-on');
+    if (!chip) return;
+    const hidden = picker.scrollWidth - picker.clientWidth;
+    if (hidden <= 0) return;
+    const target = chip.offsetLeft - (picker.clientWidth - chip.offsetWidth) / 2;
+    picker.scrollLeft = Math.max(0, Math.min(target, hidden));
+  }, [selected, runRounds.length]);
+
+  const upcomingRounds = useMemo(() => {
+    if (!state.season) return [];
+    const today = new Date().toISOString().slice(0, 10);
+    return state.season.calendar.filter((r) => r.date > today);
+  }, [state.season]);
+
   if (state.status === 'loading') {
     return <EmptyState title="Loading calendar…" reason="Fetching public/data/season.json." />;
   }
@@ -212,7 +246,7 @@ export default function CircuitAtlas() {
       </header>
 
       {runRounds.length > 0 && (
-        <div className="driver-picker">
+        <div className="driver-picker" ref={pickerRef}>
           {runRounds.map((round) => (
             <button
               key={round.circuitId}
@@ -224,7 +258,25 @@ export default function CircuitAtlas() {
               <span className="legend-fullname">{round.circuitName}</span>
             </button>
           ))}
+          {upcomingRounds.map((round) => (
+            <span
+              key={round.circuitId}
+              className="driver-chip is-upcoming"
+              title={`Traced after the ${round.raceName} runs on ${round.date}`}
+            >
+              <span className="mono">R{round.round}</span>
+              <span className="legend-fullname">{round.circuitName}</span>
+              <span className="chip-when mono">{round.date.slice(5)}</span>
+            </span>
+          ))}
         </div>
+      )}
+
+      {upcomingRounds.length > 0 && (
+        <p className="panel-note">
+          {upcomingRounds.length} circuits have no outline yet. An outline here is one
+          lap somebody actually drove, so each arrives with its race.
+        </p>
       )}
 
       {circuit.status === 'loading' && (
@@ -245,50 +297,53 @@ export default function CircuitAtlas() {
             <p className="panel-note">{doc.source}</p>
           </div>
 
-          <div className="track-map-wrap">
-            <TrackMap
-              outline={doc.outline}
-              corners={
-                turns.status === 'ready' && turns.points
-                  ? turns.rows.map((turn) => ({
-                    number: turn.number,
-                    x: turns.points[turn.apexIndex][0],
-                    y: turns.points[turn.apexIndex][1],
-                  }))
-                  : []
-              }
-            />
-          </div>
-
-          <div className="figure-grid">
-            <div className="figure">
-              <p className="figure-label">Outline points</p>
-              <p className="figure-value mono">{doc.outline?.length ?? 0}</p>
-              <p className="figure-sample">position samples along one lap</p>
+          {/* Side by side on a wide screen — see .circuit-figure-row. */}
+          <div className="circuit-figure-row">
+            <div className="track-map-wrap">
+              <TrackMap
+                outline={doc.outline}
+                corners={
+                  turns.status === 'ready' && turns.points
+                    ? turns.rows.map((turn) => ({
+                      number: turn.number,
+                      x: turns.points[turn.apexIndex][0],
+                      y: turns.points[turn.apexIndex][1],
+                    }))
+                    : []
+                }
+              />
             </div>
-            {scale && (
+
+            <div className="figure-grid">
               <div className="figure">
-                <p className="figure-label">Position unit</p>
-                <p className="figure-value mono">{Number(scale.value).toFixed(2)}</p>
-                <p className="figure-sample">
-                  raw units per metre, over {scale.sample_size} samples
-                </p>
-                <p className="figure-note">{scale.source}</p>
+                <p className="figure-label">Outline points</p>
+                <p className="figure-value mono">{doc.outline?.length ?? 0}</p>
+                <p className="figure-sample">position samples along one lap</p>
               </div>
-            )}
-            {circuitPitLoss?.pitLoss?.published && (
-              <div className="figure">
-                <p className="figure-label">Pit loss</p>
-                <p className="figure-value mono">
-                  {circuitPitLoss.pitLoss.medianS.toFixed(1)}s
-                </p>
-                <p className="figure-sample">
-                  median over {circuitPitLoss.pitLoss.drivers} drivers · middle half{' '}
-                  {circuitPitLoss.pitLoss.q1S.toFixed(1)}–{circuitPitLoss.pitLoss.q3S.toFixed(1)}s
-                </p>
-                <p className="figure-note">{pitLoss.source}</p>
-              </div>
-            )}
+              {scale && (
+                <div className="figure">
+                  <p className="figure-label">Position unit</p>
+                  <p className="figure-value mono">{Number(scale.value).toFixed(2)}</p>
+                  <p className="figure-sample">
+                    raw units per metre, over {scale.sample_size} samples
+                  </p>
+                  <p className="figure-note">{scale.source}</p>
+                </div>
+              )}
+              {circuitPitLoss?.pitLoss?.published && (
+                <div className="figure">
+                  <p className="figure-label">Pit loss</p>
+                  <p className="figure-value mono">
+                    {circuitPitLoss.pitLoss.medianS.toFixed(1)}s
+                  </p>
+                  <p className="figure-sample">
+                    median over {circuitPitLoss.pitLoss.drivers} drivers · middle half{' '}
+                    {circuitPitLoss.pitLoss.q1S.toFixed(1)}–{circuitPitLoss.pitLoss.q3S.toFixed(1)}s
+                  </p>
+                  <p className="figure-note">{pitLoss.source}</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {circuitPitLoss && !circuitPitLoss.pitLoss.published && (

@@ -328,24 +328,25 @@ substantive ones:
   circuits, so the pipeline judges it per round: under 3 m of variation
   over a whole lap is a constant with noise on it, not a profile. The
   measured range is published either way, so a refusal can be checked.
-- **Two pages still shift under the reader on first load.** Measured at
-  390px with a layout-shift observer, against the 0.1 that counts as
-  good: What-If 0.42 and Aero Explainer 0.17. The other thirteen routes
-  are at 0, down from a total of 2.18 across the site. What was fixed,
-  and what it took: every chart's height is known, so the one-line "pick
-  a driver" note now stands in a box the size of the chart it precedes;
-  the round picker is 180px wider once the calendar lands, which rewrapped
-  the control strip and moved every page down 52px, so below 620px each
-  field takes its own line; the provenance line in that strip holds its
-  line from the first paint; the home page's stat row renders as empty
-  tiles that keep their space; and the Circuit Atlas no longer paints its
-  calendar and links above a panel that is about to arrive 1,850px tall —
-  a first mount in the final place is not a shift, only a move is.
-  What-If's residual is React replacing its two trailing panels with
-  fresh nodes shortly after mounting them, which the observer scores as a
-  removal; the cause is identified but not fixed. Reserving a guessed
-  height for a whole panel was tried and made that page worse, because a
-  reserved block that is then removed is its own shift.
+- **Two pages still shift under the reader, and only sometimes.** Measured
+  at 390px with a layout-shift observer, against the 0.1 that counts as
+  good: What-If and the Aero Explainer each score 0 on some loads and
+  0.42 and 0.17 on others, from the same build. It is a race — when the
+  round's JSON lands before the first paint there is no shift at all, and
+  when it lands after, the panels are placed and then moved. The other
+  thirteen routes are at 0 every time, down from a site total of 2.18.
+  What was fixed, and what it took: every chart's height is known, so the
+  one-line "pick a driver" note now stands in a box the size of the chart
+  it precedes; the round picker is 180px wider once the calendar lands,
+  which rewrapped the control strip and moved every page down 52px, so
+  below 620px each field takes its own line; the provenance line in that
+  strip holds its line from the first paint; the home page's stat row
+  renders as empty tiles that keep their space; and the Circuit Atlas no
+  longer paints its calendar and links above a panel that is about to
+  arrive 1,850px tall — a first mount in the final place is not a shift,
+  only a move is. Reserving a guessed height for a whole panel was tried
+  and made What-If measurably worse, because a reserved block that is
+  then removed is its own shift.
 - **No DRS zones.** The feed carries a DRS channel, but turning its
   integer codes into "the flap was open here" needs a mapping this
   project has no verified source for — the same rule that keeps corner

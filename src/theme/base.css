@@ -483,9 +483,18 @@ tbody tr:hover {
 
 .lines-layout {
   display: grid;
-  grid-template-columns: minmax(280px, 520px) 1fr;
+  /* The map column takes the width the map actually needs. Now that the
+     map is shaped like its circuit, a tall track draws about 260px wide
+     inside a 520px column — so the column follows the map rather than
+     reserving a square's worth and leaving the rest empty. */
+  grid-template-columns: auto 1fr;
   gap: 1.5rem;
   align-items: start;
+}
+
+.lines-layout > :first-child {
+  justify-self: center;
+  max-width: 520px;
 }
 
 @media (max-width: 900px) {
@@ -1386,10 +1395,35 @@ tr.is-muted td {
 
 /* ---------- circuit atlas ---------- */
 
+/* The map and the figures it comes with.
+ *
+ * Now that the map is shaped like its circuit, a tall track draws about
+ * 370px wide — and on a desktop panel that left most of the row empty
+ * with the figures stacked underneath. They sit beside it instead, so
+ * the outline and the numbers measured from it are read together and
+ * neither is pushed below the fold. Below 900px it goes back to one
+ * column, where stacking is the right answer. */
 .track-map-wrap {
   display: flex;
   justify-content: center;
   margin: 0.5rem 0 1rem;
+}
+
+@media (min-width: 900px) {
+  .circuit-figure-row {
+    display: grid;
+    grid-template-columns: auto minmax(260px, 1fr);
+    gap: var(--s-5);
+    align-items: center;
+  }
+
+  .circuit-figure-row .track-map-wrap {
+    margin: 0;
+  }
+
+  /* The tiles keep their own auto-fit columns: forcing a single column
+     here stacked them at their 512px readability cap and left the rest
+     of the row empty. */
 }
 
 .track-map-wrap .track-map {
@@ -3295,5 +3329,63 @@ tr:hover .dismiss-flag,
   .controls-row select {
     width: 100%;
     min-width: 0;
+  }
+}
+
+/* A circuit whose outline has not been driven yet.
+ *
+ * It sits in the picker with the built ones because leaving it out was
+ * the problem: the atlas showed thirteen circuits and said nothing about
+ * the other ten. It reads as unavailable rather than as a button that
+ * failed — no pointer, no hover, dimmed, and a span rather than a
+ * button, so a keyboard never lands on something it cannot use. */
+.driver-chip.is-upcoming {
+  opacity: 0.45;
+  cursor: default;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.driver-chip.is-upcoming:hover {
+  /* Nothing: it is not a control. */
+  opacity: 0.45;
+  border-color: var(--line);
+  color: var(--ink-1);
+  background: var(--surface-2);
+}
+
+.chip-when {
+  font-size: 0.72em;
+  opacity: 0.8;
+}
+
+/* Scroll shadows on the chip rows.
+ *
+ * Below 640px the pickers become one scrollable row rather than seven
+ * wrapped ones, which is right for a row of three-letter driver codes
+ * and was written when that is all they held. The Circuit Atlas's picker
+ * carries full circuit names, and once it started listing the rounds
+ * that have not run yet it measured 5,213px across in a 363px window —
+ * twenty-three chips, twenty-one of them past the edge, with nothing on
+ * screen to say so.
+ *
+ * This is the same problem the tables had and it gets the same answer: a
+ * shadow at whichever edge still has content behind it. No JavaScript
+ * and no wrapper here, because a background can do it — the cover
+ * gradients are attached `local` so they travel with the content and sit
+ * over the shadows at the two extremes, and the shadows are attached
+ * `scroll` so they stay pinned to the box. Scroll away from an end and
+ * its cover slides off, revealing the shadow under it. */
+@media (max-width: 640px) {
+  .driver-picker {
+    background-repeat: no-repeat;
+    background-size: 28px 100%, 28px 100%, 22px 100%, 22px 100%;
+    background-position: left center, right center, left center, right center;
+    background-attachment: local, local, scroll, scroll;
+    background-image:
+      linear-gradient(to right, var(--bg-0), transparent),
+      linear-gradient(to left, var(--bg-0), transparent),
+      linear-gradient(to right, rgba(0, 0, 0, 0.5), transparent),
+      linear-gradient(to left, rgba(0, 0, 0, 0.5), transparent);
   }
 }
