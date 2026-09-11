@@ -106,10 +106,6 @@ export default function Qualifying() {
     <section className="page">
       <header className="page-head">
         <h1>Qualifying</h1>
-        <p className="page-sub">
-          Team-mate against team-mate, which is the one comparison where the car is the
-          same — and a count of weekends, never a claim about who is faster.
-        </p>
       </header>
 
       <div className="warning-banner" role="note">
@@ -273,7 +269,6 @@ export default function Qualifying() {
       </Limitations>
 
       <RelatedLinks
-        context={`Each link opens on round ${round} rather than its own default.`}
         links={relatedLinks(
           [
             '/strategy',

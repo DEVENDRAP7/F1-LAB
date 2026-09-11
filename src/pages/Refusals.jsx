@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
-import { Limitations, Method } from '../components/Disclosure.jsx';
+import { Disclosure, Limitations, Method } from '../components/Disclosure.jsx';
 
 // The ledger of everything this site declined to publish.
 //
@@ -53,8 +53,7 @@ export default function Refusals() {
       <header className="page-head">
         <h1>What this site would not publish</h1>
         <p className="page-sub">
-          Every module here refuses something. {totalRefused} figures were computed and
-          then withheld, each with the number that made the decision.
+          {totalRefused} figures computed, then withheld — each with the number that decided it.
         </p>
       </header>
 
@@ -79,24 +78,26 @@ export default function Refusals() {
             <div className="figure">
               <p className="figure-label">Refused</p>
               <p className="figure-value mono">{group.refused}</p>
-              <p className="figure-sample">withheld, with the reason recorded</p>
             </div>
             {group.published != null && (
               <div className="figure">
                 <p className="figure-label">Published</p>
                 <p className="figure-value mono">{group.published}</p>
-                <p className="figure-sample">cleared the bar and shipped</p>
               </div>
             )}
           </div>
 
-          <ul className="reason-list">
-            {group.entries.map((entry) => (
-              <li key={`${entry.scope}-${entry.reason}`}>
-                <span className="mono">{entry.scope}</span> — {entry.reason}
-              </li>
-            ))}
-          </ul>
+          {group.entries.length > 0 && (
+            <Disclosure summary="Each one, and what decided it" count={group.entries.length}>
+              <ul className="reason-list">
+                {group.entries.map((entry) => (
+                  <li key={`${entry.scope}-${entry.reason}`}>
+                    <span className="mono">{entry.scope}</span> — {entry.reason}
+                  </li>
+                ))}
+              </ul>
+            </Disclosure>
+          )}
         </section>
       ))}
 

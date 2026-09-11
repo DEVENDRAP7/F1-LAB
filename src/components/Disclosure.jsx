@@ -40,12 +40,14 @@ export function Method({ children, label = 'How this is computed' }) {
  * long bullets at the foot, which is the right content in the wrong
  * place: it is a reference, not an introduction. The count is in the
  * summary so it is honest about how much is behind it. */
-export function Limitations({ title = 'What this cannot tell you', children }) {
-  return (
-    <section className="panel panel-limitations">
-      <Disclosure summary={title} count={Children.count(children)}>
-        <ul className="reason-list">{children}</ul>
-      </Disclosure>
-    </section>
+export function Limitations({ title = 'What this cannot tell you', bare = false, children }) {
+  const body = (
+    <Disclosure summary={title} count={Children.count(children)}>
+      <ul className="reason-list">{children}</ul>
+    </Disclosure>
   );
+  // `bare` for the cases that already sit inside a panel — the Circuit
+  // Atlas keeps its caveats with the outline they are about, and a panel
+  // nested in a panel draws two borders around one thing.
+  return bare ? body : <section className="panel panel-limitations">{body}</section>;
 }

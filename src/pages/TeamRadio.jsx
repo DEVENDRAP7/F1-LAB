@@ -86,9 +86,6 @@ export default function TeamRadio() {
     <section className="page">
       <header className="page-head">
         <h1>Team Radio</h1>
-        <p className="page-sub">
-          Who was on the radio, when, and on which lap — with a link to the original clip.
-        </p>
         <p className="mono generated-at">generated {doc.data.generated_at}</p>
       </header>
 
@@ -223,7 +220,6 @@ export default function TeamRadio() {
       </Limitations>
 
       <RelatedLinks
-        context={`Each link opens on round ${round} rather than its own default.`}
         links={relatedLinks(['/strategy', '/errors', '/whatif', '/lines', '/circuits'], {
           round,
           session: 'R',

@@ -193,10 +193,6 @@ export default function DrivingStyle() {
     <section className="page">
       <header className="page-head">
         <h1>Driving Style</h1>
-        <p className="page-sub">
-          How a lap was driven, which is a different question from how quick it was. Two
-          drivers a tenth apart can reach that tenth in opposite ways.
-        </p>
       </header>
 
       <div className="warning-banner" role="note">
@@ -402,7 +398,6 @@ export default function DrivingStyle() {
           </Limitations>
 
           <RelatedLinks
-            context={`Each link opens on round ${round} rather than its own default.`}
             links={relatedLinks(['/lines', '/aero', '/aero-rig', '/qualifying', '/strategy'], {
               round,
               session,

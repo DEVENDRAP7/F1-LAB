@@ -10,7 +10,7 @@ import { accelerationTrace } from '../lib/aero.js';
 import { describeTurns, detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 import TelemetryTrace from '../components/TelemetryTrace.jsx';
 import { seriesColor } from '../theme/palette.js';
-import { Method } from '../components/Disclosure.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 
 // M1 — Circuit Atlas. The outline is a real driven lap: the position
 // trace of the fastest race lap, in metres, thinned but not smoothed.
@@ -206,10 +206,7 @@ export default function CircuitAtlas() {
     <section className="page">
       <header className="page-head">
         <h1>Circuit Atlas</h1>
-        <p className="page-sub">
-          Track outlines traced from real position telemetry — each one a lap somebody
-          actually drove.
-        </p>
+        <p className="page-sub">Outlines traced from real position telemetry.</p>
         <p className="mono generated-at">generated {state.season.generated_at}</p>
       </header>
 
@@ -408,11 +405,11 @@ export default function CircuitAtlas() {
           )}
 
           {doc.limitations?.length > 0 && (
-            <ul className="reason-list">
+            <Limitations bare title="What the outline is and is not">
               {doc.limitations.map((line) => (
                 <li key={line}>{line}</li>
               ))}
-            </ul>
+            </Limitations>
           )}
         </section>
       )}

@@ -660,7 +660,6 @@ export default function RaceStrategy() {
           </Limitations>
 
           <RelatedLinks
-            context={`Each link opens on round ${round} rather than its own default.`}
             links={relatedLinks(
               [
                 '/qualifying',

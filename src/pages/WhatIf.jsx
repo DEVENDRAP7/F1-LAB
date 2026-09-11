@@ -239,10 +239,7 @@ export default function WhatIf() {
     <section className="page">
       <header className="page-head">
         <h1>What-If Engine</h1>
-        <p className="page-sub">
-          Replay a race with a different strategy. Everything below is a model's estimate of
-          race time — never a claim about where anyone would have finished.
-        </p>
+        <p className="page-sub">Replay a race with a different strategy.</p>
       </header>
 
       <div className="warning-banner" role="note">
@@ -514,7 +511,6 @@ export default function WhatIf() {
       )}
 
       <RelatedLinks
-        context={`Each link opens on round ${round} rather than its own default.`}
         links={relatedLinks(['/strategy', '/errors', '/lines', '/circuits'], {
           round,
           session: 'R',

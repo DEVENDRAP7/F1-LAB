@@ -67,8 +67,8 @@ export default function SeasonLedger() {
       <header className="page-head">
         <h1>Season Ledger</h1>
         <p className="page-sub">
-          Points accumulated independently from each round's results, then cross-checked
-          against the published standings before publishing.
+          Points recomputed from each round's results, cross-checked against the published
+          standings.
         </p>
         <p className="mono generated-at">generated {generated_at}</p>
       </header>

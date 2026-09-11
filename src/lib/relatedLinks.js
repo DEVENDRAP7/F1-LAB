@@ -7,57 +7,46 @@
 export const DESTINATIONS = {
   '/strategy': {
     label: 'Race Strategy',
-    note: 'Stints, pit stops, and the measured pace trend through each one.',
     carries: ['round'],
   },
   '/qualifying': {
     label: 'Qualifying',
-    note: 'The grid as it was set, and the team-mate gap behind it.',
     carries: ['round'],
   },
   '/sprint': {
     label: 'Sprint Weekends',
-    note: 'Both races of the weekend, and how far the two orders agreed.',
     carries: ['round'],
   },
   '/lines': {
     label: 'Racing Lines',
-    note: 'Two fastest laps overlaid metre by metre, with the delta between them.',
     carries: ['round', 'session'],
   },
   '/style': {
     label: 'Driving Style',
-    note: 'How the lap was driven: throttle, coasting, corner minimums, pickup.',
     carries: ['round', 'session'],
   },
   '/aero': {
     label: 'Aero',
-    note: 'Cornering load from a curvature fit, with the working shown.',
     carries: ['round', 'session'],
   },
   '/aero-rig': {
     label: 'Aero Rig',
-    note: 'The 2026 car in 3D, with the same measured signature by speed.',
     carries: ['round', 'session'],
   },
   '/circuits': {
     label: 'Circuit Atlas',
-    note: 'The measured outline, elevation, and turn-by-turn table.',
     carries: ['circuit'],
   },
   '/radio': {
     label: 'Team Radio',
-    note: 'What the broadcast released, when, and a link to the clip.',
     carries: ['round'],
   },
   '/errors': {
     label: 'Error Review',
-    note: 'Laps that ran slow, flagged with the track state at the time.',
     carries: ['round'],
   },
   '/whatif': {
     label: 'What-If',
-    note: 'What the fitted model estimates a different strategy would have done.',
     carries: ['round'],
   },
 };
@@ -72,7 +61,7 @@ export function relatedLinks(paths, context = {}) {
         const value = context[key];
         if (value !== '' && value !== null && value !== undefined) params[key] = value;
       }
-      return { to: path, label: destination.label, note: destination.note, params };
+      return { to: path, label: destination.label, params };
     });
 }
 

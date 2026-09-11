@@ -5,7 +5,7 @@ import RelatedLinks from '../components/RelatedLinks.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
 import { formatDelta, formatLapTime } from '../lib/formatTime.js';
-import { Method } from '../components/Disclosure.jsx';
+import { Limitations, Method } from '../components/Disclosure.jsx';
 import TrackFlag from '../components/TrackFlag.jsx';
 
 // M7 — Driver Error Review.
@@ -129,7 +129,6 @@ export default function ErrorReview() {
         <h1>Driver Error Review</h1>
         <p className="page-sub">
           What race control recorded, and which laps ran slower than a driver's own pace.
-          Nothing here diagnoses a mistake.
         </p>
       </header>
 
@@ -314,19 +313,13 @@ export default function ErrorReview() {
             </>
           )}
 
-          <section className="panel">
-            <div className="panel-head">
-              <h2>What this review does not cover</h2>
-            </div>
-            <ul className="reason-list">
-              {doc.limitations.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </section>
+          <Limitations title="What this review does not cover">
+            {doc.limitations.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </Limitations>
 
           <RelatedLinks
-            context={`Each link opens on round ${round} rather than its own default.`}
             links={relatedLinks(['/strategy', '/whatif', '/lines', '/circuits'], {
               round,
               session: 'R',

@@ -64,10 +64,7 @@ export default function Home() {
     <section className="page">
       <header className="page-head">
         <h1>Apex Lab</h1>
-        <p className="page-sub">
-          A 2026 Formula 1 season built from public data. Every derived number carries how it
-          was derived; the ones that could not be stood behind were left out.
-        </p>
+        <p className="page-sub">A 2026 Formula 1 season built from public data.</p>
       </header>
 
       {stats && (
@@ -75,7 +72,6 @@ export default function Home() {
           <div className="figure">
             <p className="figure-label">Rounds</p>
             <p className="figure-value mono">{stats.rounds}</p>
-            <p className="figure-sample">races ingested and published</p>
           </div>
           <div className="figure">
             <p className="figure-label">Sessions with racing lines</p>

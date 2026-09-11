@@ -153,10 +153,7 @@ export default function AeroRig() {
     <section className="page">
       <header className="page-head">
         <h1>Aero Rig</h1>
-        <p className="page-sub">
-          A 2026 car wearing numbers measured from real driven laps. Drag to orbit, scroll to
-          zoom, click a part to ask what this project can actually say about it.
-        </p>
+        <p className="page-sub">Drag to orbit, pinch or scroll to zoom.</p>
       </header>
 
       <div className="warning-banner" role="note">
@@ -366,10 +363,10 @@ export default function AeroRig() {
           <section className="panel">
             <div className="panel-head">
               <h2>Who this session has telemetry for</h2>
-              <p className="panel-note">
-                A blank tile is a car not exported yet, not a car measured at zero: the
-                position feed publishes a handful of drivers per session, not the full field.
-              </p>
+              <Method label="Why most tiles are blank">
+                The position feed publishes a handful of drivers per session, not the full
+                field. A blank tile is a car not exported yet, not a car measured at zero.
+              </Method>
             </div>
             <div className="figure-grid">
               {teamRows.map(({ team, laps }) => (
@@ -400,7 +397,6 @@ export default function AeroRig() {
       </Limitations>
 
       <RelatedLinks
-        context={`Each link opens on round ${round} rather than its own default.`}
         links={relatedLinks(['/aero', '/lines', '/style', '/strategy', '/qualifying'], {
           round,
           session,

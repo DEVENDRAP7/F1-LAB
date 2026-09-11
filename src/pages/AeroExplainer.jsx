@@ -224,8 +224,7 @@ export default function AeroExplainer() {
       <header className="page-head">
         <h1>Aero Explainer</h1>
         <p className="page-sub">
-          How much acceleration the car actually sustained, and at what speed — measured
-          from the driven line, not modelled from assumed constants.
+          Acceleration the car sustained, and at what speed, measured from the driven line.
         </p>
       </header>
 
@@ -323,8 +322,7 @@ export default function AeroExplainer() {
             <div className="panel-head">
               <h2>Acceleration envelope</h2>
               <p className="panel-note">
-                Every sample of the lap, cornering against braking and acceleration. The
-                outline is the limit the car actually operated at; rings are whole g.
+                Every sample of the lap, cornering against braking. Rings are whole g.
               </p>
               <Method>
                 Lateral is <span className="mono">v² · κ</span> and longitudinal is{' '}
@@ -357,8 +355,8 @@ export default function AeroExplainer() {
             <div className="panel-head">
               <h2>Where the load is</h2>
               <p className="panel-note">
-                {series[0]?.code ?? 'The'} driven lap, coloured by the lateral g carried at
-                each point. Markers sit at the strongest point of each detected turn.
+                {series[0]?.code ?? 'The'} driven lap, coloured by lateral g. Markers sit at
+                each turn's strongest point.
               </p>
               <Method>
                 Colour is smoothed over about 20 m of track so a corner reads as a corner;
@@ -446,13 +444,11 @@ export default function AeroExplainer() {
           <section className="panel">
             <div className="panel-head">
               <h2>Grip against speed</h2>
-              <p className="panel-note">
-                Lateral g sustained in each speed band. A car making downforce holds more g
-                as speed rises; one on mechanical grip alone stays flat.
-              </p>
+              <p className="panel-note">Lateral g sustained in each speed band.</p>
               <Method>
-                Each point is the 95th percentile of samples in that band, so one noisy
-                sample cannot set the line. It is the shape only — converting it to a
+                A car making downforce holds more g as speed rises; one on mechanical grip
+                alone stays flat. Each point is the 95th percentile of samples in that band,
+                so one noisy sample cannot set the line. It is the shape only — converting it to a
                 downforce figure needs mass, air density and frontal area, none of which
                 any source here publishes.
               </Method>
@@ -589,11 +585,12 @@ export default function AeroExplainer() {
                 </table>
               </div>
 
-              <p className="chart-caption">
-                Slower than the model is the normal case. Faster than it is the interesting
-                one — that is downforce, and it is what the grip-against-speed panel plots.
-              </p>
               <Method label="How to read this table">
+                <p>
+                  Slower than the model is the normal case. Faster than it is the
+                  interesting one — that is downforce, and it is what the grip-against-speed
+                  panel plots.
+                </p>
                 <p>
                   A corner near the model was grip-limited: the car did what the corner
                   allowed. A corner well below it was limited by something this model has no
@@ -669,9 +666,6 @@ export default function AeroExplainer() {
                     title="Not measurable on this lap"
                     reason={drag.reason}
                   />
-                  <p className="chart-caption">
-                    The normal outcome, not a gap waiting on a fix.
-                  </p>
                   <Method label="Why coasting is this rare">
                     A flying lap is spent on the throttle or on the brakes; genuine
                     coasting — off both pedals, above {COAST_MIN_SPEED_KPH} km/h, going
@@ -726,7 +720,6 @@ export default function AeroExplainer() {
           </Limitations>
 
           <RelatedLinks
-            context={`Each link opens on round ${round} rather than its own default.`}
             links={relatedLinks(['/aero-rig', '/lines', '/style', '/circuits', '/strategy'], {
               round,
               session,

@@ -112,8 +112,7 @@ export default function Sprint() {
       <header className="page-head">
         <h1>Sprint Weekends</h1>
         <p className="page-sub">
-          The same drivers, the same cars and the same circuit, racing twice from two
-          different grids inside a day. No other weekend offers that comparison.
+          The same cars and circuit, raced twice from two different grids.
         </p>
         <p className="mono generated-at">generated {doc.data.generated_at}</p>
       </header>
@@ -288,8 +287,8 @@ export default function Sprint() {
               </table>
             </div>
             <p className="chart-caption">
-              Δ is places changed from that race's own grid: ▲ gained, ▼ lost. A driver who
-              started from the pit lane has no grid slot in this feed and shows no Δ.
+              Δ is places changed from that race's own grid. A pit-lane start has no grid
+              slot in this feed and shows no Δ.
             </p>
           </>
         )}
@@ -342,10 +341,8 @@ export default function Sprint() {
           <p className="chart-caption">
             <span className="legend-swatch" style={{ background: seriesColor(0) }} /> sprint
             {'  '}
-            <span className="legend-swatch" style={{ background: seriesColor(1) }} /> grand prix.
-            Bar length is points, on one scale across the table, split at the point where
-            the sprint's share ends. The two figures beside it are the points themselves, so
-            the bar is a reading aid rather than the only place the number appears.
+            <span className="legend-swatch" style={{ background: seriesColor(1) }} /> grand prix ·
+            bar length is points, on one scale across the table.
           </p>
         </section>
       )}
@@ -358,7 +355,6 @@ export default function Sprint() {
       </Limitations>
 
       <RelatedLinks
-        context={`Each link opens on round ${round} rather than its own default.`}
         links={relatedLinks(['/strategy', '/qualifying', '/lines', '/errors', '/circuits'], {
           round,
           session: 'R',

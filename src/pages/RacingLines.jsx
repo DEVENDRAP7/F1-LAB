@@ -328,8 +328,7 @@ export default function RacingLines() {
       <header className="page-head">
         <h1>Racing Lines</h1>
         <p className="page-sub">
-          Two drivers' fastest laps laid over each other metre by metre — the same piece of
-          track driven twice, and where the difference between them was actually made.
+          Two drivers' fastest laps laid over each other, metre by metre.
         </p>
       </header>
       <div className="controls-row">
@@ -656,7 +655,6 @@ export default function RacingLines() {
           )}
 
           <RelatedLinks
-            context={`Each link opens on round ${round} rather than its own default.`}
             links={relatedLinks(['/aero', '/aero-rig', '/style', '/circuits', '/strategy'], {
               round,
               session,

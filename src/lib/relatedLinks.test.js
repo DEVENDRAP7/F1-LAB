@@ -38,12 +38,11 @@ describe('relatedLinks', () => {
     expect(out.map((l) => l.to)).toEqual(['/whatif', '/strategy']);
   });
 
-  it('gives every destination a label and a note', () => {
+  it('gives every destination a label and carries params to it', () => {
     const links = relatedLinks(Object.keys(DESTINATIONS), { round: 1, circuit: 'monza' });
     expect(links).toHaveLength(Object.keys(DESTINATIONS).length);
     for (const link of links) {
       expect(link.label).toBeTruthy();
-      expect(link.note).toBeTruthy();
       expect(Object.keys(link.params).length).toBeGreaterThan(0);
     }
   });
