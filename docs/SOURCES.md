@@ -147,7 +147,15 @@ this project asks about first.
   public account of them and reads `0-14 (Odd DRS is Disabled, Even DRS is
   Enabled?) (More Research Needed?)`, with `2` and `3` marked `(?)` and `10`,
   `12` and `14` all `On (Unknown Distinction)`. The best public source says it
-  does not know, so this project does not either
+  does not know, so this project does not either. Re-checked against FastF1's
+  master branch on 2026-09-11: unchanged, still hedged. A zone map could be
+  built from the subset the docstring is confident about — `10`, `12` and `14`
+  are each labelled "On", so only the distinction between them is unknown —
+  and it would probably be right; "probably right" is what this project
+  refuses everywhere else. The refusal now ships as a structured
+  `drsZones.published: false` field on every circuit artifact, with its reason
+  and this source, so the Circuit Atlas can say it where a reader looks for
+  the zones and the refusal ledger can count it
 - No audio, and no transcripts of any audio. Team radio is published here as
   metadata with a link to the clip at its own host; converting speech to text
   would put this project's paraphrase where a quotation belongs, and the

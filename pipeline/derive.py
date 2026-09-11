@@ -71,26 +71,14 @@ def extract_corners(circuit_info, fastest_lap, rotation_deg: float) -> list[dict
     return corners
 
 
-def extract_drs_zones(fastest_lap) -> list[dict]:
-    """Contiguous distance ranges where DRS is active on a flying lap."""
-    tel = fastest_lap.get_telemetry()
-    if "Distance" not in tel:
-        tel = tel.add_distance()
-    if "DRS" not in tel:
-        return []
-
-    active = tel["DRS"] >= 10  # FastF1: DRS values >=10 indicate open
-    zones = []
-    start = None
-    for i, is_active in enumerate(active):
-        if is_active and start is None:
-            start = tel["Distance"].iloc[i]
-        elif not is_active and start is not None:
-            zones.append({"startM": float(start), "endM": float(tel["Distance"].iloc[i - 1])})
-            start = None
-    if start is not None:
-        zones.append({"startM": float(start), "endM": float(tel["Distance"].iloc[-1])})
-    return zones
+# There is no DRS zone extractor here any more. The one that used to sit at
+# this spot read FastF1's `DRS` column and treated `>= 10` as open, which is
+# a guess the only public account of those codes explicitly declines to
+# make. It was also unreachable: this pipeline runs on OpenF1, and nothing
+# called it. The refusal now lives where a reader can see it — written into
+# each circuit artifact and reported in the refusal ledger — rather than as
+# dead code that made the feature look half-finished. See
+# DRS_REFUSAL_REASON in run_refresh.py.
 
 
 def compute_pit_loss(laps) -> SourcedValue:

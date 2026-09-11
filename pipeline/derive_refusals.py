@@ -206,6 +206,37 @@ def collect(public_data, year: int) -> dict:
                 "entries": withheld,
             })
 
+    # --- DRS zones -------------------------------------------------
+    # One decision covering every circuit, so it is counted per circuit
+    # that could have carried a zone map and explained once. Enumerating
+    # thirteen identical rows would be thirteen copies of one sentence.
+    drs_refused = 0
+    drs_reason = ""
+    drs_source = ""
+    for path in sorted((public_data / "circuits").glob("*.json")):
+        doc = _load(path)
+        if not doc:
+            continue
+        drs = doc.get("drsZones")
+        if isinstance(drs, dict) and not drs.get("published") and drs.get("reason"):
+            drs_refused += 1
+            drs_reason = drs["reason"]
+            drs_source = drs.get("source", "")
+    if drs_refused:
+        groups.append({
+            "module": "DRS zones",
+            "rule": (
+                "A zone is drawn on a track only where a source says what the car's "
+                "DRS channel means. No source does."
+            ),
+            "published": 0,
+            "refused": drs_refused,
+            "entries": [{
+                "scope": f"every circuit ({drs_refused})",
+                "reason": f"{drs_reason} — {drs_source}" if drs_source else drs_reason,
+            }],
+        })
+
     if upcoming and upcoming.get("history") is None and upcoming.get("reason"):
         groups.append({
             "module": "Upcoming brief",

@@ -176,9 +176,20 @@
           "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
         }
       ]
+    },
+    {
+      "module": "DRS zones",
+      "rule": "A zone is drawn on a track only where a source says what the car's DRS channel means. No source does.",
+      "published": 0,
+      "refused": 13,
+      "entries": [
+        {
+          "scope": "every circuit (13)",
+          "reason": "the feed carries a DRS integer per sample, but no public source maps those codes to flap open or closed with enough confidence to draw a zone on a track \u2014 FastF1 car_data docstring (checked against master, 2026-09-11): codes 0-14, 2 and 3 documented as '(?)', 10, 12 and 14 each as 'On (Unknown Distinction)', annotated '(Odd DRS is Disabled, Even DRS is Enabled?) (More Research Needed?)'"
+        }
+      ]
     }
   ],
-  "totalRefused": 353,
-  "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion.",
-  "generated_at": "2026-09-08T10:28:49Z"
+  "totalRefused": 366,
+  "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion."
 }

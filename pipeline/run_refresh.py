@@ -553,6 +553,31 @@ QUALIFYING_MATCH_SLACK_DAYS = 3
 # What a session directory means, in the words a page should use.
 SESSION_LABELS = {"R": "the race", "Q": "qualifying"}
 
+# Why the atlas carries no DRS zone map.
+#
+# This is the one refusal on the site where the feed does carry the
+# channel: OpenF1's car_data publishes a `drs` integer per sample, and it
+# is ingested. What is missing is the mapping from those integers to "the
+# flap was open here". The most detailed public account of the codes is
+# FastF1's own car_data docstring, re-checked against its master branch on
+# 2026-09-11, and it does not claim to know: 2 and 3 are "(?)", 10, 12 and
+# 14 are each "On (Unknown Distinction)", and the whole set is annotated
+# "(Odd DRS is Disabled, Even DRS is Enabled?) (More Research Needed?)".
+#
+# A zone map could be built from the subset the source is confident about
+# and it would probably be right. "Probably right" is the thing this
+# project refuses everywhere else, so it is refused here too, and said out
+# loud rather than left as an empty list that reads like unfinished work.
+DRS_REFUSAL_REASON = (
+    "the feed carries a DRS integer per sample, but no public source maps those "
+    "codes to flap open or closed with enough confidence to draw a zone on a track"
+)
+DRS_REFUSAL_SOURCE = (
+    "FastF1 car_data docstring (checked against master, 2026-09-11): codes 0-14, "
+    "2 and 3 documented as '(?)', 10, 12 and 14 each as 'On (Unknown Distinction)', "
+    "annotated '(Odd DRS is Disabled, Even DRS is Enabled?) (More Research Needed?)'"
+)
+
 
 def refresh_telemetry(year: int, round_info: dict, sessions: list[dict],
                       session_name: str = "R", slack_days: int = 1) -> bool:
@@ -770,7 +795,15 @@ def _export_circuit_outline(circuit_key, round_info, round_, session_name,
         # than stored here: one implementation of the detection, and no
         # stored corner list that can fall out of step with the lap it
         # was read from.
-        "drsZones": [],
+        # The feed carries a DRS channel and this is a refusal, not a gap, so
+        # it is written as one: a structured field the refusal ledger can
+        # report, rather than a bare empty list that reads as "not done yet".
+        "drsZones": {
+            "published": False,
+            "zones": [],
+            "reason": DRS_REFUSAL_REASON,
+            "source": DRS_REFUSAL_SOURCE,
+        },
         "generated_at": ingest._now_iso(),
         "source": (
             f"OpenF1 position trace, session {session_key}, fastest "
@@ -788,9 +821,6 @@ def _export_circuit_outline(circuit_key, round_info, round_, session_name,
             "No official corner numbering: this source publishes none. The atlas "
             "detects turns from the published line and numbers them in lap order, "
             "which is this lap's own sequence rather than the circuit's names.",
-            "No DRS zones: the feed carries a DRS channel, but turning its integer "
-            "codes into 'the flap was open here' needs a mapping this project has no "
-            "verified source for.",
         ],
     })
 

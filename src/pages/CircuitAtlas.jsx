@@ -297,6 +297,22 @@ export default function CircuitAtlas() {
             </p>
           )}
 
+          {/* The one refusal on this page where the data is present and the
+              meaning is not: the feed sends a DRS integer per sample and no
+              source says what the integers mean. Said here, where a reader
+              looks for the zones, rather than only in the ledger. */}
+          {doc.drsZones && !doc.drsZones.published && (
+            <p className="chart-caption">
+              <strong>No DRS zones on this outline.</strong>{' '}
+              {doc.drsZones.reason}.
+              {doc.drsZones.source && (
+                <Method label="What the source actually says">
+                  {doc.drsZones.source}
+                </Method>
+              )}
+            </p>
+          )}
+
           {turns.status === 'ready' && turns.elevation && (
             <>
               <div className="panel-head">

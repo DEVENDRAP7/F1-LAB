@@ -175,3 +175,48 @@ class TestRefusalLedger:
         ledger = derive_refusals.collect(tmp_path, 2026)
         assert ledger["groups"] == []
         assert ledger["totalRefused"] == 0
+
+    def test_the_drs_refusal_is_reported_once_and_counted_per_circuit(self, tmp_path):
+        """DRS is the refusal where the data is present and the meaning is not.
+
+        It is one decision covering every circuit, so the ledger counts it
+        per circuit that could have carried a zone map and explains it once
+        — thirteen copies of one sentence is what the ledger is for avoiding.
+        """
+        import derive_refusals
+
+        circuits = tmp_path / "circuits"
+        circuits.mkdir(parents=True)
+        for key in ("monza", "spa", "suzuka"):
+            (circuits / f"{key}.json").write_text(json.dumps({
+                "circuitId": key,
+                "drsZones": {
+                    "published": False,
+                    "zones": [],
+                    "reason": "no public source maps those codes",
+                    "source": "FastF1 car_data docstring: 'More Research Needed?'",
+                },
+            }))
+        (tmp_path / "2026").mkdir(parents=True)
+
+        ledger = derive_refusals.collect(tmp_path, 2026)
+        drs = next(g for g in ledger["groups"] if g["module"] == "DRS zones")
+        assert drs["refused"] == 3
+        assert drs["published"] == 0
+        assert len(drs["entries"]) == 1
+        assert "More Research Needed" in drs["entries"][0]["reason"]
+
+    def test_a_circuit_that_published_zones_is_not_a_refusal(self, tmp_path):
+        """If a verified mapping ever lands, the ledger must stop reporting it."""
+        import derive_refusals
+
+        circuits = tmp_path / "circuits"
+        circuits.mkdir(parents=True)
+        (circuits / "monza.json").write_text(json.dumps({
+            "circuitId": "monza",
+            "drsZones": {"published": True, "zones": [{"startM": 100, "endM": 900}]},
+        }))
+        (tmp_path / "2026").mkdir(parents=True)
+
+        ledger = derive_refusals.collect(tmp_path, 2026)
+        assert [g for g in ledger["groups"] if g["module"] == "DRS zones"] == []

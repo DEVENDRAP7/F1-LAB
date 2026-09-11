@@ -331,7 +331,9 @@ substantive ones:
 - **No DRS zones.** The feed carries a DRS channel, but turning its
   integer codes into "the flap was open here" needs a mapping this
   project has no verified source for — the same rule that keeps corner
-  numbers out.
+  numbers out. This is the only refusal where the data is present and the
+  meaning is missing, so it is said on the Circuit Atlas itself and
+  counted in the refusal ledger rather than left as an empty list.
 - **Curvature is fitted, not differentiated.** Position arrives at about
   3.7 Hz, over 20 m between fixes at racing speed, so a curve is fitted to
   a window of the path that always spans several real fixes. A 2 m finite
