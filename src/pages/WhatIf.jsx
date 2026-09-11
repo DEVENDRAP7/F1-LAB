@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { dataPath } from '../lib/dataPath.js';
 import EmptyState from '../components/EmptyState.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
@@ -74,6 +74,24 @@ export default function WhatIf() {
   const [season, setSeason] = useState({ status: 'loading', data: null });
   const [round, setRound] = useUrlState('round');
   const [doc, setDoc] = useState({ status: 'idle', data: null });
+
+  // Whether the round fetch has ever come back.
+  //
+  // Two traps here, both found by measuring. `doc` starts at 'idle' and
+  // only becomes 'loading' once a round is known, so "not loading" is
+  // true on the very first paint — exactly when the trailing panels must
+  // not be drawn. And this page fetches twice on arrival: once for the
+  // round it opens on, then again after walking back to the newest round
+  // that has data. Gating on the current status alone therefore mounted
+  // those panels, unmounted them for the second fetch, and remounted
+  // them two thousand pixels lower — a 0.42 layout shift, all of it from
+  // the removal.
+  //
+  // So it latches: once there has been an answer, the panels stay put
+  // while the next one is fetched.
+  const settledOnce = useRef(false);
+  if (doc.status === 'ready' || doc.status === 'empty') settledOnce.current = true;
+  const settled = settledOnce.current;
   const [driverId, setDriverId] = useUrlState('driver');
   const [strategy, setStrategy] = useState(null);
 
@@ -267,12 +285,13 @@ export default function WhatIf() {
               ))}
             </select>
           </label>
-          {doc.data?.fit && (
-            <span className="generated-at mono">
-              fitted on {doc.data.fit.greenLaps} green laps · residual{' '}
-              {doc.data.fit.residualRmsS.toFixed(2)}s
-            </span>
-          )}
+          {/* Holds its line from the first paint: arriving later grew the
+              control strip by 54px and moved every panel down with it. */}
+          <span className="generated-at mono" aria-hidden={!doc.data?.fit}>
+            {doc.data?.fit
+              ? `fitted on ${doc.data.fit.greenLaps} green laps · residual ${doc.data.fit.residualRmsS.toFixed(2)}s`
+              : '\u00a0'}
+          </span>
         </div>
       )}
 
@@ -498,7 +517,11 @@ export default function WhatIf() {
         </section>
       )}
 
-      {doc.data?.limitations && (
+      {/* Both of these sit below content that arrives from a fetch about
+          2,250px tall, so painting them before it meant painting them
+          twice — once here and once two thousand pixels lower. A first
+          mount in the final place is not a shift; a move is. */}
+      {settled && doc.data?.limitations && (
         <Limitations title="What this model does not know">
           {doc.data.limitations.map((line) => (
             <li key={line}>{line}</li>
@@ -511,13 +534,15 @@ export default function WhatIf() {
         </Limitations>
       )}
 
-      <RelatedLinks
-        links={relatedLinks(['/strategy', '/errors', '/lines', '/circuits'], {
-          round,
-          session: 'R',
-          circuit: circuitForRound(season.data?.calendar, round),
-        })}
-      />
+      {settled && (
+        <RelatedLinks
+          links={relatedLinks(['/strategy', '/errors', '/lines', '/circuits'], {
+            round,
+            session: 'R',
+            circuit: circuitForRound(season.data?.calendar, round),
+          })}
+        />
+      )}
     </section>
   );
 }

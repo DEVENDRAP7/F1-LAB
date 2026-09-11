@@ -115,12 +115,14 @@ export default function TeamRadio() {
               ))}
             </select>
           </label>
-          {race?.radio?.published && (
-            <span className="generated-at mono">
-              {race.radio.clips} clip{race.radio.clips === 1 ? '' : 's'} ·{' '}
-              {race.radio.withLap} placed on a lap
-            </span>
-          )}
+          {/* Holds its line from the first paint: see the controls-row
+              reservation in base.css — a provenance line arriving later
+              rewrapped the strip and moved the page under the reader. */}
+          <span className="generated-at mono" aria-hidden={!race?.radio?.published}>
+            {race?.radio?.published
+              ? `${race.radio.clips} clip${race.radio.clips === 1 ? '' : 's'} · ${race.radio.withLap} placed on a lap`
+              : '\u00a0'}
+          </span>
         </div>
       )}
 

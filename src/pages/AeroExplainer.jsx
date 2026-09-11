@@ -11,6 +11,7 @@ import {
 } from '../lib/aero.js';
 import { seriesColor } from '../theme/palette.js';
 import EmptyState from '../components/EmptyState.jsx';
+import ChartPlaceholder from '../components/ChartPlaceholder.jsx';
 import RelatedLinks from '../components/RelatedLinks.jsx';
 import { circuitForRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlSelection, useUrlState } from '../lib/urlState.js';
@@ -248,11 +249,16 @@ export default function AeroExplainer() {
             <option value="R">Race</option>
           </select>
         </label>
-        {lap && (
-          <span className="generated-at mono">
-            fastest {manifest.data.sessionLabel ?? 'race'} laps · {manifest.data.source}
-          </span>
-        )}
+        {/* The provenance line wraps onto its own row in this control
+            strip, so appearing when the lap lands grew the strip by 52px
+            and moved the entire page down by that much. It holds its
+            line from the first paint instead, empty until it has
+            something to say. */}
+        <span className="generated-at mono" aria-hidden={!lap}>
+          {lap
+            ? `fastest ${manifest.data.sessionLabel ?? 'race'} laps · ${manifest.data.source}`
+            : '\u00a0'}
+        </span>
       </div>
 
       {manifest.status === 'loading' && (
@@ -332,7 +338,9 @@ export default function AeroExplainer() {
               </Method>
             </div>
             {series.length === 0 ? (
-              <p className="panel-note">Select a driver to plot their lap.</p>
+              <ChartPlaceholder height={480}>
+                Select a driver to plot their lap.
+              </ChartPlaceholder>
             ) : (
               <>
                 <GGDiagram series={series} height={480} />
@@ -365,7 +373,9 @@ export default function AeroExplainer() {
               </Method>
             </div>
             {series.length === 0 ? (
-              <p className="panel-note">Select a driver to draw their lap.</p>
+              <ChartPlaceholder height={420}>
+                Select a driver to draw their lap.
+              </ChartPlaceholder>
             ) : (
               <>
                 <ChannelMap
@@ -455,7 +465,9 @@ export default function AeroExplainer() {
               </Method>
             </div>
             {series.length === 0 ? (
-              <p className="panel-note">Select a driver to plot their envelope.</p>
+              <ChartPlaceholder height={300}>
+                Select a driver to plot their envelope.
+              </ChartPlaceholder>
             ) : (
               <EnvelopeChart series={series} />
             )}

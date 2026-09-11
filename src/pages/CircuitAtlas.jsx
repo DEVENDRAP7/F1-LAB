@@ -431,6 +431,14 @@ export default function CircuitAtlas() {
         </section>
       )}
 
+      {/* The calendar and the links sit below the circuit panel, and that
+          panel arrives from a fetch about 1,850px tall — so painting
+          these first meant painting them twice: once here, and once
+          1,850px lower when the circuit landed. An element that mounts
+          for the first time in its final place is not a layout shift;
+          only one that moves is. So they wait for the panel above them
+          to know its own size. */}
+      {circuit.status !== 'loading' && (
       <TableScroll className="is-full">
         <table>
           <caption className="visually-hidden">{state.season.year} race calendar</caption>
@@ -459,14 +467,16 @@ export default function CircuitAtlas() {
           </tbody>
         </table>
       </TableScroll>
+      )}
 
-      <RelatedLinks
-        context="Each link opens on the round run at this circuit rather than its own default."
-        links={relatedLinks(['/lines', '/aero', '/strategy', '/qualifying'], {
-          round: roundForCircuit(state.season?.calendar, selected),
-          session: 'Q',
-        })}
-      />
+      {circuit.status !== 'loading' && (
+        <RelatedLinks
+          links={relatedLinks(['/lines', '/aero', '/strategy', '/qualifying'], {
+            round: roundForCircuit(state.season?.calendar, selected),
+            session: 'Q',
+          })}
+        />
+      )}
     </section>
   );
 }

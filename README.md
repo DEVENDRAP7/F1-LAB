@@ -328,18 +328,24 @@ substantive ones:
   circuits, so the pipeline judges it per round: under 3 m of variation
   over a whole lap is a constant with noise on it, not a profile. The
   measured range is published either way, so a refusal can be checked.
-- **Three pages still shift under the reader on first load.** Measured at
-  390px with a layout-shift observer: What-If 0.62, Circuit Atlas ~0.5-0.65,
-  Aero Explainer 0.56, against the 0.1 that counts as good. On each one the
-  page paints its heading, controls and trailing panels first and then
-  mounts a screen-and-a-half of content into the middle. The home page had
-  the same fault (0.38) and is fixed — its stat row now renders as empty
-  tiles that hold their own space, bringing it to 0.02 — but that works
-  because the tile count is known in advance. On these three the content is
-  whole panels of charts whose height depends on the race, and reserving a
-  fixed height for them measurably made it worse: a reserved block becomes
-  its own shift when it is removed. The honest fix is for each chart to
-  reserve its aspect ratio before its data arrives, which is not done yet.
+- **Two pages still shift under the reader on first load.** Measured at
+  390px with a layout-shift observer, against the 0.1 that counts as
+  good: What-If 0.42 and Aero Explainer 0.17. The other thirteen routes
+  are at 0, down from a total of 2.18 across the site. What was fixed,
+  and what it took: every chart's height is known, so the one-line "pick
+  a driver" note now stands in a box the size of the chart it precedes;
+  the round picker is 180px wider once the calendar lands, which rewrapped
+  the control strip and moved every page down 52px, so below 620px each
+  field takes its own line; the provenance line in that strip holds its
+  line from the first paint; the home page's stat row renders as empty
+  tiles that keep their space; and the Circuit Atlas no longer paints its
+  calendar and links above a panel that is about to arrive 1,850px tall —
+  a first mount in the final place is not a shift, only a move is.
+  What-If's residual is React replacing its two trailing panels with
+  fresh nodes shortly after mounting them, which the observer scores as a
+  removal; the cause is identified but not fixed. Reserving a guessed
+  height for a whole panel was tried and made that page worse, because a
+  reserved block that is then removed is its own shift.
 - **No DRS zones.** The feed carries a DRS channel, but turning its
   integer codes into "the flap was open here" needs a mapping this
   project has no verified source for — the same rule that keeps corner

@@ -3232,3 +3232,68 @@ tr:hover .dismiss-flag,
 .figure.is-skeleton .figure-value {
   width: 35%;
 }
+
+/* A chart's space, before the chart. See ChartPlaceholder.jsx: the note
+   is centred in the box so it reads as a waiting chart rather than a
+   short paragraph with a lot of air under it. */
+.chart-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+  margin-top: 0.75rem;
+}
+
+.chart-placeholder .panel-note {
+  margin: 0;
+  max-width: 32ch;
+}
+
+/* The provenance line in a control strip.
+ *
+ * It is long metadata that wraps onto a second line at phone widths, so
+ * filling it in grew the strip by 52px and moved the whole page down.
+ * It holds two lines from the first paint. On a wide screen it sits
+ * beside the selects, which are taller than this, so the reservation
+ * costs nothing there. */
+.controls-row .generated-at {
+  /* 42px, not an em multiple: the filled line measures 40px at phone
+     widths and an em value tracks the font rather than the wrap. Still
+     shorter than the selects beside it on a wide screen, so it reserves
+     nothing there. */
+  min-height: 42px;
+}
+
+/* The control strip on a phone.
+ *
+ * It is a wrapping flex row, and the round picker is empty on the first
+ * paint and about 180px wider once the calendar arrives — which rewrapped
+ * the row, changed its height by 52px, and moved every panel on the page
+ * down by that much. Measured on the Aero Explainer: the provenance line
+ * jumped 180px sideways and 55px down as the row reflowed around the
+ * grown select.
+ *
+ * Below 620px each field takes its own line, so the row's height is the
+ * number of fields rather than a function of how long this round's name
+ * happens to be, and nothing rewraps when the options land. It also
+ * gives the selects the full width, which is the better shape for a
+ * thumb anyway. */
+@media (max-width: 620px) {
+  .controls-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .controls-row label,
+  .controls-row .field {
+    width: 100%;
+  }
+
+  .controls-row select {
+    width: 100%;
+    min-width: 0;
+  }
+}

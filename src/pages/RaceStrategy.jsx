@@ -227,11 +227,14 @@ export default function RaceStrategy() {
             ))}
           </select>
         </label>
-        {data && (
-          <span className="generated-at mono">
-            {data.laps.length} laps · {driverOrder.length} drivers · generated {data.generated_at}
-          </span>
-        )}
+        {/* Holds its line from the first paint: see the controls-row
+            reservation in base.css — a provenance line arriving later
+            rewrapped the strip and moved the page under the reader. */}
+        <span className="generated-at mono" aria-hidden={!data}>
+          {data
+            ? `${data.laps.length} laps · ${driverOrder.length} drivers · generated ${data.generated_at}`
+            : '\u00a0'}
+        </span>
       </div>
 
       {!round && (

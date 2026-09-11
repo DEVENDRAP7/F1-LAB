@@ -226,11 +226,14 @@ export default function DrivingStyle() {
               <option value="R">Race</option>
             </select>
           </label>
-          {manifest.data?.sessionLabel && (
-            <span className="generated-at mono">
-              fastest {manifest.data.sessionLabel} laps
-            </span>
-          )}
+          {/* Holds its line from the first paint: see the controls-row
+              reservation in base.css — a provenance line arriving later
+              rewrapped the strip and moved the page under the reader. */}
+          <span className="generated-at mono" aria-hidden={!manifest.data?.sessionLabel}>
+            {manifest.data?.sessionLabel
+              ? `fastest ${manifest.data.sessionLabel} laps`
+              : '\u00a0'}
+          </span>
         </div>
       )}
 
