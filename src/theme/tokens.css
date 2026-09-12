@@ -1,101 +1,91 @@
 /*
  * Design tokens only — no inline colors anywhere else in the app.
  *
- * Two colour jobs, kept apart on purpose:
+ * ONE RULE, and everything else follows from it:
  *
- *   CHROME    surfaces, nav, headings, rules, focus. Free to carry hue
- *             and warmth, because it encodes nothing — it is the room
- *             the data sits in.
- *   SEMANTIC  series, stint ramp, status, podium, sector. Each of these
- *             means something, is validated against both surfaces, and
- *             is never borrowed for decoration.
+ *   the chrome is monochrome, so colour always means something.
  *
- * The earlier palette had the semantic half right and almost no chrome,
- * so every page read as grey text on grey panels with the colour locked
- * inside the charts. The fix is more chrome, not louder data.
+ * Before this, the accent blue was the wordmark, every stat number,
+ * every card heading and every link — which is the same as having no
+ * accent at all, because when everything is emphasised nothing is. Worse
+ * on a site like this one: it put decorative blue next to a purple that
+ * means session best and a green that means personal best, so the
+ * reader had no way to know which colours were carrying information.
+ *
+ * So the room is built entirely from ink on a ground — a warm near-black
+ * in dark, warm paper in light — and every hue on screen is semantic:
+ *
+ *   TIMING     purple session best, green personal best
+ *   COMPOUND   the five tyre bands
+ *   FLAGS      what race control actually waved
+ *   SERIES     four slots, assigned by selection and never by rank
+ *   STATUS     reserved, never borrowed for a series
+ *
+ * State that used to need the accent is carried by ink weight and by
+ * inversion instead: a selected chip is ink-on-ground reversed, a
+ * current nav item is full-strength ink with a rule under it, a link is
+ * underlined. That is how print has always done it, and it leaves the
+ * whole colour channel free for the data.
+ *
+ * The semantic sets were re-validated against these new surfaces rather
+ * than carried over on trust: the four series slots pass the lightness
+ * band, chroma floor, CVD separation, normal-vision floor and 3:1
+ * contrast checks on both #131314 and #ffffff.
  */
 :root {
-  /* Surfaces carry a slight blue cast rather than pure neutral grey:
-   * a flat #12151b panel on a #0a0c10 page is the "pale" complaint —
-   * there is no temperature anywhere for the eye to hold on to. */
-  --bg-0: #07090e;
-  --bg-1: #101520;
-  --bg-2: #182031;
-  --bg-3: #202a3e;
-  --line: #26314a;
-  --line-strong: #35446a;
+  /* A warm near-black rather than the navy this used to be. Navy with a
+     blue accent is the default look of every admin template; the warmth
+     here is what keeps a monochrome page from reading as dead grey. */
+  --bg-0: #0a0a0b;
+  --bg-1: #131314;
+  --bg-2: #1b1b1d;
+  --bg-3: #232326;
+  --line: #26262a;
+  --line-strong: #3a3a40;
 
-  --ink-0: #f2f5fa;
-  --ink-1: #a9b4c9;
-  /* Stepped up from #6b7791. Measured off the rendered page rather than
-     off the token: the smallest text on the site — figure captions, the
-     generated-at line, the sample counts under every figure — was
-     landing at 3.9:1 on the panel surface, under the 4.5 a body size
-     that small needs. Same hue and saturation, one step lighter, which
-     puts it at 4.55 on a panel and 5.18 on the page. */
-  --ink-2: #76829a;
+  --ink-0: #f5f4f1;
+  --ink-1: #a5a29b;
+  /* Measured, not chosen: #7c7972 held the hue but landed at 3.96:1 on
+     --bg-2, and the smallest text on this site (sample counts, captions,
+     the generated-at line) sits at a body size that needs 4.5. This step
+     clears it on all three grounds — 5.66 on bg-0, 5.31 on bg-1, 4.92 on
+     bg-2. */
+  --ink-2: #8c8981;
 
-  /* Signature accent. Used for interactive state, active nav, focus
-   * rings and heading rules — never to encode a value. */
-  --accent-0: #4da3ff;
-  --accent-1: #2b7fe0;
-  --accent-glow: rgba(77, 163, 255, 0.16);
-  --accent-edge: rgba(77, 163, 255, 0.42);
+  /* There is no decorative accent any more. These names are kept because
+     focus rings, selection and links still need *a* colour, and what
+     they now resolve to is ink — full-strength, so a focus ring is the
+     loudest thing on the page, which is exactly what a focus ring is
+     for. Nothing that encodes a value may use them. */
+  --accent-0: var(--ink-0);
+  --accent-1: var(--ink-1);
+  --accent: var(--ink-0);
+  --accent-glow: rgba(245, 244, 241, 0.1);
+  --accent-edge: rgba(245, 244, 241, 0.3);
 
-  /* A warm counterweight, so the whole site is not one cool hue. */
-  --hot-0: #ff7a3d;
-  --hot-glow: rgba(255, 122, 61, 0.14);
-
-  --grad-head: linear-gradient(96deg, var(--accent-0), var(--hot-0));
-  --grad-panel: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  /* Kept for the one place a warm mark is structural rather than
+     decorative: the live/most-recent marker. */
+  --hot-0: #f5f4f1;
+  --hot-glow: rgba(245, 244, 241, 0.1);
 
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-2: 0 6px 20px rgba(0, 0, 0, 0.45);
 
-  /* ---------- depth ----------
-   *
-   * Surfaces here are glass: a translucent tint over the page's own
-   * light, a lit rim where the light catches the top edge, and a shadow
-   * underneath. Three things have to be true at once or it reads as fog
-   * rather than as a pane of something.
-   *
-   * The rim does most of the work. A translucent panel with a blur and
-   * no rim looks like a smudge; the same panel with a 1px inset
-   * highlight along its top edge reads as a physical edge immediately,
-   * because that is where a real edge catches the light.
-   *
-   * Elevation is two shadows, never one. A single soft shadow is
-   * ambient occlusion with nothing casting it. A tight, dark contact
-   * shadow directly under the element plus a wide, soft ambient one is
-   * what the eye reads as height — the first says "it is touching
-   * here", the second says "it is above that".
-   */
-  /* ---------- surfaces ----------
-   *
-   * Glass is now ONE element: the sticky header, which is the only
-   * surface content actually passes behind and therefore the only one
-   * where a blur describes anything real. Everywhere else it was a
-   * translucent tint over a fixed background — the same flat colour
-   * every time, computed the expensive way, on eight large elements a
-   * page. Panels are opaque now, and the data on them reads louder for
-   * it.
-   */
-  --surface-1: #101520;
-  --surface-2: #182031;
+  --surface-1: #131314;
+  --surface-2: #1b1b1d;
 
-  --glass-tint: rgba(24, 32, 49, 0.72);
-  --glass-tint-strong: rgba(30, 40, 62, 0.86);
-  --glass-blur: blur(18px) saturate(135%);
-  --glass-rim: rgba(255, 255, 255, 0.09);
-  --glass-rim-strong: rgba(255, 255, 255, 0.15);
-  /* The underside. A dark inset along the bottom edge is the other half
-     of a rim: lit on top, shaded beneath, which is what gives a flat
-     rectangle a thickness. */
+  --glass-tint: rgba(19, 19, 20, 0.82);
+  --glass-tint-strong: rgba(27, 27, 29, 0.9);
+  --glass-blur: blur(18px) saturate(120%);
+  --glass-rim: rgba(255, 255, 255, 0.07);
+  --glass-rim-strong: rgba(255, 255, 255, 0.12);
   --glass-underside: rgba(0, 0, 0, 0.32);
 
-  --elev-1:
-    0 1px 1px rgba(0, 0, 0, 0.34),
-    0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  /* Elevation is nearly gone: almost nothing on this site is a floating
+     object, and saying so with a shadow on every panel was most of why
+     it read as a template. What is left is for the two things that
+     genuinely sit above the page — the sticky bar and an open menu. */
+  --elev-1: none;
   --elev-2:
     0 1px 1px rgba(0, 0, 0, 0.4),
     0 10px 26px -8px rgba(0, 0, 0, 0.55);
@@ -103,15 +93,14 @@
     0 2px 2px rgba(0, 0, 0, 0.45),
     0 22px 50px -14px rgba(0, 0, 0, 0.65);
 
-  /* A groove for a bar to sit in: the track is recessed, the fill sits
-     proud of it. Used on every bar chart drawn in DOM rather than
-     canvas. */
-  --groove:
-    inset 0 1px 2px rgba(0, 0, 0, 0.45),
-    inset 0 -1px 0 var(--glass-rim);
-  /* Applied over a fill whose colour encodes something: a highlight
-     only, no hue shift, so the value the colour carries is unchanged. */
-  --fill-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 62%);
+  --groove: inset 0 0 0 1px var(--line);
+  --fill-sheen: none;
+
+  /* No heading gradient any more: a two-hue sweep across an h1 is the
+     single loudest decorative element a page can have, and it was
+     sitting above data whose own colours mean something. */
+  --grad-head: none;
+  --grad-panel: none;
 
   /* ---------- the sport's own colour language ----------
    *
@@ -170,7 +159,11 @@
    * screen: on this dark surface white is right, but the same token has
    * to stay visible as a bar on the light surface too, so it is stepped
    * per mode and every bar carries a hairline outline. */
-  --compound-soft: #e2373d;
+  /* One step deeper than it was. The stint bars carry a lap count in
+     white inside the segment, and on the old red that label measured
+     4.33:1 against a 4.5 floor — the band still reads as the soft red
+     everyone knows, and the number on it is now legible. */
+  --compound-soft: #d92f36;
   --compound-medium: #f0c033;
   --compound-hard: #dfe4ec;
   --compound-inter: #2fae4e;
@@ -293,58 +286,55 @@
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme='dark']) {
-    --bg-0: #eef1f6;
+    /* Paper, not screen-white. A warm off-white ground with the true
+       white kept for the surfaces that sit on it gives the page the
+       same figure/ground relationship the dark mode has, and stops a
+       monochrome layout reading as an unstyled document. */
+    --bg-0: #faf9f6;
     --bg-1: #ffffff;
-    --bg-2: #f5f7fb;
-    --bg-3: #e6ebf4;
-    --line: #d2d9e6;
-    --line-strong: #b3bfd4;
-    --ink-0: #0d1117;
-    --ink-1: #465063;
-    /* Stepped down from #6e7a92 for the same reason and by the same
-       measurement: 4.21 on the light panel, now 5.00 there and 4.53 on
-       the page behind it. */
-    --ink-2: #636e84;
+    --bg-2: #f2f0ea;
+    --bg-3: #e8e5dd;
+    --line: #ddd9d0;
+    --line-strong: #b9b4a8;
+    --ink-0: #16150f;
+    --ink-1: #4a4842;
+    /* 5.05 on the paper ground, 5.32 on a white surface. */
+    --ink-2: #6e6b63;
 
-    --accent-0: #1e6fd9;
-    --accent-1: #17579f;
-    --accent-glow: rgba(30, 111, 217, 0.1);
-    --accent-edge: rgba(30, 111, 217, 0.35);
-    --hot-0: #e2591c;
-    --hot-glow: rgba(226, 89, 28, 0.1);
+    /* Ink, for the same reason as in dark mode: nothing decorative gets
+       a hue, so every hue on the page belongs to the data. */
+    --accent-0: var(--ink-0);
+    --accent-1: var(--ink-1);
+    --accent: var(--ink-0);
+    --accent-glow: rgba(22, 21, 15, 0.07);
+    --accent-edge: rgba(22, 21, 15, 0.28);
+    --hot-0: #16150f;
+    --hot-glow: rgba(22, 21, 15, 0.07);
 
-    --grad-panel: linear-gradient(180deg, #ffffff, var(--bg-2));
-    --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.06);
-    --shadow-2: 0 8px 24px rgba(16, 24, 40, 0.1);
+    --grad-head: none;
+    --grad-panel: none;
+    --shadow-1: 0 1px 2px rgba(22, 21, 15, 0.06);
+    --shadow-2: 0 8px 24px rgba(22, 21, 15, 0.1);
 
-    /* Glass on a light surface is a different material, not the dark
-       one inverted. The tint goes lighter than the page rather than
-       darker, the rim stays white but has less to catch, and the
-       shadows are cool and much weaker — a hard black shadow on white
-       reads as a sticker, not as glass. */
     --surface-1: #ffffff;
-    --surface-2: #f5f7fb;
+    --surface-2: #f2f0ea;
 
-    --glass-tint: rgba(255, 255, 255, 0.78);
-    --glass-tint-strong: rgba(255, 255, 255, 0.92);
+    --glass-tint: rgba(250, 249, 246, 0.82);
+    --glass-tint-strong: rgba(250, 249, 246, 0.94);
     --glass-rim: rgba(255, 255, 255, 0.9);
     --glass-rim-strong: rgba(255, 255, 255, 1);
-    --glass-underside: rgba(16, 24, 40, 0.08);
+    --glass-underside: rgba(22, 21, 15, 0.07);
 
-    --elev-1:
-      0 1px 1px rgba(16, 24, 40, 0.05),
-      0 2px 6px -1px rgba(16, 24, 40, 0.07);
+    --elev-1: none;
     --elev-2:
-      0 1px 1px rgba(16, 24, 40, 0.06),
-      0 10px 26px -8px rgba(16, 24, 40, 0.16);
+      0 1px 1px rgba(22, 21, 15, 0.05),
+      0 10px 26px -8px rgba(22, 21, 15, 0.14);
     --elev-3:
-      0 2px 2px rgba(16, 24, 40, 0.07),
-      0 22px 50px -14px rgba(16, 24, 40, 0.22);
+      0 2px 2px rgba(22, 21, 15, 0.06),
+      0 22px 50px -14px rgba(22, 21, 15, 0.2);
 
-    --groove:
-      inset 0 1px 2px rgba(16, 24, 40, 0.14),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.7);
-    --fill-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 62%);
+    --groove: inset 0 0 0 1px var(--line);
+    --fill-sheen: none;
 
     /* ---------- reserved ramps, stepped for this surface ----------
      *
@@ -363,9 +353,14 @@
     --sector-yellow: #856c11;
     --sector-purple: #a12af4;
 
-    --pos-1: #b8860b;
-    --pos-2: #6b7689;
-    --pos-3: #a6642c;
+    /* Re-stepped for the paper ground. These were set against the old
+       #eef1f6 page; on the warmer, lighter paper they landed at 3.09,
+       4.36 and 4.45 against a 4.5 floor, and they are set as text — a
+       position number, not a swatch — so they have to clear it. Same
+       hues, walked down until they do: 5.11, 5.42 and 5.66. */
+    --pos-1: #8a6408;
+    --pos-2: #5d6779;
+    --pos-3: #8f5624;
 
     /* Hard steps down to a mid grey here: #dfe4ec on white is a bar you
        cannot see. Soft and medium darken just enough to hold their

@@ -99,12 +99,16 @@
   flex: 0 0 auto;
 }
 
+/* The second word of the wordmark. It used to be filled with the accent
+   gradient via background-clip, which meant that when the gradient went
+   away the word rendered as nothing at all — transparent text over no
+   background. It is weight and tone now, which is how a wordmark should
+   have been built in the first place. */
 .brand span {
-  background: var(--grad-head);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--ink-2);
+  font-weight: 500;
   margin-left: 0.28em;
 }
 
@@ -149,8 +153,15 @@
    the section you are in, `is-open` is the menu you have pulled down.
    Drawing them the same makes an open menu look like a navigation you
    already performed. */
+/* The section you are in. With no accent colour to spend, this is ink
+   weight plus a rule under the label — which is what a printed index
+   does, and it survives being the only signal for a reader who cannot
+   separate hues at all. The underline is drawn with a shadow rather
+   than a border so it does not change the trigger's height and shift
+   the whole bar when you navigate. */
 .nav-trigger.is-here {
-  color: var(--accent-0);
+  color: var(--ink-0);
+  box-shadow: inset 0 -2px 0 var(--ink-0);
 }
 
 .nav-trigger.is-open {
@@ -302,10 +313,21 @@ table {
 
 th,
 td {
-  padding: 0.62rem 0.95rem;
+  padding: 0.7rem 1.1rem 0.7rem 0;
   line-height: 1.45;
   border-bottom: 1px solid var(--line);
   text-align: left;
+}
+
+/* Numbers in a column line up, always. Without tabular figures a
+   points column wanders by a few pixels a row and the eye cannot use
+   the column edge to compare, which is the entire reason it is a
+   column. */
+td.tabular,
+th.tabular,
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
 thead th {
@@ -319,26 +341,29 @@ thead th {
   border-bottom-color: var(--line-strong);
 }
 
-/* Zebra plus a hover row: on a table this dense, banding is what lets
-   the eye track across a row without a ruler. */
-tbody tr:nth-child(even) {
-  background: color-mix(in srgb, var(--bg-2) 45%, transparent);
-}
+/* No zebra. The rows already carry a hairline each, and banding on top
+   of that is the same information twice — on a monochrome sheet it
+   reads as noise rather than as structure. Tracking across a wide row
+   is handled by the rule and by tabular figures holding the columns
+   straight. */
 
 tbody tr:hover {
   background: var(--accent-glow);
 }
 
-/* Dashed and recessed, on purpose: an empty state is a hole in the
-   page where a panel would be, and it should read as one rather than as
-   another card with nothing in it. */
+/* A hole in the page where data would be. It is still marked out rather
+   than left blank — a reader has to be able to tell "nothing here yet"
+   from "the page stopped rendering" — but it is a dashed rule and a left
+   indent now, not a large white card. On a page with no other boxes on
+   it, a box is the loudest thing on screen, and an absence should not be
+   the loudest thing on screen. */
 .empty-state {
-  border: 1px dashed var(--line-strong);
-  background: var(--surface-1);
-  border-radius: 14px;
-  padding: 2rem;
+  border: 0;
+  border-left: 2px dashed var(--line-strong);
+  background: none;
+  border-radius: 0;
+  padding: var(--s-3) 0 var(--s-3) var(--s-4);
   max-width: 42rem;
-  box-shadow: var(--groove);
 }
 
 .empty-state-title {
@@ -353,17 +378,31 @@ tbody tr:hover {
   line-height: 1.5;
 }
 
+/* A standing notice — what a page refuses to claim.
+ *
+ * It was a tinted, rounded, shadowed box with a coloured left edge, and
+ * on most pages it sat directly under the title, so the first thing on
+ * every page was a large coloured rectangle. It is a marked-off passage
+ * now: one rule down the left, the page's own ground behind it. The
+ * colour stays on the rule, where it still reads as a flag, and comes
+ * off the fill, where it was competing with data that means something
+ * by being coloured. */
 .warning-banner {
-  background: color-mix(in srgb, var(--warn) 14%, var(--surface-2));
-  border: 1px solid transparent;
-  border-left: 3px solid var(--warn);
-  border-radius: 10px;
-  padding: var(--s-3) var(--s-4);
-  margin-bottom: var(--s-4);
-  color: var(--ink-0);
+  background: none;
+  border: 0;
+  border-left: 2px solid var(--warn);
+  border-radius: 0;
+  padding: var(--s-1) 0 var(--s-1) var(--s-4);
+  margin-bottom: var(--s-5);
+  color: var(--ink-1);
   font-size: var(--t-md);
   line-height: 1.6;
-  box-shadow: var(--elev-1);
+  box-shadow: none;
+  max-width: var(--measure);
+}
+
+.warning-banner strong {
+  color: var(--ink-0);
 }
 
 /* A disclosure inside a banner sits on a tinted surface, so it drops the
@@ -444,41 +483,54 @@ tbody tr:hover {
   margin-bottom: 1rem;
 }
 
+/* A selectable code. Square rather than a pill, because a three-letter
+   code in a rounded capsule is a tag, and these are switches.
+ *
+ * Selection is INVERTED — ink ground, page-coloured text — rather than
+ * signalled by a border colour. That is the one state change that
+ * survives having no accent colour, it is unmistakable at a glance
+ * across twenty chips, and it does not spend a hue on something that
+ * carries no value. Where a chip stands for a plotted driver the series
+ * swatch inside it still carries the identity. */
 .driver-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.34rem 0.8rem;
-  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  padding: 0.34rem 0.7rem;
+  background: none;
   color: var(--ink-1);
   cursor: pointer;
   font-weight: 600;
-  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
-  transition: color 120ms ease, background 120ms ease,
-    border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  box-shadow: none;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
 .driver-chip:hover {
   color: var(--ink-0);
-  background: var(--bg-3);
+  background: none;
   border-color: var(--line-strong);
-  transform: translateY(-2px);
-  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
+  transform: none;
+  box-shadow: none;
 }
 
-/* Selected sits down into the surface. A chip that is on and a chip
-   that is merely hovered must not both read as raised, or the state
-   the selection carries is told only by a border colour. */
 .driver-chip.is-on {
   transform: none;
-  box-shadow: var(--groove);
+  box-shadow: none;
+  background: var(--ink-0);
+  border-color: var(--ink-0);
+  color: var(--bg-0);
+}
+
+.driver-chip.is-on:hover {
+  background: var(--ink-0);
+  color: var(--bg-0);
 }
 
 .driver-chip:active {
-  transform: translateY(0);
-  box-shadow: var(--groove);
+  transform: none;
+  box-shadow: none;
 }
 
 .lines-layout {
@@ -553,37 +605,23 @@ tbody tr:hover {
 
 .page-head {
   position: relative;
-  margin-bottom: var(--s-5);
-  padding-left: var(--s-4);
-}
-
-/* A pseudo-element rather than border-image: border-image needs every
-   side sized to paint reliably, and with only border-left set it drew
-   nothing at all. */
-.page-head::before {
-  content: '';
-  position: absolute;
-  inset: 0.15rem auto 0.4rem 0;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--grad-head);
+  margin: 0 0 var(--s-6);
+  padding: 0 0 var(--s-4);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .page-head h1 {
   margin: 0 0 var(--s-2);
-  font-weight: 700;
-  font-size: var(--t-display);
-  letter-spacing: -0.015em;
-  line-height: 1.08;
-  /* The title is the one place the accent gradient sits on type: it
-     names the page and encodes nothing. Both transparent properties are
-     needed — `color` alone leaves WebKit painting its own fill and the
-     gradient never shows. */
-  background: var(--grad-head);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  /* Much larger than it was, and the only thing on the page at this
+     size. The old h1 sat within a few pixels of the stat numbers and the
+     card titles, which is why no page had a focal point: everything was
+     the same size in the same colour, so the eye had nowhere to land. */
+  font-size: clamp(2.4rem, 5.2vw, 3.6rem);
+  letter-spacing: -0.028em;
+  line-height: 0.98;
+  color: var(--ink-0);
+  text-wrap: balance;
 }
 
 .page-sub {
@@ -594,59 +632,68 @@ tbody tr:hover {
   max-width: var(--measure);
 }
 
-/* The primary surface.
+/* The primary surface — which is now, mostly, not a surface at all.
  *
- * It used to carry six layers at once: a border, a 14px radius, a
- * translucent tint, a backdrop blur, three shadows, a specular
- * highlight in one corner and an accent hairline along the top. Each
- * was defensible alone. Eight of them down a page is a stack of
- * identical decorated boxes with the charts as the quiet part, and the
- * blur is a full-surface filter recomputed on every scroll for a tint
- * that resolves to a flat colour anyway.
+ * Every panel used to be a bordered, rounded, shadowed box, and on a
+ * page like the home index those boxes nested two and three deep: a card
+ * inside a group panel inside the page, each with the same hairline and
+ * the same radius. That is the single thing that made this look like a
+ * template. A border says "these things belong together", and when
+ * everything has one it says nothing at all.
  *
- * What is left is a hairline, an opaque surface one step off the page,
- * and a contact shadow. The accent tick on the heading is the landmark
- * now — one small mark rather than a whole frame. */
+ * So the default panel is a band: separated from its neighbour by space
+ * and a hairline, the way a results sheet separates sections. No box, no
+ * radius, no shadow, no fill. A box is now a deliberate choice, taken
+ * only where something really is a container you can act on — see
+ * .panel-boxed. */
 .panel {
   position: relative;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 0;
+  margin: 0 0 var(--s-7);
+  box-shadow: none;
+}
+
+/* A real container: the disclosure blocks, the editors, anything a
+   reader manipulates rather than reads. */
+.panel-boxed {
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   background: var(--surface-1);
-  padding: var(--s-4) var(--s-5) var(--s-5);
-  margin-bottom: var(--s-5);
-  box-shadow: var(--elev-1);
+  padding: var(--s-4);
 }
 
 .panel-head {
   margin-bottom: var(--s-4);
 }
 
-/* Some panels carry a bare h2 rather than a .panel-head wrapper, and
-   those were the only headings on the site without the accent tick — a
-   difference in markup showing up as a difference in design. */
+/* A section label, not a title. Small, letterspaced, quiet — it names
+   the band underneath without competing with the data in it. The
+   gradient tick that used to sit before every one of these is gone: a
+   decorative mark repeated fifteen times down a page is wallpaper, and
+   this one was in the accent colour, next to data whose colours mean
+   something. */
 .panel > h2,
 .panel-head h2 {
   margin: 0 0 var(--s-2);
-  font-size: var(--t-sm);
+  font-size: var(--t-xs);
   font-weight: 700;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-0);
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
+  color: var(--ink-2);
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--line);
 }
 
-/* A short accent tick before every panel title — cheap, consistent, and
-   it gives the eye a repeating landmark down a long page. */
-.panel > h2::before,
-.panel-head h2::before {
-  content: '';
-  width: 3px;
-  height: 0.95em;
-  border-radius: 2px;
-  background: var(--grad-head);
-  flex: 0 0 auto;
+.panel > h3,
+.panel-head h3 {
+  margin: var(--s-5) 0 var(--s-2);
+  font-size: var(--t-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink-0);
 }
 
 /* One rule for every block of running text on the site. The measure and
@@ -973,15 +1020,22 @@ tbody tr:hover {
    be read whole — the calendar — opt out with .is-full. */
 /* Recessed: a table is a window cut into the panel, not another card
    sitting on it. */
+/* A table is a ruled sheet, not a card.
+ *
+ * This was a bordered, rounded, filled, inset-shadowed box wrapped
+ * around rows that already had rules between them — containment three
+ * times over for one object. The rows are the structure; the container
+ * only needs to scroll. */
 .table-scroll {
   overflow-x: auto;
   max-height: 420px;
   overflow-y: auto;
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  border: 0;
+  border-top: 1px solid var(--line-strong);
+  border-radius: 0;
   margin-top: 0.75rem;
-  background: color-mix(in srgb, var(--bg-1) 55%, transparent);
-  box-shadow: var(--groove);
+  background: none;
+  box-shadow: none;
 }
 
 .table-scroll.is-full {
@@ -1015,15 +1069,18 @@ tbody tr:hover {
   position: sticky;
   top: 0;
   /* Opaque, not glass: rows scrolling under a blurred header turn the
-     header's own labels into mush. It is raised off the rows with a
-     shadow instead. */
-  background: var(--bg-2);
-  box-shadow: 0 1px 0 var(--line-strong), 0 6px 12px -8px rgba(0, 0, 0, 0.6);
+     header's own labels into mush. The page's own ground, so the header
+     reads as part of the sheet and not as a bar laid over it — the rule
+     under it is what separates the labels from the data. */
+  background: var(--bg-0);
+  box-shadow: 0 1px 0 var(--line-strong);
   z-index: 1;
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-1);
+  color: var(--ink-2);
+  padding-bottom: var(--s-2);
 }
 
 tr.is-muted td {
@@ -1048,14 +1105,11 @@ tr.is-muted td {
   font-weight: 600;
 }
 
-/* Selected has to be unmistakable and must not rest on colour alone.
-   Three channels: it is pressed into the surface, its rim is the accent,
-   and its label takes the accent colour. */
-.driver-chip.is-on {
-  background: var(--accent-glow);
-  border-color: var(--accent-edge);
-  color: var(--ink-0);
-}
+/* The selected state lives with the rest of the chip rules, further up:
+   it inverts. This block used to restate it here with an accent tint and
+   an accent rim, which silently beat the rule above it by coming later
+   in the file — two definitions of one state, and the one that won was
+   the one nobody was reading. */
 
 .link-button {
   background: none;
@@ -1285,55 +1339,65 @@ tr.is-muted td {
    from two editions ends up read as a settled fact. */
 .figure-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  /* The rule between tiles is the container now, so the gap carries the
+     hairline rather than separating two boxes. */
+  gap: 0;
+  border-top: 1px solid var(--line);
 }
 
+/* A statistic, set the way a results sheet sets one: the number large
+   enough to be the thing you see first, the label small and quiet above
+   it, and a rule rather than a box holding them apart.
+ *
+ * These were bordered, rounded, filled cards with a shadow, a hover
+ * lift, and a two-hue gradient bar across the bottom corner that
+ * encoded nothing. The number inside was 1.9rem in the accent colour —
+ * the same colour as the page title, the card headings and every link,
+ * so it read as chrome rather than as the measurement it is. */
 .figure {
   position: relative;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  /* A lone tile in an auto-fit grid takes the whole row, which turned a
-     single refusal count on the Refusals page into a 1200px-wide card
-     with one number in it. Capped, so one tile reads like one of four
-     rather than like a banner. */
-  max-width: 32rem;
-  padding: 0.8rem 0.9rem;
-  background: var(--surface-2);
-  overflow: hidden;
-  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
-  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  max-width: none;
+  padding: var(--s-4) var(--s-5) var(--s-4) 0;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
 }
 
-.figure:hover {
-  border-color: var(--accent-edge);
-  transform: translateY(-2px);
-  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
-}
-
-.figure::after {
-  content: '';
-  position: absolute;
-  inset: auto auto 0 0;
-  width: 34%;
-  height: 2px;
-  background: var(--grad-head);
-  opacity: 0.7;
+/* A vertical hairline between tiles on the same row, drawn on the tile
+   rather than the grid so it disappears correctly when they wrap. */
+@media (min-width: 620px) {
+  .figure + .figure {
+    padding-left: var(--s-5);
+    border-left: 1px solid var(--line);
+  }
 }
 
 .figure-label {
-  color: var(--ink-1);
-  font-size: 0.78rem;
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   margin: 0;
 }
 
 .figure-value {
-  font-size: 1.9rem;
+  /* The hero. Tabular so a column of them lines up, tight so a long
+     number still reads as one object, and in ink — the colour channel
+     belongs to the data that encodes something with it. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  font-size: clamp(2rem, 3.4vw, 2.9rem);
   font-weight: 700;
-  line-height: 1.15;
-  margin: 0.2rem 0 0.15rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: var(--s-2) 0 var(--s-2);
   text-align: left;
-  color: var(--accent-0);
+  color: var(--ink-0);
 }
 
 .figure-sample {
@@ -2006,43 +2070,63 @@ tbody tr.is-on {
 
 .module-grid {
   display: grid;
-  gap: 0.7rem;
+  /* Column gap only: the rows are held apart by each card's own rule, so
+     a row gap would double the separation. */
+  gap: 0 var(--s-5);
   /* auto-FILL, not auto-fit: the home page now shows one grid per
      section, and auto-fit collapses the empty tracks so a two-card
      section drew cards twice the width of a four-card one directly
      above it. Keeping the empty tracks keeps every card on the page the
      same size. */
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   list-style: none;
   margin: 0.6rem 0 0;
   padding: 0;
 }
 
+/* The index of modules, set as an index rather than as a wall of cards.
+ *
+ * Fourteen bordered, filled, shadowed cards with a hover lift, grouped
+ * inside four more bordered panels, was the clearest single symptom of
+ * the card-soup problem: three nested borders around a link. A contents
+ * page is a list of names, and the name is the thing you are scanning
+ * for — so each entry is a ruled row with its title full strength and
+ * its line of description under it, and the only thing hover changes is
+ * the ink and a rule that runs the width of the row. */
 .module-card {
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
   color: inherit;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.25rem;
   height: 100%;
-  padding: 0.75rem 0.85rem;
+  padding: var(--s-3) var(--s-4) var(--s-4) 0;
   text-decoration: none;
-  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
-  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  box-shadow: none;
+  transition: border-color 120ms ease;
 }
 
 .module-card:hover,
 .module-card:focus-visible {
-  border-color: var(--accent-edge);
-  transform: translateY(-2px);
-  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
+  border-top-color: var(--ink-0);
+  transform: none;
+  box-shadow: none;
+}
+
+.module-card:hover .module-name,
+.module-card:focus-visible .module-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .module-name {
-  color: var(--accent-0);
+  color: var(--ink-0);
   font-weight: 700;
+  font-size: var(--t-lg);
+  letter-spacing: -0.012em;
 }
 
 .module-line {
@@ -2070,30 +2154,38 @@ tbody tr.is-on {
   padding: 0;
 }
 
+/* Where to go next, set as a list of destinations rather than a row of
+   buttons. The name is what a reader is scanning for. */
+/* Where to go next, set as a list of destinations rather than a row of
+   buttons. The name is what a reader is scanning for, so the name is all
+   there is, on its own ruled row. */
 .related-link {
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  box-shadow: var(--elev-1), inset 0 1px 0 var(--glass-rim);
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  height: 100%;
-  padding: 0.65rem 0.8rem;
+  display: block;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  padding: var(--s-3) 0;
   text-decoration: none;
-  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  box-shadow: none;
+  transition: border-color 120ms ease;
 }
 
 .related-link:hover,
 .related-link:focus-visible {
-  border-color: var(--accent-edge);
-  transform: translateY(-2px);
-  box-shadow: var(--elev-2), inset 0 1px 0 var(--glass-rim-strong);
+  border-top-color: var(--ink-0);
+  transform: none;
+  box-shadow: none;
+}
+
+.related-link:hover .related-link-name,
+.related-link:focus-visible .related-link-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .related-link-name {
-  color: var(--accent-0);
+  color: var(--ink-0);
   font-weight: 600;
 }
 
@@ -3400,4 +3492,43 @@ tr:hover .dismiss-flag,
   color: var(--ink-2);
   cursor: help;
   border-bottom: 1px dotted var(--line);
+}
+
+/* An inverted chip inverts all the way through.
+ *
+ * The selected state flips the chip to an ink ground, and the secondary
+ * text inside it — a driver's full name, a circuit's name — was still
+ * painted in --ink-2, which is a mid grey chosen to sit on the PAGE.
+ * On the inverted ground it measured 3.18:1. Both inks come from the
+ * ground side of the palette while the chip is inverted. */
+.driver-chip.is-on,
+.driver-chip.is-on .legend-fullname,
+.driver-chip.is-on .chip-when,
+.driver-chip.is-on .mono {
+  color: var(--bg-0);
+}
+
+.driver-chip.is-on .legend-fullname,
+.driver-chip.is-on .chip-when {
+  opacity: 0.72;
+}
+
+/* The swatch that carries a series identity next to text.
+ *
+ * A series hue is picked to separate marks from each other against a
+ * chart surface; it is not picked to be legible as 12px type, and
+ * measured on the paper ground the driver codes painted in it came in
+ * at 3.13–3.23:1 against a 4.5 floor. So identity moves to a swatch and
+ * the text keeps an ink token — which is also the only version that
+ * works for a reader who cannot separate the hues at all. */
+.series-dot {
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  border-radius: 2px;
+  margin-right: 0.34em;
+  vertical-align: baseline;
+  /* A 2px ring in the surface colour, so two swatches that land next to
+     each other never read as one wider mark. */
+  box-shadow: 0 0 0 1px var(--bg-0);
 }

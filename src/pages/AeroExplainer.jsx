@@ -312,8 +312,8 @@ export default function AeroExplainer() {
               {series.map((s) => (
                 <div className="figure" key={s.code}>
                   <p className="figure-label">
-                    <span className="mono" style={{ color: s.color }}>{s.code}</span> sustained
-                    lateral
+                    <span className="series-dot" style={{ background: s.color }} aria-hidden="true" />
+                    <span className="mono">{s.code}</span> sustained lateral
                   </p>
                   <p className="figure-value mono">{s.peaks.peakLateralG.toFixed(1)}g</p>
                   <p className="figure-sample">

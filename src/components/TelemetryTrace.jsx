@@ -109,9 +109,15 @@ export default function TelemetryTrace({
         {crosshairIndex != null && crosshairIndex < n && (
           <span className="mono trace-readout">
             {(crosshairIndex * spacingM).toFixed(0)} m
+            {/* The driver's colour is a swatch, not the text. A series hue
+                is chosen to separate marks against a chart surface, not to
+                be legible at 13px as a label: measured on the paper ground
+                these read 3.16:1 against a 4.5 floor. The swatch carries
+                the identity and the value stays ink. */}
             {series.map((s) => (
-              <span key={s.code} style={{ color: s.color }} className="trace-readout-value">
+              <span key={s.code} className="trace-readout-value">
                 {' '}
+                <span className="series-dot" style={{ background: s.color }} aria-hidden="true" />
                 {s.code} {formatValue(s.values[crosshairIndex])}
                 {unit}
               </span>
