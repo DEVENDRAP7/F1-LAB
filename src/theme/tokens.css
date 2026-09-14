@@ -183,6 +183,63 @@
      this size needs. Same hue, one step lighter, 5.04:1. */
   --status-critical: #d96060;
 
+  /* Verdict — what this project actually knows about a part of the car.
+   *
+   * Three classes: measured (something here measures its effect),
+   * schematic (the shape is drawn from the published regulations and
+   * nothing more is claimed), refused (nothing published to measure it
+   * with). The Aero Rig shows them in two places, on two different
+   * surfaces, so each gets its own step of the same hue.
+   *
+   * THE BADGE is text on the page, so it takes a step that clears the
+   * 4.5:1 that size of type needs: measured is 7.13:1 on the dark
+   * surface and, re-stepped below, 6.46:1 on the light one.
+   *
+   * THE CAR sits in the rig's own chamber, which the scene paints dark
+   * in BOTH themes — so those steps are defined once and deliberately do
+   * not follow the page, because the surface they are read against is
+   * the chamber and not the document.
+   *
+   * The car's steps also hold each part's own lightness and vary only in
+   * hue. Lightness on a shaded 3D surface is already spoken for by the
+   * lighting — the same panel is light where it faces the key and dark
+   * where it turns away — so it cannot also carry a category, whereas
+   * hue survives being lit from any angle. Measured against each other
+   * at equal lightness: dE 22 schematic-to-measured, 22
+   * schematic-to-refused, 42 measured-to-refused.
+   *
+   * Schematic is the neutral one on purpose. It means the project claims
+   * nothing about that shape, and the absence of a claim should look
+   * like the absence of colour.
+   *
+   * The chroma is deliberately low, and that was learned by rendering
+   * rather than by picking swatches. These are base colours for a lit
+   * material, and the rig puts about 4.8 units of ambient and
+   * directional light on them, so what reaches the screen is several
+   * times more saturated and lighter than the value written here. A
+   * first attempt at dE 22 apart looked correct as swatches and rendered
+   * as a two-tone paint scheme.
+   *
+   * The lightness was then raised from L 29 to L 38 for a separate
+   * reason: at the darker value the car lost the argument with its own
+   * streamlines, which are bright and were tuned when the model was
+   * painted red. The car has to be the subject of the picture.
+   *
+   * THE TYRE IS EXEMPT, and stays neutral at every verdict. Rubber has
+   * to be dark and colourless to read as rubber, and the wheel is a big
+   * enough mass that tinting it made the tint the subject of the picture
+   * instead of the car. Its verdict is still reachable — it lights up
+   * when selected, and the readout names it — but at rest the wheel is
+   * the one part of thirteen whose class the car does not show. */
+  --verdict-measured: #65a9c8;
+  --verdict-schematic: var(--ink-1);
+  --verdict-refused: var(--status-critical);
+
+  --rig-schematic: #595959;
+  --rig-measured: #465d69;
+  --rig-refused: #6c5452;
+  --rig-tyre: #2a2a2a;
+
   /* Podium. Sport semantics — finishing position, not team identity,
    * and deliberately not any team's colours (docs/SPEC.md: no liveries). */
   --pos-1: #f2c14b;
@@ -349,6 +406,9 @@
     --status-warning: #936503;
     --status-serious: #c04616;
     --status-critical: #ce3333;
+    /* Badge only. The rig's chamber is dark in both themes, so the
+       --rig-* steps above are not re-stepped here. */
+    --verdict-measured: #126682;
 
     --sector-green: #0e7f4b;
     --sector-yellow: #856c11;

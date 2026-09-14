@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createAeroRig } from '../lib/aeroRigScene.js';
+import { PARTS } from '../lib/aeroRigParts.js';
 
 // The 3D chamber. Three.js owns the canvas, the geometry and the render
 // loop entirely — see aeroRigScene.js — this component only mounts it,
@@ -9,6 +10,10 @@ import { createAeroRig } from '../lib/aeroRigScene.js';
 // selection: it is one schematic diagram of the 2026 regulations, not a
 // per-driver model. Only the gauges and the envelope chart around it
 // vary with what is selected.
+const VERDICTS = Object.fromEntries(
+  Object.entries(PARTS).map(([part, info]) => [part, info.verdict[0]]),
+);
+
 export default function AeroRigViewport({ mode, onPick, className }) {
   const canvasRef = useRef(null);
   const rigRef = useRef(null);
@@ -17,6 +22,11 @@ export default function AeroRigViewport({ mode, onPick, className }) {
     if (!canvasRef.current) return undefined;
     const rig = createAeroRig(canvasRef.current, {
       onPick: (part) => onPickRef.current(part),
+      // The car is coloured by what this project knows about each part.
+      // The verdicts live with the part metadata; the scene is handed
+      // just the three-way class so it stays ignorant of everything
+      // else about a part.
+      verdicts: VERDICTS,
     });
     rigRef.current = rig;
     return () => {

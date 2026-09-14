@@ -2560,16 +2560,70 @@ tbody tr.is-on {
   text-transform: uppercase;
 }
 
+/* The badge and the car now name the same three classes in the same
+   three colours. They were already three colours before, but a
+   different three: the badge said measured-as-ink and schematic-as-amber
+   while the car said nothing at all, and a reader had two languages to
+   learn for one idea. These are the page-surface steps of the same hues
+   the car wears — see the verdict tokens for why the two surfaces need
+   separate steps. */
 .verdict-badge.is-m {
-  color: var(--accent-0);
+  color: var(--verdict-measured);
 }
 
 .verdict-badge.is-s {
-  color: var(--status-warning);
+  color: var(--verdict-schematic);
 }
 
 .verdict-badge.is-r {
-  color: var(--status-critical);
+  color: var(--verdict-refused);
+}
+
+/* The key under the viewport. The swatches show the CAR's colours, not
+   the badge's, because the car is the thing being decoded — so they are
+   the chamber steps, sat on a dark plate of their own so they are read
+   against something close to the chamber they came from. */
+.rig-verdict-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  list-style: none;
+  border-top: 1px solid var(--line);
+  background: var(--bg-1);
+}
+
+.rig-verdict-key li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--ink-1);
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rig-key-swatch {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 2px;
+  flex: none;
+  /* A ring, because two of the three swatches are close to the plate
+     they sit on and would otherwise have no edge. */
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%);
+}
+
+.rig-key-swatch.is-m {
+  background: var(--rig-measured);
+}
+
+.rig-key-swatch.is-s {
+  background: var(--rig-schematic);
+}
+
+.rig-key-swatch.is-r {
+  background: var(--rig-refused);
 }
 
 @media (max-width: 640px) {
