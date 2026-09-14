@@ -94,6 +94,20 @@ load time rather than written into the copy.
   the order this lap meets them, which is not the circuit's official
   corner numbering — no source here publishes that. No downforce figure
   either, because that needs constants none of them publish.
+- **The lap in three dimensions** — the landing page opens on one real
+  qualifying lap drawn as 3D geometry: x, y and the `z` channel every 2D
+  map on this site discards. The line is coloured by the speed at each
+  sample, on the same bands as Racing Lines, and a sheet hangs beneath it
+  to the lowest point of the lap so the elevation reads as a profile. It
+  exists because the elevation is real and substantial — 102.4 m around
+  Spa, 63.4 m at the Red Bull Ring, 12.6 m at Monza — and a flat outline
+  cannot show it. Height is drawn at 6× vertical scale, one factor for
+  every circuit so relief stays true relative to itself, and the factor
+  is stated on screen; fitting each circuit's relief to the same screen
+  height would draw Monza as hilly as Spa. The rounds whose elevation
+  channel the pipeline refused are not offered. three.js arrives by
+  dynamic import after the page has painted, so the landing page is
+  readable before it lands and readable without it.
 - **Aero Rig** — a 3D, clickable schematic of the 2026 car, built to widely
   published regulation characteristics rather than scanned or modelled from
   any team's real bodywork. An active-aero mode switch flattens both wings

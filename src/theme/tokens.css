@@ -225,20 +225,21 @@
   --stint-3: #5f93bd;
   --stint-4: #77aeda;
 
-  /* No webfont is loaded, so every name here is a fallback that has to
-   * stand on its own. The previous stack listed 'Titillium Web' and
-   * 'Barlow Condensed' — neither of which ships anywhere — and then
-   * 'Arial Narrow', which does. So the entire site rendered in a
-   * CONDENSED face by accident, which is why the type looked squeezed
-   * in from the sides with no air in it.
+  /* Archivo for everything that is words, JetBrains Mono for everything
+   * that is a number — declared in theme/fonts.css, self-hosted, 75 KB
+   * for the two of them.
    *
-   * A condensed font must never sit in a fallback chain unless condensed
-   * is the intent. This is the normal-width system stack; it needs no
-   * network request and matches the host OS. */
-  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, 'Noto Sans', sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'IBM Plex Mono',
-    'Cascadia Mono', Menlo, Consolas, monospace;
+   * Everything after the first name is a fallback that has to stand on
+   * its own, because it is what a reader sees for the moment before the
+   * face lands and forever if it fails. Both chains are deliberately
+   * normal-width: an earlier stack here named two faces that ship
+   * nowhere and then 'Arial Narrow', which ships everywhere, so the
+   * whole site rendered CONDENSED by accident. A condensed face must
+   * never sit in a fallback chain unless condensed is the intent. */
+  --font-display: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono',
+    'IBM Plex Mono', Menlo, Consolas, monospace;
 
   /* ---------- scales ----------
    *

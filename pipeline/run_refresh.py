@@ -1285,13 +1285,31 @@ def refresh_telemetry_index(year: int) -> None:
             or SESSION_LABELS.get(session_name, session_name),
             "unavailable": bool(manifest.get("unavailable")),
         }
+        # Whether this session's elevation channel survived
+        # derive_telemetry.elevation_summary, carried up into the index.
+        #
+        # The 3D view on the landing page can only draw a lap that has a
+        # usable one, so it has to know which those are before it asks
+        # for anything. Without this it had to fetch all thirteen
+        # manifests to find out — thirteen round trips to answer one
+        # question — which is the same probing this index was written to
+        # stop. The judgement itself is not repeated here: it is copied
+        # from the manifest, where the pipeline made it.
+        elevation = manifest.get("elevation")
+        if elevation:
+            entry[session_name]["elevation"] = {
+                "usable": bool(elevation.get("usable")),
+                "rangeM": elevation.get("rangeM"),
+                "reason": elevation.get("reason"),
+            }
 
     export.export_telemetry_index(year, {
         "year": year,
         "generated_at": ingest._now_iso(),
         "rounds": rounds,
         "note": (
-            "Which sessions have exported racing lines. A session marked "
+            "Which sessions have exported racing lines, and whether each "
+            "carries a usable elevation channel. A session marked "
             "unavailable was attempted and the position feed had nothing usable "
             "for it; a session absent here has not been attempted yet."
         ),

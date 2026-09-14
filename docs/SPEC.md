@@ -63,9 +63,18 @@ serves the `public/` folder for local development.
 |---|---|
 | Whole site | < 300 MB |
 | Any single file | < 20 MB |
-| Initial page load | < 400 KB |
+| Initial page load | < 400 KB transferred |
 | One session's data, lazy-loaded | < 3 MB |
 | One driver's racing line | < 60 KB |
+
+The initial-load figure is **bytes over the wire**, with the text assets
+gzipped as GitHub Pages serves them. That distinction matters since the
+landing page began drawing a lap in 3D: the page now pulls three.js, and
+measured against a gzipping server it comes to 367 KB across 12 requests
+— inside the budget — where the same assets uncompressed are about
+1,020 KB. Nothing in that total blocks first paint: three.js is reached
+by a dynamic import after the hero has mounted, so the page is readable
+before it arrives and readable without it if it never does.
 
 Achieved by: resampling position data to fixed 2-metre distance spacing,
 quantizing to Int16 (decimetres for X/Y, km/h ×10 for speed, 0–100 for
