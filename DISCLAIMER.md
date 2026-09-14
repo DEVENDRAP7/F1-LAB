@@ -14,5 +14,15 @@ stated non-commercial use terms of the FastF1 library
 No team liveries, logos, or broadcast graphics are reproduced anywhere in
 this project. All colors, typography, and layout are original.
 
+The 3D car in the Aero Rig is worth being specific about, because it is
+the one asset that did not start out that way. Its geometry comes from a
+CC-BY concept model, credited beside the viewport, and that model ships
+painted in a team's colours — a red body with a yellow onboard camera.
+None of those materials are used: every one of the thirteen is discarded
+on load and replaced by colours defined in this project's own
+`src/theme/tokens.css`, which encode what the project knows about each
+part (measured, schematic, or refused) rather than who might run it. The
+shape is borrowed, with credit. The colour is not.
+
 "Formula 1", "F1", "FIA", and related marks are trademarks of their
 respective owners.

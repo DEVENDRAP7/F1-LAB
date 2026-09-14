@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { needsResize } from './canvasSize.js';
+import { cssToken } from '../theme/palette.js';
 import { pinchRadius, spread } from './pinch.js';
 
 // The car is a loaded model, not lofted geometry.
@@ -14,18 +15,44 @@ import { pinchRadius, spread } from './pinch.js';
 // scripts/model/segment_car.py builds that file, and its header records
 // what the segmentation can and cannot recover.
 //
-// createAeroRig(canvas, { onPick, onLoadError }) builds the scene, starts
-// its own render loop, and returns { setMode(mode), dispose() }. It knows
+// createAeroRig(canvas, { onPick, onLoadError, verdicts }) builds the
+// scene, starts its own render loop, and returns { setMode(mode),
+// dispose() }. Selection is driven by clicks inside the scene, which
+// both light the part and report it through onPick. It knows
 // nothing about what a part is called or what to say about it — see
 // aeroRigParts.js for that — it only ever hands back the raw part key a
 // click landed on, through onPick.
-export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {} } = {}) {
+//
+// `verdicts` is the one exception, and a deliberately thin one: a map of
+// part key to 'm' | 's' | 'r'. The scene has to know which of three
+// classes a part is in to colour it, and it is handed that rather than
+// importing the part metadata, so it still knows no names and no prose.
+export function createAeroRig(
+  canvas,
+  { onPick = () => {}, onLoadError = () => {}, verdicts = {} } = {},
+) {
   let currentMode = 'OFF';
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  /* The chamber is a dark room, opaquely, in both themes.
+   *
+   * It was transparent, so the page showed through and the "chamber" was
+   * whatever colour the document happened to be — near-black in dark
+   * mode and mid-grey in light. That was tolerable while the car was
+   * just a red object, and it is not now: the car's colours encode a
+   * verdict and were stepped against a dark ground, so the ground has to
+   * actually be dark rather than follow the page. The scene already had
+   * dark fog and a dark floor; it only ever looked light because nothing
+   * was painted behind them.
+   *
+   * Opaque also spares the compositor reading the GL surface back every
+   * frame to blend it with the page. */
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setClearColor(new THREE.Color(0x0b0b0c), 1);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x0a0c10, 11, 28);
+  // Neutral, for the same reason the lights are: a tinted fog is a
+  // tint applied by distance.
+  scene.fog = new THREE.Fog(0x0b0b0c, 11, 28);
 
   const camera = new THREE.PerspectiveCamera(38, 2, 0.1, 200);
   const home = new THREE.Vector3(5.2, 2.4, 5.9);
@@ -35,20 +62,37 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
   const camGoal = home.clone();
   const targetGoal = target.clone();
 
-  scene.add(new THREE.AmbientLight(0x7d8db0, 0.42));
+  /* Every light here is neutral, and that is now a requirement rather
+     than a preference.
+   *
+   * This rig used to be lit like a product shot: a blue ambient, two
+   * cold blue rims and a warm orange kicker from the front left. It
+   * looked good on a grey car and it is unusable on this one, because
+   * the car's colour now encodes what the project knows about each part
+   * (see the verdict tokens in tokens.css). A light multiplies the
+   * surface colour it falls on, so a blue rim and an orange kicker would
+   * push the same panel towards two different verdicts depending only on
+   * which way it happened to be facing — the encoding would be decided
+   * by the lighting rather than by the data.
+   *
+   * It is the same argument that makes the lap hero's tube unlit. There
+   * the fix was to remove the lighting; here the shape has to be read in
+   * three dimensions, so the lights stay and lose their colour instead.
+   * Intensities are unchanged, so the modelling is the same as before. */
+  scene.add(new THREE.AmbientLight(0x9b9b9b, 0.42));
   const key = new THREE.DirectionalLight(0xffffff, 1.45);
   key.position.set(5, 8, 6);
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0xbcd2ff, 1.35);
+  const rim = new THREE.DirectionalLight(0xd6d6d6, 1.35);
   rim.position.set(-6, 2.2, -6);
   scene.add(rim);
-  const rim2 = new THREE.DirectionalLight(0xdfe8ff, 0.9);
+  const rim2 = new THREE.DirectionalLight(0xe6e6e6, 0.9);
   rim2.position.set(7, 1.4, -4);
   scene.add(rim2);
-  const warm = new THREE.DirectionalLight(0xff6a45, 0.55);
-  warm.position.set(-4, 1.2, 6);
-  scene.add(warm);
-  const under = new THREE.DirectionalLight(0x6f86b5, 0.16);
+  const fill = new THREE.DirectionalLight(0xbfbfbf, 0.55);
+  fill.position.set(-4, 1.2, 6);
+  scene.add(fill);
+  const under = new THREE.DirectionalLight(0x8e8e8e, 0.16);
   under.position.set(0, -4, 1);
   scene.add(under);
 
@@ -70,7 +114,7 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(46, 46),
     new THREE.MeshStandardMaterial({
-      color: 0x080a0f, roughness: 1, metalness: 0,
+      color: 0x09090a, roughness: 1, metalness: 0,
       transparent: true, opacity: 0.55, alphaMap: fade, depthWrite: false,
     }),
   );
@@ -143,6 +187,65 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
 
   const draco = new DRACOLoader();
   draco.setDecoderPath(`${import.meta.env.BASE_URL}draco/`);
+  /* ---------------- the car's materials ----------------
+
+     The model arrives with a team's livery baked into it — the source
+     concept model is painted red, with a yellow onboard camera — and
+     docs/SPEC.md rule 5 forbids liveries outright while DISCLAIMER.md
+     promises that every colour here is original. So not one of the
+     GLB's thirteen materials is used. They are replaced, and disposed,
+     the moment the model lands.
+
+     What replaces them says something instead. Each part already
+     carries a verdict — measured, schematic or refused — which is the
+     whole reason the car is clickable, and that verdict is now what
+     colours it. A reader can see, before clicking anything, that most
+     of this car is a drawn shape and only a few parts are things this
+     site can actually measure.
+
+     Two material families, because a tyre that is coloured like
+     bodywork stops looking like a tyre. Within each family the three
+     verdicts differ in hue at the same lightness — see the tokens for
+     why lightness cannot be the cue on a lit 3D surface.
+
+     One material instance per mesh rather than one per class, so that
+     selecting a part can light that part alone. Thirteen materials is
+     nothing, and sharing them would mean selecting the floor also lit
+     the diffuser. */
+  const TYRE_PARTS = new Set(['wheel']);
+  const VERDICT_TOKEN = { m: 'measured', s: 'schematic', r: 'refused' };
+
+  function verdictColours(part) {
+    const verdict = VERDICT_TOKEN[verdicts[part]] ?? 'schematic';
+    return {
+      // The tyre keeps rubber's own colourless dark at every verdict —
+      // see the tokens for why it is the one exemption.
+      base: TYRE_PARTS.has(part) ? cssToken('--rig-tyre') : cssToken(`--rig-${verdict}`),
+      // The full-strength step, used only to light a selected part. The
+      // tyre does get this: a selection is momentary and deliberate, so
+      // it can afford to stop looking like rubber for as long as it is
+      // the thing being asked about.
+      lit: cssToken(`--verdict-${verdict}`),
+    };
+  }
+
+  const carMaterials = [];
+
+  function materialFor(part) {
+    const { base } = verdictColours(part);
+    const tyre = TYRE_PARTS.has(part);
+    const material = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(base),
+      // Rubber is matte and unreflective; bodywork is a smooth painted
+      // panel. This is the one place the two families differ beyond
+      // colour, and it is what makes a tyre read as one.
+      roughness: tyre ? 0.88 : 0.42,
+      metalness: tyre ? 0 : 0.12,
+    });
+    carMaterials.push({ part, material, base });
+    return material;
+  }
+
   const loader = new GLTFLoader();
   loader.setDRACOLoader(draco);
 
@@ -159,6 +262,19 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
         // whole point of the segmentation step.
         const part = mesh.name.replace(/[._]\d+$/, '');
         mesh.userData.part = part;
+
+        // Swap the livery out for the verdict, and release the material
+        // that came in the file: nothing else references it, and a
+        // dropped GLB material is a leaked GPU texture and program.
+        const shipped = mesh.material;
+        mesh.material = materialFor(part);
+        for (const m of Array.isArray(shipped) ? shipped : [shipped]) {
+          if (!m) continue;
+          if (m.map) m.map.dispose();
+          m.dispose();
+        }
+        // A part can be selected before the model finishes loading.
+        if (selectedPart) applySelection(selectedPart);
         const pivot = PIVOTS[part];
         if (!pivot) {
           car.add(mesh);
@@ -240,8 +356,12 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
   scene.add(flow);
   const FLOW_LINES = 46;
   const FLOW_STEPS = 76;
-  const flowMat = new THREE.LineBasicMaterial({ color: 0x9fb2cc, transparent: true, opacity: 0.15 });
-  const flowMatHot = new THREE.LineBasicMaterial({ color: 0xdce6f4, transparent: true, opacity: 0.36 });
+  // Quieter than they were. These opacities were set when the car was
+  // painted bright red and could hold its own against them; against
+  // graphite the same lines read as the subject of the picture and the
+  // car as the backdrop.
+  const flowMat = new THREE.LineBasicMaterial({ color: 0xa8a8a8, transparent: true, opacity: 0.09 });
+  const flowMatHot = new THREE.LineBasicMaterial({ color: 0xe4e4e4, transparent: true, opacity: 0.22 });
   const lines = [];
   for (let i = 0; i < FLOW_LINES; i += 1) {
     const geo = new THREE.BufferGeometry();
@@ -463,8 +583,28 @@ export function createAeroRig(canvas, { onPick = () => {}, onLoadError = () => {
   // car back, which counts as handing the framing over again.
   let userFramed = false;
 
+  /* The selected part lights up in its own verdict colour.
+   *
+   * Clicking used to move the camera and nothing else, so on a car where
+   * several parts share a verdict there was no way to see which one you
+   * had actually picked — the readout named it and the picture did not.
+   *
+   * Emissive rather than a swapped base colour, because emissive is
+   * added after the lighting: the part brightens by the same amount
+   * wherever it faces, so a selected panel turned away from the key
+   * light still reads as selected. The hue is the full-strength step of
+   * the same verdict the readout is naming at that moment. */
+  function applySelection(part) {
+    for (const entry of carMaterials) {
+      const on = entry.part === part;
+      entry.material.emissive.set(on ? verdictColours(entry.part).lit : 0x000000);
+      entry.material.emissiveIntensity = on ? 0.5 : 0;
+    }
+  }
+
   function focusOn(part, point) {
     selectedPart = part;
+    applySelection(part);
     if (!part) {
       userFramed = false;
       goal.radius = fitRadius();
