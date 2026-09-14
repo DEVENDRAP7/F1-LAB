@@ -95,6 +95,17 @@ standings stay as plain JSON since they're small and diffable.
   `main` with no review step.
 - `deploy.yml` — on push to `main`: build, test, deploy to Pages, with a
   concurrency group so overlapping runs cancel.
+- `ci.yml` — on `pull_request` + `workflow_dispatch`. Lint, the JS suite,
+  the Python pipeline suite, the aero export and the build: deliberately
+  the same steps as `deploy.yml`'s build job, in the same order, on the
+  same runner image and the same unpinned system Python, because a PR
+  gate is only worth having if passing it predicts the deploy passing.
+  The duplication between the two files is therefore intentional, and the
+  two drifting apart is the failure mode to watch for. It does not gate
+  `main` — `deploy.yml` already runs these and refuses to publish if any
+  fails — and it does not run the browser-based audits (layout shift,
+  computed contrast, touch targets, payload), which need a Playwright
+  dependency this project does not carry.
 
 ### Accepted trade-offs
 
