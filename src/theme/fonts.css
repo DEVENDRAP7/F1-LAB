@@ -1,0 +1,56 @@
+/* The site's two typefaces, self-hosted.
+ *
+ * Both are variable and both are loaded as the LATIN, WEIGHT-AXIS ONLY
+ * file: 35 KB for Archivo and 40 KB for JetBrains Mono. The packages
+ * ship a lot more than that — italic cuts, a width axis, latin-ext,
+ * every other subset — and importing their index CSS pulls the whole
+ * set. docs/SPEC.md budgets the initial page load at 400 KB, and 75 KB
+ * of that on type is affordable where 1.3 MB is not. Italics are
+ * synthesised; nothing on this site is set in italic except one
+ * withheld-figure label.
+ *
+ * Self-hosted rather than fetched from a font CDN, for the same reason
+ * everything else here is: the site should not need a third party to
+ * render, and a request to one is a request a reader did not ask for.
+ *
+ * Why these two.
+ *
+ * ARCHIVO is a grotesque built for the job this site does — it has a
+ * genuinely tight, high-contrast set of caps for the small letterspaced
+ * labels, a heavy weight that holds together at the display sizes the
+ * page titles now use, and figures that are already tabular-capable.
+ * The old stack was system-ui, which is a different typeface on every
+ * machine: the site had no voice because it had no face.
+ *
+ * JETBRAINS MONO carries every number. That matters more here than it
+ * would elsewhere: this is a site of lap times, gaps and points, and its
+ * figures are drawn to be told apart at small sizes and to line up in a
+ * column, which is exactly what a timing sheet needs.
+ *
+ * `font-display: swap` on both. The fallback is a system stack chosen to
+ * be metrically close, so the reflow when the face lands is small, and a
+ * reader never waits on a font to read a lap time. */
+
+@font-face {
+  font-family: 'Archivo Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

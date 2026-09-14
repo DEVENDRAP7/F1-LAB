@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { dataPath } from '../lib/dataPath.js';
 import { GROUPS } from '../lib/modules.js';
+import LapHero from '../components/LapHero.jsx';
+import { loadSeason, loadTelemetry } from '../lib/published.js';
 
 // The front door. The site had none: it opened on a championship table
 // with no statement of what it is, what it refuses to do, or where the
@@ -26,9 +28,13 @@ export default function Home() {
     const grab = (path) =>
       fetch(dataPath(path)).then((res) => (res.ok ? res.json() : null)).catch(() => null);
 
+    // season.json and telemetry.json go through the shared loaders: the
+    // 3D hero above needs both too, and fetched independently each was
+    // requested twice in parallel, before the HTTP cache could serve the
+    // second one.
     Promise.all([
-      grab('season.json'),
-      grab('2026/telemetry.json'),
+      loadSeason().catch(() => null),
+      loadTelemetry().catch(() => null),
       grab('2026/refusals.json'),
     ]).then(([season, telemetry, refusals]) => {
       if (cancelled) return;
@@ -66,6 +72,13 @@ export default function Home() {
         <h1>Apex Lab</h1>
         <p className="page-sub">A 2026 Formula 1 season built from public data.</p>
       </header>
+
+      {/* The lap in three dimensions, before any of the counting. The
+          page used to open on four tiles of totals, which say how much
+          data there is without showing any of it; this opens on the
+          thing itself, and on the one published channel the rest of the
+          site draws nowhere. */}
+      <LapHero />
 
       {/* The grid renders before the numbers arrive, holding their space.
           Measured: this row is 413px tall on a phone, and mounting it only

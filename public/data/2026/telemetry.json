@@ -1,6 +1,6 @@
 {
   "year": 2026,
-  "generated_at": "2026-09-08T10:28:30Z",
+  "generated_at": "2026-09-14T07:22:24Z",
   "rounds": {
     "1": {
       "Q": {
@@ -11,7 +11,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": false,
+          "rangeM": 2.49,
+          "reason": "the elevation channel varies by only 2.5m over the lap, below the 3m floor this project treats as a real profile"
+        }
       },
       "R": {
         "drivers": [
@@ -21,7 +26,12 @@
           "VER"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": false,
+          "rangeM": 2.49,
+          "reason": "the elevation channel varies by only 2.5m over the lap, below the 3m floor this project treats as a real profile"
+        }
       }
     },
     "10": {
@@ -33,7 +43,12 @@
           "VER"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 102.4,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -43,7 +58,12 @@
           "NOR"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 102.22,
+          "reason": null
+        }
       }
     },
     "11": {
@@ -55,7 +75,12 @@
           "NOR"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 34.87,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [],
@@ -72,7 +97,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 9.05,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -82,7 +112,12 @@
           "PIA"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 9.02,
+          "reason": null
+        }
       }
     },
     "13": {
@@ -94,7 +129,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 12.62,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -104,7 +144,12 @@
           "VER"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 12.49,
+          "reason": null
+        }
       }
     },
     "2": {
@@ -116,7 +161,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 6.99,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -126,7 +176,12 @@
           "RUS"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 7.02,
+          "reason": null
+        }
       }
     },
     "3": {
@@ -138,7 +193,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 37.32,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -148,7 +208,12 @@
           "RUS"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 40.28,
+          "reason": null
+        }
       }
     },
     "4": {
@@ -160,7 +225,12 @@
           "VER"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 3.7,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -170,7 +240,12 @@
           "RUS"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 3.68,
+          "reason": null
+        }
       }
     },
     "5": {
@@ -182,7 +257,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 5.21,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -192,7 +272,12 @@
           "VER"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 5.24,
+          "reason": null
+        }
       }
     },
     "6": {
@@ -204,7 +289,12 @@
           "VER"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 41.95,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [],
@@ -221,7 +311,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 30.01,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -231,7 +326,12 @@
           "VER"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 30.17,
+          "reason": null
+        }
       }
     },
     "8": {
@@ -243,7 +343,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 63.4,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -253,7 +358,12 @@
           "VER"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 63.34,
+          "reason": null
+        }
       }
     },
     "9": {
@@ -265,7 +375,12 @@
           "RUS"
         ],
         "sessionLabel": "qualifying",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 11.31,
+          "reason": null
+        }
       },
       "R": {
         "drivers": [
@@ -275,9 +390,14 @@
           "VER"
         ],
         "sessionLabel": "the race",
-        "unavailable": false
+        "unavailable": false,
+        "elevation": {
+          "usable": true,
+          "rangeM": 11.28,
+          "reason": null
+        }
       }
     }
   },
-  "note": "Which sessions have exported racing lines. A session marked unavailable was attempted and the position feed had nothing usable for it; a session absent here has not been attempted yet."
+  "note": "Which sessions have exported racing lines, and whether each carries a usable elevation channel. A session marked unavailable was attempted and the position feed had nothing usable for it; a session absent here has not been attempted yet."
 }
