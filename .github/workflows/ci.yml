@@ -1,0 +1,98 @@
+# The gate that runs BEFORE main.
+#
+# Every check here already existed — deploy.yml runs all of them, and
+# refuses to publish if any fails, so main has never been able to go out
+# broken. What was missing is that nothing ran on a pull request, so a
+# branch's first honest feedback arrived only once it had been merged.
+#
+# WHY IT MIRRORS deploy.yml STEP FOR STEP
+#
+# The point of a PR gate is that passing it predicts the deploy passing.
+# That only holds if the two run the same commands in the same
+# environment, so this deliberately copies deploy.yml's build job rather
+# than improving on it: same Node version, same `npm ci`, the same four
+# checks in the same order, and the same unpinned system Python that
+# deploy.yml uses for pytest. Pinning a Python here that deploy does not
+# pin would let this pass on one interpreter and the deploy fail on
+# another, which is worse than not gating at all — a green check that
+# does not mean what it says.
+#
+# So the duplication is the feature. If a step changes in deploy.yml it
+# has to change here too, and the two drifting apart is the one failure
+# mode worth watching for.
+#
+# WHAT IT DOES NOT CHECK
+#
+# It does not assert that the committed data artifacts are current. That
+# would be a good gate and the repo does not pass it today: regenerating
+# public/data/2026/aero.json from the racing lines already committed
+# yields 96 laps against the 88 in the file, which was last written on
+# 2026-08-29. Nothing is broken by that — deploy.yml regenerates the file
+# before it builds, so what ships is correct — but adding the assertion
+# without first refreshing the file would mean landing a check that is
+# red on arrival, so it is named here instead of quietly omitted.
+#
+# It also does not run the browser-based audits — layout shift, computed
+# contrast, touch targets, payload measurement. Those need Playwright,
+# which is not a dependency of this project, and adding one to run CI is
+# a decision for a human rather than a side effect of wiring up a gate.
+
+name: CI
+
+# Pull requests only. deploy.yml already runs these same checks on every
+# push to main, so gating main here as well would just buy a second copy
+# of the same answer.
+on:
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+# A second push to a branch makes the first run's answer irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      # The what-if model ships as a Python reference and a JS port that
+      # must agree bit-for-bit on a committed fixture, so a drift on
+      # either side has to fail the same workflow. Installed exactly as
+      # deploy.yml installs it — see the header on why this is copied
+      # rather than pinned.
+      - name: Run pipeline unit tests (Python side of the parity contract)
+        run: |
+          pip install -q numpy pytest
+          python -m pytest pipeline/tests -q
+
+      # deploy.yml runs this to regenerate the Aero Rig's data before it
+      # builds, so if the script breaks, the deploy breaks. Here it writes
+      # to a scratch path instead of into public/data: on a pull request
+      # the question is only whether it still runs, and writing into the
+      # tree would suggest the result was meant to be committed.
+      - name: Export aero signature (deploy runs this, so it has to work)
+        run: node scripts/aero_export.mjs --out "$RUNNER_TEMP/aero.json"
+
+      - name: Build
+        run: npm run build
