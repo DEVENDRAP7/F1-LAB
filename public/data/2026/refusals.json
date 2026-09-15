@@ -4,7 +4,7 @@
     {
       "module": "What-If Engine",
       "rule": "A counterfactual is offered only where replaying the real strategy reproduces the real race time within 1%.",
-      "published": 81,
+      "published": 89,
       "refused": 12,
       "entries": [
         {
@@ -60,7 +60,7 @@
     {
       "module": "Racing Lines",
       "rule": "A line is published only where the position feed carries a lap that can be drawn. A session it does not gets a written refusal, not an empty page.",
-      "published": 96,
+      "published": 104,
       "refused": 2,
       "entries": [
         {
@@ -92,7 +92,7 @@
     {
       "module": "Tyre compounds",
       "rule": "A stint takes a compound only where the stint feed matches it by driver and lap overlap. A wrong compound colour is worse than none.",
-      "published": 775,
+      "published": 822,
       "refused": 30,
       "entries": [
         {
@@ -120,15 +120,15 @@
     {
       "module": "Degradation fits",
       "rule": "A fit is published as a trend only with enough laps behind it and enough explanatory power. Below that it ships with the reason it failed rather than as a confident slope.",
-      "published": 381,
-      "refused": 298,
+      "published": 414,
+      "refused": 311,
       "entries": [
         {
-          "scope": "239 fit(s)",
+          "scope": "251 fit(s)",
           "reason": "lap-to-lap scatter dominates the trend"
         },
         {
-          "scope": "59 fit(s)",
+          "scope": "60 fit(s)",
           "reason": "too few usable laps"
         }
       ]
@@ -137,7 +137,7 @@
       "module": "Pit loss",
       "rule": "A pit loss becomes a circuit constant only where enough drivers had a measurable racing stop and their figures agree.",
       "published": 4,
-      "refused": 9,
+      "refused": 10,
       "entries": [
         {
           "scope": "Round 1 \u00b7 Albert Park Grand Prix Circuit",
@@ -174,6 +174,10 @@
         {
           "scope": "Round 13 \u00b7 Autodromo Nazionale di Monza",
           "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        },
+        {
+          "scope": "Round 14 \u00b7 Madring",
+          "reason": "4 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
         }
       ]
     },
@@ -181,15 +185,16 @@
       "module": "DRS zones",
       "rule": "A zone is drawn on a track only where a source says what the car's DRS channel means. No source does.",
       "published": 0,
-      "refused": 13,
+      "refused": 14,
       "entries": [
         {
-          "scope": "every circuit (13)",
+          "scope": "every circuit (14)",
           "reason": "the feed carries a DRS integer per sample, but no public source maps those codes to flap open or closed with enough confidence to draw a zone on a track \u2014 FastF1 car_data docstring (checked against master, 2026-09-11): codes 0-14, 2 and 3 documented as '(?)', 10, 12 and 14 each as 'On (Unknown Distinction)', annotated '(Odd DRS is Disabled, Even DRS is Enabled?) (More Research Needed?)'"
         }
       ]
     }
   ],
-  "totalRefused": 366,
-  "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion."
+  "totalRefused": 381,
+  "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion.",
+  "generated_at": "2026-09-15T10:55:00Z"
 }

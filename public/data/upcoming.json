@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-09-08T10:28:49Z",
+  "generated_at": "2026-09-15T10:55:00Z",
   "next": {
-    "round": 14,
-    "raceName": "Spanish Grand Prix",
-    "circuitName": "Madring",
-    "circuitId": "madring",
-    "date": "2026-09-13",
+    "round": 15,
+    "raceName": "Azerbaijan Grand Prix",
+    "circuitName": "Baku City Circuit",
+    "circuitId": "baku",
+    "date": "2026-09-26",
     "sprint": false,
-    "lat": 40.46528,
-    "long": -3.61528
+    "lat": 40.3725,
+    "long": 49.8533
   },
   "historyYearsRequested": [
     2025,
@@ -17,29 +17,63 @@
     2022
   ],
   "history": {
-    "editions": 0,
-    "years": [],
-    "perEdition": [],
+    "editions": 4,
+    "years": [
+      2025,
+      2024,
+      2023,
+      2022
+    ],
+    "perEdition": [
+      {
+        "year": 2025,
+        "starters": 20,
+        "classified": 19,
+        "winnerGrid": 1,
+        "medianStops": 1.0
+      },
+      {
+        "year": 2024,
+        "starters": 20,
+        "classified": 19,
+        "winnerGrid": 2,
+        "medianStops": 1.0
+      },
+      {
+        "year": 2023,
+        "starters": 20,
+        "classified": 18,
+        "winnerGrid": 3,
+        "medianStops": 1.0
+      },
+      {
+        "year": 2022,
+        "starters": 20,
+        "classified": 16,
+        "winnerGrid": 3,
+        "medianStops": 1.0
+      }
+    ],
     "finishRate": {
-      "classified": 0,
-      "starters": 0,
-      "share": null
+      "classified": 72,
+      "starters": 80,
+      "share": 0.9
     },
     "positionChange": {
-      "medianPlaces": null,
-      "n": 0,
+      "medianPlaces": 2.0,
+      "n": 72,
       "note": "Absolute difference between grid slot and finishing position, classified finishers only. Pit-lane starts (grid 0) are excluded."
     },
     "winnerGrid": {
-      "median": null,
-      "best": null,
-      "worst": null,
-      "n": 0
+      "median": 2.5,
+      "best": 1,
+      "worst": 3,
+      "n": 4
     },
     "stops": {
-      "medianPerDriver": null,
-      "n": 0,
-      "editionsWithData": 0
+      "medianPerDriver": 1.0,
+      "n": 77,
+      "editionsWithData": 4
     },
     "unavailable": {
       "safetyCar": "No safety-car or track-status channel is published by this source, so neutralisation frequency cannot be counted.",
