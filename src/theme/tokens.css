@@ -220,10 +220,13 @@
    * first attempt at dE 22 apart looked correct as swatches and rendered
    * as a two-tone paint scheme.
    *
-   * The lightness was then raised from L 29 to L 38 for a separate
-   * reason: at the darker value the car lost the argument with its own
-   * streamlines, which are bright and were tuned when the model was
-   * painted red. The car has to be the subject of the picture.
+   * The lightness was then raised from L 29 to L 38 so the car did not
+   * lose the argument with its own streamlines, and settled at L 32 once
+   * the scene gained an image-based environment and filmic tone mapping:
+   * those lift the mid-tones and desaturate, so the values here sit
+   * darker and about half again more chromatic than what reaches the
+   * screen. Chroma 20 at equal lightness, dE 20 between each class and
+   * the neutral, 38 between the two claims.
    *
    * THE TYRE IS EXEMPT, and stays neutral at every verdict. Rubber has
    * to be dark and colourless to read as rubber, and the wheel is a big
@@ -235,10 +238,10 @@
   --verdict-schematic: var(--ink-1);
   --verdict-refused: var(--status-critical);
 
-  --rig-schematic: #595959;
-  --rig-measured: #465d69;
-  --rig-refused: #6c5452;
-  --rig-tyre: #2a2a2a;
+  --rig-schematic: #4b4b4b;
+  --rig-measured: #1b5166;
+  --rig-refused: #6a403f;
+  --rig-tyre: #282828;
 
   /* Podium. Sport semantics — finishing position, not team identity,
    * and deliberately not any team's colours (docs/SPEC.md: no liveries). */

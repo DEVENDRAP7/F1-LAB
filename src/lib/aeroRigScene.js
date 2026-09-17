@@ -47,6 +47,32 @@ export function createAeroRig(
    * frame to blend it with the page. */
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
   renderer.setClearColor(new THREE.Color(0x0b0b0c), 1);
+
+  /* Filmic tone mapping, and an environment for surfaces to reflect.
+   *
+   * These two absences were why the car looked like matte plastic no
+   * matter which colours it was given, and no amount of re-picking hex
+   * values was going to fix it.
+   *
+   * A MeshStandardMaterial is a physically-based material: the roughness
+   * and metalness channels describe how a surface reflects ITS
+   * SURROUNDINGS. With scene.environment unset the surroundings are
+   * nothing at all, so a glossy panel reflects black, the only thing
+   * left is the diffuse term from five directional lights, and every
+   * part of the car reads as unpainted plastic.
+   *
+   * And with no tone mapping the renderer clips: anywhere the lights
+   * pushed a surface past 1.0 it went flat white, so the highlights that
+   * describe a curved panel were being thrown away exactly where the
+   * curvature is strongest. ACES filmic rolls those off instead.
+   *
+   * The environment is generated rather than downloaded — no asset, no
+   * request, nothing added to the payload — and it is GREYSCALE by
+   * construction, for the same reason the lights were neutralised: a
+   * tinted reflection is a tint applied by surface angle, and the car's
+   * colour is carrying a meaning that a stray blue sheen would corrupt. */
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.95;
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
   const scene = new THREE.Scene();
@@ -79,20 +105,64 @@ export function createAeroRig(
    * the fix was to remove the lighting; here the shape has to be read in
    * three dimensions, so the lights stay and lose their colour instead.
    * Intensities are unchanged, so the modelling is the same as before. */
-  scene.add(new THREE.AmbientLight(0x9b9b9b, 0.42));
-  const key = new THREE.DirectionalLight(0xffffff, 1.45);
+  /* A neutral studio, as an equirectangular gradient with two soft
+     highlight bands — a broad one overhead for the top surfaces and a
+     narrower one low down so the flanks and the floor edge pick up a
+     rim. Greyscale throughout; see the renderer note above. */
+  const envCanvas = document.createElement('canvas');
+  envCanvas.width = 256;
+  envCanvas.height = 128;
+  {
+    const ctx = envCanvas.getContext('2d');
+    const sky = ctx.createLinearGradient(0, 0, 0, envCanvas.height);
+    sky.addColorStop(0, '#d8d8d8');
+    sky.addColorStop(0.42, '#6e6e6e');
+    sky.addColorStop(0.52, '#2a2a2a');
+    sky.addColorStop(1, '#101010');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, envCanvas.width, envCanvas.height);
+    // The overhead softbox.
+    const top = ctx.createRadialGradient(128, 6, 2, 128, 6, 92);
+    top.addColorStop(0, 'rgba(255,255,255,0.95)');
+    top.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = top;
+    ctx.fillRect(0, 0, envCanvas.width, 64);
+    // A low band, so the car has an edge against the dark floor.
+    const low = ctx.createRadialGradient(40, 58, 2, 40, 58, 60);
+    low.addColorStop(0, 'rgba(255,255,255,0.5)');
+    low.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = low;
+    ctx.fillRect(0, 30, envCanvas.width, 50);
+  }
+  const envSource = new THREE.CanvasTexture(envCanvas);
+  envSource.mapping = THREE.EquirectangularReflectionMapping;
+  envSource.colorSpace = THREE.SRGBColorSpace;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envRT = pmrem.fromEquirectangular(envSource);
+  scene.environment = envRT.texture;
+  // The background stays the flat clear colour: a visible studio behind
+  // the car would be a room the reader might take for a real place.
+  pmrem.dispose();
+  envSource.dispose();
+
+  /* Intensities are lower than they were, because the environment above
+     is now doing most of the ambient work. Left at the old values the
+     two sources stacked and every upper surface tone-mapped to white.
+     The ambient light is gone entirely: a uniform term added on top of
+     an IBL only flattens the shading the IBL is there to provide. */
+  const key = new THREE.DirectionalLight(0xffffff, 0.85);
   key.position.set(5, 8, 6);
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0xd6d6d6, 1.35);
+  const rim = new THREE.DirectionalLight(0xd6d6d6, 0.7);
   rim.position.set(-6, 2.2, -6);
   scene.add(rim);
-  const rim2 = new THREE.DirectionalLight(0xe6e6e6, 0.9);
+  const rim2 = new THREE.DirectionalLight(0xe6e6e6, 0.45);
   rim2.position.set(7, 1.4, -4);
   scene.add(rim2);
-  const fill = new THREE.DirectionalLight(0xbfbfbf, 0.55);
+  const fill = new THREE.DirectionalLight(0xbfbfbf, 0.3);
   fill.position.set(-4, 1.2, 6);
   scene.add(fill);
-  const under = new THREE.DirectionalLight(0x8e8e8e, 0.16);
+  const under = new THREE.DirectionalLight(0x8e8e8e, 0.1);
   under.position.set(0, -4, 1);
   scene.add(under);
 
@@ -234,13 +304,33 @@ export function createAeroRig(
   function materialFor(part) {
     const { base } = verdictColours(part);
     const tyre = TYRE_PARTS.has(part);
-    const material = new THREE.MeshStandardMaterial({
+    /* Painted carbon for the bodywork, rubber for the tyre.
+     *
+     * MeshPhysicalMaterial rather than Standard, for the clearcoat. A
+     * real F1 body is painted carbon under lacquer, which is a diffuse
+     * coloured layer with a thin glossy one over it, and clearcoat is
+     * exactly that: a second specular lobe that catches a highlight
+     * without washing the colour underneath towards white. It is what
+     * separates "painted panel" from "coloured plastic", and it is only
+     * worth anything now that there is an environment to reflect.
+     *
+     * The tyre gets none of it. Rubber is dielectric, almost completely
+     * rough, and has no lacquer — so no clearcoat, no metalness, and a
+     * roughness high enough that it takes almost nothing from the
+     * environment. That contrast is doing as much work as the colour
+     * difference in making a tyre read as a tyre. */
+    const material = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(base),
-      // Rubber is matte and unreflective; bodywork is a smooth painted
-      // panel. This is the one place the two families differ beyond
-      // colour, and it is what makes a tyre read as one.
-      roughness: tyre ? 0.88 : 0.42,
-      metalness: tyre ? 0 : 0.12,
+      roughness: tyre ? 0.95 : 0.38,
+      metalness: tyre ? 0 : 0.08,
+      clearcoat: tyre ? 0 : 0.85,
+      clearcoatRoughness: tyre ? 0 : 0.18,
+      // A touch of sheen on the bodywork only, which fills the grazing
+      // angles where neither the diffuse nor the clearcoat lobe reaches
+      // and a panel would otherwise go flat black at its silhouette.
+      sheen: tyre ? 0 : 0.12,
+      sheenRoughness: 0.6,
+      sheenColor: new THREE.Color(0xffffff),
     });
     carMaterials.push({ part, material, base });
     return material;
@@ -747,6 +837,7 @@ export function createAeroRig(
           }
         }
       });
+      envRT.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
     },
