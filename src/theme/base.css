@@ -632,6 +632,61 @@ tbody tr:hover {
   max-width: var(--measure);
 }
 
+/* The view strip on a merged page — see components/ViewTabs.jsx.
+ *
+ * It sits on the page-head's own rule rather than above it, so the
+ * active tab's underline and that rule are one line: a tab that floated
+ * clear of the rule read as a second row of buttons rather than as the
+ * page's own spine. The negative margin is the head's bottom padding
+ * plus the 1px of rule the 2px marker covers. */
+.view-tabs {
+  display: flex;
+  gap: var(--s-5);
+  margin: var(--s-2) 0 calc(-1 * var(--s-4) - 1px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.view-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.view-tab {
+  appearance: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  /* The top padding is a touch target, not spacing: the label is 12px of
+     uppercase mono, and without it the tab is a 29px-tall thing to hit
+     with a thumb. The strip's own top margin is reduced by the same
+     amount so the rhythm above it is unchanged. */
+  padding: var(--s-4) 0 var(--s-3);
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.view-tab:hover {
+  color: var(--ink-0);
+}
+
+.view-tab.is-on {
+  color: var(--ink-0);
+  border-bottom-color: var(--accent-0);
+  font-weight: 700;
+}
+
+.view-tab:focus-visible {
+  outline: 2px solid var(--accent-0);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 /* The primary surface — which is now, mostly, not a surface at all.
  *
  * Every panel used to be a bordered, rounded, shadowed box, and on a

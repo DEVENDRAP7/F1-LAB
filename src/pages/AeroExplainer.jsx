@@ -222,14 +222,7 @@ export default function AeroExplainer() {
   const lap = manifest.data?.laps?.find((l) => l.code === series[0]?.code);
 
   return (
-    <section className="page">
-      <header className="page-head">
-        <h1>Aero Explainer</h1>
-        <p className="page-sub">
-          Acceleration the car sustained, and at what speed, measured from the driven line.
-        </p>
-      </header>
-
+    <>
       <div className="controls-row">
         <label className="field">
           Round{' '}
@@ -747,7 +740,7 @@ export default function AeroExplainer() {
           </Limitations>
 
           <RelatedLinks
-            links={relatedLinks(['/aero-rig', '/lines', '/style', '/circuits', '/strategy'], {
+            links={relatedLinks(['/lines', '/style', '/circuits', '/strategy'], {
               round,
               session,
               circuit: circuitForRound(season.data?.calendar, round),
@@ -755,6 +748,6 @@ export default function AeroExplainer() {
           />
         </>
       )}
-    </section>
+    </>
   );
 }

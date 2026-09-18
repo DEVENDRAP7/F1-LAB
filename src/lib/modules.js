@@ -1,14 +1,26 @@
 // The site's map, in one place.
 //
 // The nav and the home page were each carrying their own copy of this
-// list, which is how /aero-rig ended up in one and not the other. It is
-// also what the grouping below fixes: fifteen routes in a single flat
+// list, which is how the Aero Rig ended up in one and not the other. It
+// is also what the grouping below fixes: fifteen routes in a single flat
 // row overflowed 1280px, so the last five were reachable only by
 // scrolling a bar that gave no sign there was anything to scroll to.
+//
+// Grouping fixed the overflow without fixing the count. Six of those
+// entries were three pairs, each pair asking for the same round, session
+// and driver before answering two halves of one question, so each pair
+// is now one entry with a tab strip — see components/ViewTabs.jsx. Eleven
+// entries, and nothing dropped.
 //
 // `line` is the one-sentence description of what the page does. It is
 // shown in the nav menu and on the home page, so a link says what it
 // leads to before it is clicked.
+//
+// `views` are the tabs of a merged page, in the order they are shown;
+// the first is the one the page opens on and the one whose key is left
+// out of the URL. They live here rather than in the page file so that
+// the redirects below, and a test, can check that every old path still
+// names a view that exists.
 
 export const GROUPS = [
   {
@@ -26,10 +38,40 @@ export const GROUPS = [
     name: 'Race',
     items: [
       { to: '/strategy', name: 'Race Strategy', line: 'Stints by real compound, an undercut ledger, and per-stint pace fits with their R².' },
-      { to: '/lines', name: 'Racing Lines', line: 'Driven laps overlaid, colourable by any published channel, with a mini-sector dominance map.' },
-      { to: '/style', name: 'Driving Style', line: 'How a lap was driven rather than how quick it was. There is no better column.' },
-      { to: '/errors', name: 'Error Review', line: 'What race control recorded, kept strictly apart from what this site merely noticed.' },
-      { to: '/radio', name: 'Team Radio', line: 'Who the broadcast put on air, on which lap — linked, never transcribed.' },
+      {
+        to: '/lines',
+        name: 'Driven Laps',
+        line: 'Laps overlaid metre by metre, and how each one was driven. No better column.',
+        views: [
+          {
+            key: 'lines',
+            name: 'Racing lines',
+            line: "Two drivers' fastest laps laid over each other, metre by metre.",
+          },
+          {
+            key: 'style',
+            name: 'Driving style',
+            line: 'How those laps were driven rather than how quick they were. There is no better column.',
+          },
+        ],
+      },
+      {
+        to: '/record',
+        name: 'Race Record',
+        line: 'What race control recorded, and who the broadcast put on air — neither one a verdict.',
+        views: [
+          {
+            key: 'incidents',
+            name: 'Incidents',
+            line: "What race control recorded, and which laps ran slower than a driver's own pace.",
+          },
+          {
+            key: 'radio',
+            name: 'Team radio',
+            line: 'Who the broadcast put on air, on which lap — linked, never transcribed.',
+          },
+        ],
+      },
     ],
   },
   {
@@ -38,8 +80,23 @@ export const GROUPS = [
     short: 'Car',
     items: [
       { to: '/circuits', name: 'Circuit Atlas', line: 'Outlines traced from real laps, with detected turns, gear, braking point and elevation.' },
-      { to: '/aero', name: 'Aero Explainer', line: 'Cornering load computed from the driven line: a g-g diagram and grip against speed.' },
-      { to: '/aero-rig', name: 'Aero Rig', line: 'The 2026 car in 3D, wearing a downforce signature measured from real laps.' },
+      {
+        to: '/aero',
+        name: 'Aerodynamics',
+        line: 'Cornering load computed from the driven line, and the 3D car those numbers act on.',
+        views: [
+          {
+            key: 'measured',
+            name: 'Measured',
+            line: 'Acceleration the car sustained, and at what speed, measured from the driven line.',
+          },
+          {
+            key: 'rig',
+            name: 'The car',
+            line: 'The same numbers around a 3D car, with every part labelled by what is actually known about it.',
+          },
+        ],
+      },
     ],
   },
   {
@@ -53,6 +110,27 @@ export const GROUPS = [
 ];
 
 export const MODULES = GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, group: g.name })));
+
+/* Where a path that used to be its own page goes now.
+ *
+ * Six pages became three. A link that has been shared, bookmarked or
+ * written down is not this project's to break, so every one of the old
+ * paths is still a live route that lands on the view it used to be —
+ * see the redirects in App.jsx, which read this table. */
+export const LEGACY_PATHS = {
+  '/style': { to: '/lines', view: 'style' },
+  '/aero-rig': { to: '/aero', view: 'rig' },
+  // No view: /errors was what /record now opens on, and a redirect that
+  // wrote view=incidents into the URL would be stating a default, which
+  // is the one thing the query string here never does.
+  '/errors': { to: '/record' },
+  '/radio': { to: '/record', view: 'radio' },
+};
+
+/** The tabs of a merged page, for the page itself to render. */
+export function viewsOf(path) {
+  return MODULES.find((m) => m.to === path)?.views ?? [];
+}
 
 /** The group a path belongs to, so the nav can mark where you are. */
 export function groupOf(pathname) {
