@@ -150,6 +150,16 @@ public/data/
 
 ## Modules
 
+These are the modules, which is not the same as the pages. Several of
+them turned out to want the same round, session and driver as another
+before they could say anything, and two such modules on two pages means a
+reader picks the same three things twice to read one answer. So Racing
+Lines and Driving Style share a page, the Aero Explainer shares one with
+the Aero Rig, and Driver Error Review shares one with Team Radio — each
+pair as two views of one page, selection carried between them, and every
+path they used to have still live. The modules below are unchanged; only
+how many pages they are spread across is.
+
 1. **Circuit Atlas** — track outline from the fastest qualifying lap's
    position trace, numbered corners with entry/min speed, apex distance,
    gear, braking point; elevation; DRS zones. Per-circuit constants carry a

@@ -191,11 +191,7 @@ export default function DrivingStyle() {
   }
 
   return (
-    <section className="page">
-      <header className="page-head">
-        <h1>Driving Style</h1>
-      </header>
-
+    <>
       <div className="warning-banner" role="note">
         <strong>There is no better column here.</strong> These are different ways round the
         same piece of track, not a ranking.
@@ -402,7 +398,7 @@ export default function DrivingStyle() {
           </Limitations>
 
           <RelatedLinks
-            links={relatedLinks(['/lines', '/aero', '/aero-rig', '/qualifying', '/strategy'], {
+            links={relatedLinks(['/aero', '/aero-rig', '/qualifying', '/strategy'], {
               round,
               session,
               circuit: circuitForRound(season?.calendar, round),
@@ -410,6 +406,6 @@ export default function DrivingStyle() {
           />
         </>
       )}
-    </section>
+    </>
   );
 }

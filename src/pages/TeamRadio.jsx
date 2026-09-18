@@ -84,11 +84,8 @@ export default function TeamRadio() {
   const { races, limitations } = doc.data;
 
   return (
-    <section className="page">
-      <header className="page-head">
-        <h1>Team Radio</h1>
-        <p className="mono generated-at">generated {doc.data.generated_at}</p>
-      </header>
+    <>
+      <p className="mono generated-at">generated {doc.data.generated_at}</p>
 
       <div className="warning-banner" role="note">
         <strong>Nothing here is transcribed, and nothing is inferred.</strong> This page
@@ -223,12 +220,12 @@ export default function TeamRadio() {
       </Limitations>
 
       <RelatedLinks
-        links={relatedLinks(['/strategy', '/errors', '/whatif', '/lines', '/circuits'], {
+        links={relatedLinks(['/strategy', '/whatif', '/lines', '/circuits'], {
           round,
           session: 'R',
           circuit: circuitForRound(season?.calendar, round),
         })}
       />
-    </section>
+    </>
   );
 }

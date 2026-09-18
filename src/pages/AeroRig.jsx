@@ -150,12 +150,7 @@ export default function AeroRig() {
   const [verdictKind, verdictNote] = info.verdict;
 
   return (
-    <section className="page">
-      <header className="page-head">
-        <h1>Aero Rig</h1>
-        <p className="page-sub">Drag to orbit, pinch or scroll to zoom.</p>
-      </header>
-
+    <>
       <div className="warning-banner" role="note">
         <strong>The shape is somebody else's concept, not this project's measurement.</strong>{' '}
         Only the numbers around it are measured. Click any part for its verdict.
@@ -410,11 +405,11 @@ export default function AeroRig() {
       </Limitations>
 
       <RelatedLinks
-        links={relatedLinks(['/aero', '/lines', '/style', '/strategy', '/qualifying'], {
+        links={relatedLinks(['/lines', '/style', '/strategy', '/qualifying'], {
           round,
           session,
         })}
       />
-    </section>
+    </>
   );
 }
