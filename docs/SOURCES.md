@@ -66,7 +66,7 @@ is unusable from CI. OpenF1 replaced it.
 
 ### Aero Rig car model — third party, CC-BY-4.0
 
-The 3D car on `/aero-rig` is **not** this project's geometry. It is:
+The 3D car on `/aero` (the car view) is **not** this project's geometry. It is:
 
 > "F1 2026 concept (polygon model)"
 > (<https://sketchfab.com/3d-models/f1-2026-concept-polygon-model-ea3bde709b1e4dc9b0ec8557d106ed42>)
@@ -119,7 +119,7 @@ dev: vite, @vitejs/plugin-react, vitest, eslint
 not installed: playwright (npm i --no-save, for the screenshot scripts only)
 ```
 
-`three` renders the Aero Rig's 3D car — lazy-loaded on `/aero-rig` alone, via
+`three` renders the Aero Rig's 3D car — lazy-loaded by the car view of `/aero` alone, via
 `React.lazy`, so it never lands in the initial bundle any other page pays for.
 
 `eslint.config.js` is core ESLint only, with no React plugin: `no-unused-vars`

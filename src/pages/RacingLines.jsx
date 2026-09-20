@@ -325,13 +325,7 @@ export default function RacingLines() {
   const availableDrivers = manifest.status === 'ready' ? Object.keys(manifest.data.drivers) : [];
 
   return (
-    <section className="page">
-      <header className="page-head">
-        <h1>Racing Lines</h1>
-        <p className="page-sub">
-          Two drivers' fastest laps laid over each other, metre by metre.
-        </p>
-      </header>
+    <>
       <div className="controls-row">
         <label>
           Round{' '}
@@ -655,7 +649,7 @@ export default function RacingLines() {
           )}
 
           <RelatedLinks
-            links={relatedLinks(['/aero', '/aero-rig', '/style', '/circuits', '/strategy'], {
+            links={relatedLinks(['/aero', '/aero-rig', '/circuits', '/strategy'], {
               round,
               session,
               circuit: circuitForRound(season.data?.calendar, round),
@@ -663,6 +657,6 @@ export default function RacingLines() {
           />
         </>
       )}
-    </section>
+    </>
   );
 }

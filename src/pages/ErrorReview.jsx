@@ -148,14 +148,7 @@ export default function ErrorReview() {
   }
 
   return (
-    <section className="page">
-      <header className="page-head">
-        <h1>Driver Error Review</h1>
-        <p className="page-sub">
-          What race control recorded, and which laps ran slower than a driver's own pace.
-        </p>
-      </header>
-
+    <>
       <div className="warning-banner" role="note">
         <strong>A flag is not a verdict.</strong> The cause is not identified anywhere on
         this page.
@@ -420,7 +413,7 @@ export default function ErrorReview() {
           </Limitations>
 
           <RelatedLinks
-            links={relatedLinks(['/strategy', '/whatif', '/lines', '/circuits'], {
+            links={relatedLinks(['/radio', '/strategy', '/whatif', '/lines', '/circuits'], {
               round,
               session: 'R',
               circuit: circuitForRound(season.data?.calendar, round),
@@ -428,6 +421,6 @@ export default function ErrorReview() {
           />
         </>
       )}
-    </section>
+    </>
   );
 }

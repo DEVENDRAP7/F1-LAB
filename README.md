@@ -21,7 +21,13 @@ load time rather than written into the copy.
 
 ![The Season Ledger: the 2026 championship, accumulated independently and cross-checked](docs/screenshots/ledger.png)
 
-
+What follows is what the site holds. It is eleven pages, not fourteen:
+three pairs of these — the racing line and how it was driven, the
+measured aero and the car it acts on, race control and the radio — each
+asked a reader for the same round, session and driver before answering
+two halves of one question, so each pair is now one page with two views.
+Nothing was dropped, the selection carries across a view, and every path
+those pages used to have still works and lands on the view it was.
 
 - **Season Ledger** — the 2026 championship, accumulated independently
   from each round's results and cross-checked against the published
@@ -249,8 +255,10 @@ position alone.
 Output is 186k triangles in 0.8 MB, Draco-compressed, with the decoder
 served from `public/draco/`. It costs nothing at the door: the model and
 the viewer are both lazy-loaded, so the initial page load is 376 KB
-against the 400 KB budget in `docs/SPEC.md`, and `/aero-rig` adds
-1.60 MB against the 3 MB lazy budget.
+against the 400 KB budget in `docs/SPEC.md`, and the car view of `/aero`
+adds 1.60 MB against the 3 MB lazy budget — paid only by a reader who
+opens that view, since the measured view no longer carries the viewer at
+all.
 
 ## Where the data comes from
 

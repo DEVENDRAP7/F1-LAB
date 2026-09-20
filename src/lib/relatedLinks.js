@@ -3,6 +3,12 @@
 // actually use — /strategy has no session concept, /circuits is keyed by
 // circuit rather than round — so a link never carries a parameter its target
 // would ignore, and never drops one it would have used.
+//
+// A key is a destination, not a path: three pairs of pages became three
+// tabbed pages (see components/ViewTabs.jsx), so several keys share a `to`
+// and differ by the `view` they land on. Keeping the keys is what lets a
+// page go on asking for "the driving style view" rather than knowing which
+// page that view now lives on.
 
 export const DESTINATIONS = {
   '/strategy': {
@@ -18,19 +24,23 @@ export const DESTINATIONS = {
     carries: ['round'],
   },
   '/lines': {
-    label: 'Racing Lines',
+    label: 'Racing lines',
     carries: ['round', 'session'],
   },
   '/style': {
-    label: 'Driving Style',
+    to: '/lines',
+    view: 'style',
+    label: 'Driving style',
     carries: ['round', 'session'],
   },
   '/aero': {
-    label: 'Aero',
+    label: 'Aero, measured',
     carries: ['round', 'session'],
   },
   '/aero-rig': {
-    label: 'Aero Rig',
+    to: '/aero',
+    view: 'rig',
+    label: 'The car in 3D',
     carries: ['round', 'session'],
   },
   '/circuits': {
@@ -38,11 +48,14 @@ export const DESTINATIONS = {
     carries: ['circuit'],
   },
   '/radio': {
-    label: 'Team Radio',
+    to: '/record',
+    view: 'radio',
+    label: 'Team radio',
     carries: ['round'],
   },
   '/errors': {
-    label: 'Error Review',
+    to: '/record',
+    label: 'Incidents',
     carries: ['round'],
   },
   '/whatif': {
@@ -61,7 +74,12 @@ export function relatedLinks(paths, context = {}) {
         const value = context[key];
         if (value !== '' && value !== null && value !== undefined) params[key] = value;
       }
-      return { to: path, label: destination.label, params };
+      // The view is part of the destination rather than of the reader's
+      // selection, so it is set here rather than carried from context. A
+      // destination that is a page's first view sets none, on the same rule
+      // as every other default: the URL says what was changed.
+      if (destination.view) params.view = destination.view;
+      return { to: destination.to ?? path, label: destination.label, params };
     });
 }
 

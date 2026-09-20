@@ -291,7 +291,7 @@ export default function LapHero() {
         <p>
           The line is one lap&apos;s published position trace: x, y and the z channel the rest of
           the site discards. Colour is the speed at that sample, on the same bands as{' '}
-          <Link to="/racing-lines">Racing Lines</Link>. The sheet beneath the line is the
+          <Link to="/lines">Driven Laps</Link>. The sheet beneath the line is the
           height above the lowest point of this lap.
         </p>
         <p>

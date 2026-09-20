@@ -99,6 +99,17 @@ const mobileStats = await mobile.evaluate(() => ({
   clientW: document.documentElement.clientWidth,
 }));
 
+// Every route, and every view of a merged one: a tab that renders
+// nothing is exactly as broken as a page that does, and only the second
+// used to be visible here.
+const ROUTES = [
+  ['/ledger', 'ledger'], ['/', 'home'], ['/strategy', 'strategy-default'],
+  ['/circuits', 'circuits'], ['/lines', 'lines'], ['/lines?view=style', 'style'],
+  ['/upcoming', 'upcoming'], ['/record', 'record'], ['/record?view=radio', 'radio'],
+  ['/aero', 'aero'], ['/aero?view=rig', 'aero-rig'], ['/whatif', 'whatif'],
+  ['/qualifying', 'qualifying'], ['/sprint', 'sprint'], ['/refusals', 'refusals'],
+];
+
 const light = await browser.newPage({ viewport: { width: 1280, height: 1000 }, colorScheme: 'light' });
 await openStrategy(light, 3);
 await light.screenshot({ path: '/tmp/strategy-light.png', fullPage: false });
@@ -106,7 +117,7 @@ await light.screenshot({ path: '/tmp/strategy-light.png', fullPage: false });
 // Light mode is a selected palette, not an inversion, so every page that
 // carries a colour ramp has to be looked at in it — the grip map's light
 // steps are different colours, not the dark ones lightened.
-for (const [route, name] of [['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/whatif', 'whatif'], ['/', 'ledger'], ['/sprint', 'sprint']]) {
+for (const [route, name] of [['/aero', 'aero'], ['/aero?view=rig', 'aero-rig'], ['/whatif', 'whatif'], ['/', 'ledger'], ['/sprint', 'sprint']]) {
   const l2 = await browser.newPage({ viewport: { width: 1280, height: 1000 }, colorScheme: 'light' });
   await l2.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
   await l2.waitForTimeout(900);
@@ -114,9 +125,7 @@ for (const [route, name] of [['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/wh
   await l2.close();
 }
 
-// Every route, so a page that regressed is not missed just because the
-// one under active development still renders.
-for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/strategy', 'strategy-default'], ['/circuits', 'circuits'], ['/lines', 'lines'], ['/upcoming', 'upcoming'], ['/errors', 'errors'], ['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/whatif', 'whatif'], ['/qualifying', 'qualifying'], ['/sprint', 'sprint'], ['/radio', 'radio'], ['/style', 'style'], ['/refusals', 'refusals']]) {
+for (const [route, name] of ROUTES) {
   const p2 = await browser.newPage({ viewport: { width: 1280, height: 1000 }, colorScheme: 'dark' });
   p2.on('response', (r) => r.status() >= 400 && note(name, r));
   p2.on('console', (m) => m.type() === 'error'
@@ -133,7 +142,7 @@ for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/strategy',
 
 // Same routes at phone width — "no overflow" alone is not "looks good",
 // so these get eyeballed, not just measured.
-for (const [route, name] of [['/ledger', 'ledger'], ['/', 'home'], ['/strategy', 'strategy-default'], ['/circuits', 'circuits'], ['/lines', 'lines'], ['/upcoming', 'upcoming'], ['/errors', 'errors'], ['/aero', 'aero'], ['/aero-rig', 'aero-rig'], ['/whatif', 'whatif'], ['/qualifying', 'qualifying'], ['/sprint', 'sprint'], ['/radio', 'radio'], ['/style', 'style'], ['/refusals', 'refusals']]) {
+for (const [route, name] of ROUTES) {
   const m2 = await browser.newPage({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
   await m2.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
   await m2.waitForTimeout(700);
@@ -151,14 +160,21 @@ const deep = await browser.newPage({ viewport: { width: 1280, height: 1000 }, co
 for (const [route, expected] of [
   ['/lines?round=11&session=R', { round: '11', session: 'R' }],
   ['/strategy?round=3', { round: '3' }],
-  ['/style?round=11&session=R', { round: '11', session: 'R' }],
+  ['/lines?round=11&session=R&view=style', { round: '11', session: 'R' }],
   ['/aero?round=11&session=R', { round: '11', session: 'R' }],
-  ['/aero-rig?round=11&session=R', { round: '11', session: 'R' }],
+  ['/aero?round=11&session=R&view=rig', { round: '11', session: 'R' }],
   ['/whatif?round=3', { round: '3' }],
-  ['/errors?round=11', { round: '11' }],
+  ['/record?round=11', { round: '11' }],
   ['/qualifying?round=5', { round: '5' }],
   ['/sprint?round=4', { round: '4' }],
   ['/circuits?circuit=silverstone', {}],
+  // The four paths that used to be pages of their own. These check the
+  // redirect as much as the page: a selection that a redirect dropped on
+  // the way through is a shared link that lands on the wrong round.
+  ['/style?round=11&session=R', { round: '11', session: 'R' }],
+  ['/aero-rig?round=11&session=R', { round: '11', session: 'R' }],
+  ['/errors?round=11', { round: '11' }],
+  ['/radio?round=11', { round: '11' }],
 ]) {
   await deep.goto(`http://localhost:${PORT}${BASE}/#${route}`, { waitUntil: 'networkidle' });
   await deep.waitForTimeout(1400);
