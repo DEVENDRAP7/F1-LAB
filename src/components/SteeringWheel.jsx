@@ -359,6 +359,14 @@ export default function SteeringWheel({ mode, onMode }) {
               {...activate(id, p.id === 'shift' ? () => shift(up ? 1 : -1) : () => {})}
             >
               <rect className="wheel-paddle" x={x} y={p.y} width={w} height={p.h} rx="14" />
+              {/* The clutch tabs draw 58 units wide, which lands at
+                  43.8px on a coarse pointer — under the floor by a fifth
+                  of a pixel, which is the least interesting way to fail
+                  it. The shift tabs above are 66 and already clear.
+                  Widening the hit area rather than the drawing keeps the
+                  tab the size it is on a real wheel; the nearest other
+                  hotspot is 437px away, so there is nothing to steal. */}
+              {hitTarget(x + w / 2, p.y + p.h / 2, Math.max(w, HIT_UNITS), Math.max(p.h, HIT_UNITS))}
               {/* Nudged outward onto the exposed half of the tab. Centred,
                   the label sat exactly on the face edge that overlaps it
                   and half of every word disappeared behind the wheel. */}
@@ -412,6 +420,20 @@ export default function SteeringWheel({ mode, onMode }) {
               />
             ))}
           </g>
+          {/* The bed spans y=112 to 138 — 26 units, 20px on a coarse
+              pointer. It is a row of 5-unit lamps and cannot honestly be
+              drawn thicker, so the hit area grows instead, and it has to
+              grow UP: the screen starts 6 units below at y=144, and
+              taking those would mean answering for taps aimed at the
+              only instrument in the car. Upward there is nothing to
+              steal — the face's own top edge runs along y=108 here,
+              between the two pods, and no hotspot reaches above it. So
+              the target runs 78 to 138, with its top 30 units off the
+              face entirely. What that costs is one oddity: a deliberate
+              tap on the background just above the wheel opens the
+              strip's readout. A readout is not an action, and a tap that
+              lands a little high now gets the thing it was aimed at. */}
+          {hitTarget(SCREEN_X + SCREEN_W / 2, 138 - HIT_UNITS / 2, SCREEN_W, HIT_UNITS)}
         </g>
 
         {/* Status columns either side of the screen, in the one strip of
@@ -421,7 +443,22 @@ export default function SteeringWheel({ mode, onMode }) {
             why there are two of them and they say the same thing.
             Each lamp reports a state you can actually put this wheel
             into, rather than standing for something a team's telemetry
-            might show, which would be an invention dressed as a fact. */}
+            might show, which would be an invention dressed as a fact.
+
+            These two columns are the other place that misses the 44px
+            floor, and for the same reason as the rotary detents below —
+            see the comment there. A column of 4.6-unit lamps is 9 units
+            wide, 7px on a coarse pointer, and the free face it could
+            grow into is the strip it already sits in: on the left, 46
+            units between the drink button's hit target and the screen's
+            edge at x=332, which is 35px; on the right, 18 units between
+            the screen at x=568 and the differential rocker's target at
+            x=586, which is 14px. Taking more than that means answering
+            for a tap aimed at a button that does something, to reach a
+            lamp that only explains itself — the wrong trade. Both
+            columns stay reachable by keyboard, and they light on their
+            own when you put the wheel into the state they report, which
+            is the thing they are for. */}
         {[315, 585].map((x) => (
           <g key={x}
             className={`wheel-hit${shown === 'fix:status' ? ' is-on' : ''}`}
@@ -555,7 +592,38 @@ export default function SteeringWheel({ mode, onMode }) {
           );
         })}
 
-        {/* Rotaries */}
+        {/* Rotaries.
+            WHERE THE 44px FLOOR STOPS, AND WHY.
+
+            Everything else on the site reaches it, either by taking the
+            height (see the coarse-pointer rules in base.css) or by
+            hiding a 60-unit rect behind a small drawn part (see
+            hitTarget). Two families here do not: the 28 wedge detents
+            below, and the two status-lamp columns above. The reason is
+            arithmetic rather than effort, and it is worth writing down
+            rather than rounding a number up in an audit.
+
+            A detent's neighbour is one step around a collar whose mid
+            radius is 57 units, so the spacing is fixed by how many
+            positions the real switch has. Measured at the 680px floor
+            the CSS gives the diagram — scale 0.7556 px/unit, where 44px
+            needs 58 units — the nearest-neighbour centres come out at
+            32.8px on engine map and strategy mode (8 positions each) and
+            20.4px on engine braking (12). Widening a hit target past
+            half that distance does not add a reachable detent, it just
+            makes the detent next door answer for it: a tap that lands
+            wrong and changes something, which is worse than a tap that
+            lands wrong and changes nothing. Drawing the collars bigger
+            instead would mean three dials the size of the rim, and the
+            whole claim of this diagram is that it is to scale.
+
+            So the floor is met by a different route: the knob inside
+            each collar is its own control, it renders 59px across, and
+            tapping it advances the rotary one position and writes the
+            same readout the wedge would. Every position stays reachable
+            by finger — pressed, not aimed at — and the wedges remain
+            what they are for a mouse and for the keyboard, which reach
+            a position directly. */}
         {ROTARIES.map((rot) => {
           const n = rot.positions.length;
           const step = 360 / n;

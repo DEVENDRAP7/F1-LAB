@@ -70,9 +70,9 @@ serves the `public/` folder for local development.
 The initial-load figure is **bytes over the wire**, with the text assets
 gzipped as GitHub Pages serves them. That distinction matters since the
 landing page began drawing a lap in 3D: the page now pulls three.js, and
-measured against a gzipping server it comes to 367 KB across 12 requests
+measured against a gzipping server it comes to 348 KB across 12 requests
 — inside the budget — where the same assets uncompressed are about
-1,020 KB. Nothing in that total blocks first paint: three.js is reached
+1,046 KB. Nothing in that total blocks first paint: three.js is reached
 by a dynamic import after the hero has mounted, so the page is readable
 before it arrives and readable without it if it never does.
 
@@ -106,6 +106,15 @@ standings stay as plain JSON since they're small and diffable.
   fails — and it does not run the browser-based audits (layout shift,
   computed contrast, touch targets, payload), which need a Playwright
   dependency this project does not carry.
+
+  It does make one assertion `deploy.yml` does not: that the committed
+  `public/data/2026/aero.json` still matches what the committed racing
+  lines produce (`scripts/check_data_current.mjs`). The deploy regenerates
+  that file before building, so the deploy can never notice it has gone
+  stale — which is how it came to be a month old and sixteen laps short,
+  visible only to whoever ran the site locally. The check compares content
+  rather than bytes, since the export stamps itself with the moment it
+  ran.
 
 ### Accepted trade-offs
 

@@ -403,12 +403,21 @@
      * against the dark panel and then used as TEXT on a white one. Six
      * of the seven failed WCAG 4.5:1 here — the sector yellow read at
      * 1.68:1, which is a label nobody can see. Each is the same hue
-     * walked down to a passing step (measured, not eyeballed; all land
-     * at 5.0:1 or better on #ffffff). */
+     * walked down to a passing step (measured, not eyeballed).
+     *
+     * The step is measured against the DARKEST surface the token is used
+     * on, which is not white: the severity chips on /record set their
+     * background to a 14-20% tint of this very colour, so each one sits
+     * on a wash of itself. Stepping against #ffffff as this block first
+     * did left `minor` at 4.05:1 on its own chip while reading 4.86:1 on
+     * the page around it — and `major` and `moderate` were at 3.57 and
+     * 3.75 on theirs, latent because today's data happens to flag
+     * nothing worse than minor. The three now clear 4.8:1 on their own
+     * tint and 5.9:1 or better on the page. */
     --status-good: #097f09;
-    --status-warning: #936503;
-    --status-serious: #c04616;
-    --status-critical: #ce3333;
+    --status-warning: #825903;
+    --status-serious: #a03a12;
+    --status-critical: #a72828;
     /* Badge only. The rig's chamber is dark in both themes, so the
        --rig-* steps above are not re-stepped here. */
     --verdict-measured: #126682;

@@ -444,11 +444,20 @@ export default function RacingLines() {
             ))}
           </div>
 
-          {active.length === 0 ? (
+          {/* Three states, and the middle one is the point. Nothing
+              selected is a prompt. Everything selected and decoded is the
+              instrument. In between — selected, still decoding — the
+              layout renders at its reserved height rather than as a short
+              empty state that the instrument then displaces. */}
+          {selected.length === 0 ? (
             <EmptyState
               title="Select up to 4 drivers"
               reason="Each selection decodes that driver's exported fastest lap from its .bin artifact."
             />
+          ) : active.length === 0 ? (
+            <div className="lines-layout is-pending">
+              decoding {selected.length === 1 ? 'the lap' : `${selected.length} laps`}
+            </div>
           ) : (
             <div className="lines-layout">
               {colourBy === 'driver' ? (
