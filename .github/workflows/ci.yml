@@ -21,21 +21,25 @@
 # has to change here too, and the two drifting apart is the one failure
 # mode worth watching for.
 #
-# WHAT IT DOES NOT CHECK
+# THE ONE CHECK deploy.yml DOES NOT RUN
 #
-# It does not assert that the committed data artifacts are current. That
-# would be a good gate and the repo does not pass it today: regenerating
-# public/data/2026/aero.json from the racing lines already committed
-# yields 96 laps against the 88 in the file, which was last written on
-# 2026-08-29. Nothing is broken by that — deploy.yml regenerates the file
-# before it builds, so what ships is correct — but adding the assertion
-# without first refreshing the file would mean landing a check that is
-# red on arrival, so it is named here instead of quietly omitted.
+# Data currency. deploy.yml regenerates public/data/2026/aero.json before
+# it builds, so the deploy cannot care whether the committed copy is
+# current — and that is precisely why the committed copy drifted to a
+# month old and sixteen laps short without failing anything. What it cost
+# was `npm run dev`: locally the newest two rounds had no car to show.
 #
-# It also does not run the browser-based audits — layout shift, computed
-# contrast, touch targets, payload measurement. Those need Playwright,
-# which is not a dependency of this project, and adding one to run CI is
-# a decision for a human rather than a side effect of wiring up a gate.
+# So this is a PR-only assertion, and the one deliberate divergence from
+# the mirror rule above. It is safe to diverge here because it can only
+# fail for a reason the deploy is immune to.
+#
+# WHAT NEITHER OF THEM CHECKS
+#
+# The browser-based audits — layout shift, computed contrast, touch
+# targets, payload measurement. Those need Playwright, which is not a
+# dependency of this project, and adding one to run CI is a decision for
+# a human rather than a side effect of wiring up a gate. They are run by
+# hand instead, and what they found is written down where the fix is.
 
 name: CI
 
@@ -93,6 +97,12 @@ jobs:
       # tree would suggest the result was meant to be committed.
       - name: Export aero signature (deploy runs this, so it has to work)
         run: node scripts/aero_export.mjs --out "$RUNNER_TEMP/aero.json"
+
+      # …and then, having it in hand, check the committed copy still says
+      # the same thing. See the header: this is the one assertion deploy
+      # does not make, because regenerating is the deploy's first move.
+      - name: Check the committed aero export is current
+        run: node scripts/check_data_current.mjs "$RUNNER_TEMP/aero.json"
 
       - name: Build
         run: npm run build

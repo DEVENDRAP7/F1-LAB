@@ -542,6 +542,15 @@ tbody tr:hover {
   grid-template-columns: auto 1fr;
   gap: 1.5rem;
   align-items: start;
+  /* The height this settles at once the .bin files decode, measured, so
+     the panel is its final size from the first paint. Selecting a driver
+     is instant; decoding their lap is not, and without this the layout
+     arrived 402px taller than the placeholder it replaced and shoved the
+     related-links panel down with it — 0.031 of layout shift.
+     Two values because the grid reflows at 900px, so the reservation
+     lives beside the rule that decides it rather than guessing one
+     number for both. */
+  min-height: 486px;
 }
 
 .lines-layout > :first-child {
@@ -552,7 +561,20 @@ tbody tr:hover {
 @media (max-width: 900px) {
   .lines-layout {
     grid-template-columns: 1fr;
+    /* Stacked, the map sits above the traces rather than beside them. */
+    min-height: 810px;
   }
+}
+
+/* While the laps decode. Same element, same reserved height, so what
+   replaces it does not move anything. */
+.lines-layout.is-pending {
+  align-content: start;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .traces-column {
@@ -3251,6 +3273,28 @@ tbody tr.is-on {
   /* The strategy editor's own buttons — they add and remove pit stops,
      which is the whole interaction on that panel. */
   .ghost-button {
+    min-height: 44px;
+  }
+
+  /* A button that reads as a link still has to be hit like a button.
+     `.link-button` takes its height from one line of 0.85rem text plus
+     0.5rem of padding, which measured 27px on a phone — the shortest
+     real control left on the site. They open the evidence behind a
+     number — /strategy's lap-time table, the undercut ledger's
+     arithmetic — or undo something: the aero page's grip override, the
+     wheel's pinned readout. Made a flex block so the extra height lands
+     under the underline rather than stretching it. */
+  .link-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* The rig's aero-mode pair. One line of 0.72rem mono with 0.5rem of
+     padding rendered 31px tall, and these two are the only way to move
+     the wings between loaded and flat — which is the whole point of
+     looking at a 2026 car. */
+  .mode-switch button {
     min-height: 44px;
   }
 

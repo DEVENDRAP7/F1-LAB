@@ -75,23 +75,13 @@ export default function WhatIf() {
   const [round, setRound] = useUrlState('round');
   const [doc, setDoc] = useState({ status: 'idle', data: null });
 
-  // Whether the round fetch has ever come back.
-  //
-  // Two traps here, both found by measuring. `doc` starts at 'idle' and
-  // only becomes 'loading' once a round is known, so "not loading" is
-  // true on the very first paint — exactly when the trailing panels must
-  // not be drawn. And this page fetches twice on arrival: once for the
-  // round it opens on, then again after walking back to the newest round
-  // that has data. Gating on the current status alone therefore mounted
-  // those panels, unmounted them for the second fetch, and remounted
-  // them two thousand pixels lower — a 0.42 layout shift, all of it from
-  // the removal.
-  //
-  // So it latches: once there has been an answer, the panels stay put
-  // while the next one is fetched.
+  // The two latches the trailing panels depend on. Declared up here
+  // because a hook has to be: there is an early return further down for
+  // the loading state, and a `useRef` below it would be called on some
+  // renders and not others. They are SET far below, where everything they
+  // read is in scope, and the reasoning is there, at `settled`.
   const settledOnce = useRef(false);
-  if (doc.status === 'ready' || doc.status === 'empty') settledOnce.current = true;
-  const settled = settledOnce.current;
+  const lastLimitations = useRef([]);
   const [driverId, setDriverId] = useUrlState('driver');
   const [strategy, setStrategy] = useState(null);
 
@@ -253,6 +243,50 @@ export default function WhatIf() {
   const validated = Object.entries(doc.data?.drivers ?? {})
     .filter(([, e]) => e.validation.validated)
     .sort(([a], [b]) => a.localeCompare(b));
+
+  /* The limitations the document last published, kept across a refetch.
+   * `doc.data` is nulled while the next round loads, so reading it
+   * directly would unmount the panel on every round change — the exact
+   * removal the latch below exists to prevent. The list is a property of
+   * the model, not of one round, so holding the previous one for a frame
+   * states nothing false. (The ref itself is declared at the top of the
+   * component, above the early return — see there.) */
+  if (doc.data?.limitations) lastLimitations.current = doc.data.limitations;
+  const limitations = lastLimitations.current;
+
+  /* When the two trailing panels — the limitations list and the related
+   * links — are allowed to exist.
+   *
+   * They sit under about 1,100px of panels that arrive from a fetch, so
+   * drawing them early means drawing them twice: once near the top of an
+   * empty page and once where they belong. That is a move, and a move is
+   * a layout shift.
+   *
+   * It latches, for two reasons. The page fetches twice on arrival — once
+   * for the round in the URL, then again after walking back to the newest
+   * round that has data — and gating on the live status alone mounted the
+   * panels, unmounted them for the second fetch, and remounted them lower:
+   * 0.42, all of it from the removal. And `doc` is set back to a null
+   * `data` at the start of every refetch, so any condition reading
+   * `doc.data` unmounts them again on each round change.
+   *
+   * What it waits for is the LAST thing above them, not the first. Gating
+   * on `doc.status === 'ready'` looked right and was measurably wrong:
+   * `strategy` is seeded by an effect that runs after the commit which
+   * makes the document ready, so on that commit the four big panels do not
+   * exist yet and these two mounted above where they were going. Measured
+   * at 0.1493. Waiting for `strategy` costs nothing — it lands one frame
+   * later — and takes the page to 0.0004.
+   *
+   * The three terminal states are the reason this is not simply
+   * `entry && strategy`: on a round with nothing to model, the big panels
+   * are never coming, and the trailing ones still have to appear.
+   */
+  const nothingToModel =
+    doc.status === 'empty' ||
+    (doc.status === 'ready' && (doc.data.skipped || validated.length === 0));
+  if (nothingToModel || (entry && strategy)) settledOnce.current = true;
+  const settled = settledOnce.current;
 
   return (
     <section className="page">
@@ -521,9 +555,9 @@ export default function WhatIf() {
           2,250px tall, so painting them before it meant painting them
           twice — once here and once two thousand pixels lower. A first
           mount in the final place is not a shift; a move is. */}
-      {settled && doc.data?.limitations && (
+      {settled && limitations.length > 0 && (
         <Limitations title="What this model does not know">
-          {doc.data.limitations.map((line) => (
+          {limitations.map((line) => (
             <li key={line}>{line}</li>
           ))}
           <li>

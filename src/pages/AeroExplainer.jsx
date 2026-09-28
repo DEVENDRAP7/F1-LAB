@@ -300,21 +300,51 @@ export default function AeroExplainer() {
             })}
           </div>
 
-          {series.length > 0 && (
+          {/* One tile per SELECTED driver, not per decoded one.
+              The selection is known the moment the manifest lands; the
+              numbers need the .bin to arrive and be run through
+              accelerationTrace, a frame or two later. Rendering only the
+              decoded ones meant this row appeared out of nothing once
+              they landed and pushed 2,300px of charts down with it —
+              measured at 0.0515, the largest shift left on the site.
+              A tile per selection reserves the true height at every
+              width (the grid wraps, so a fixed min-height would be wrong
+              on a phone) and fills in where the row already is. */}
+          {selected.length > 0 && (
             <div className="figure-grid">
-              {series.map((s) => (
-                <div className="figure" key={s.code}>
-                  <p className="figure-label">
-                    <span className="series-dot" style={{ background: s.color }} aria-hidden="true" />
-                    <span className="mono">{s.code}</span> sustained lateral
-                  </p>
-                  <p className="figure-value mono">{s.peaks.peakLateralG.toFixed(1)}g</p>
-                  <p className="figure-sample">
-                    braking {s.peaks.peakBrakingG.toFixed(1)}g · top{' '}
-                    {Math.round(s.peaks.topSpeedKph)} km/h
-                  </p>
-                </div>
-              ))}
+              {selected.map((code) => {
+                const s = series.find((x) => x.code === code);
+                return (
+                  <div className="figure" key={code}>
+                    <p className="figure-label">
+                      {/* No dot until there is a series: the colour is the
+                          chart's index, and inventing one here would risk
+                          disagreeing with the chart it labels. */}
+                      {s && (
+                        <span
+                          className="series-dot"
+                          style={{ background: s.color }}
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span className="mono">{code}</span> sustained lateral
+                    </p>
+                    <p className="figure-value mono">
+                      {s ? `${s.peaks.peakLateralG.toFixed(1)}g` : '\u2014'}
+                    </p>
+                    <p className="figure-sample">
+                      {s ? (
+                        <>
+                          braking {s.peaks.peakBrakingG.toFixed(1)}g · top{' '}
+                          {Math.round(s.peaks.topSpeedKph)} km/h
+                        </>
+                      ) : (
+                        'decoding this lap'
+                      )}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
 
