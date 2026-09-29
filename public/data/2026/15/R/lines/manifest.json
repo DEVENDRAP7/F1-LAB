@@ -1,0 +1,81 @@
+{
+  "channels": [
+    "x",
+    "y",
+    "z",
+    "speed",
+    "throttle",
+    "brake",
+    "gear"
+  ],
+  "scale": {
+    "x": 10,
+    "y": 10,
+    "z": 10,
+    "speed": 10,
+    "throttle": 1,
+    "brake": 1,
+    "gear": 1
+  },
+  "drivers": {
+    "RUS": {
+      "pointCount": 3099
+    },
+    "VER": {
+      "pointCount": 3098
+    },
+    "ANT": {
+      "pointCount": 3091
+    },
+    "HAD": {
+      "pointCount": 3092
+    }
+  },
+  "schemaVersion": 2,
+  "sessionName": "R",
+  "sessionLabel": "the race",
+  "source": "OpenF1 session 11377 (Azerbaijan)",
+  "positionUnitsPerMetre": {
+    "value": 10.014687350537844,
+    "source": "measured on this lap: raw position path length divided by the lap length obtained by integrating published speed over the sample timestamps",
+    "sample_size": 406
+  },
+  "elevation": {
+    "usable": true,
+    "rangeM": 26.76,
+    "minM": -24.66,
+    "maxM": 2.1,
+    "source": "OpenF1 position z, on the same measured unit as x and y; relative to the feed's own datum, not to sea level"
+  },
+  "laps": [
+    {
+      "code": "RUS",
+      "driverNumber": 63,
+      "lapNumber": 49,
+      "lapTimeS": 104.916
+    },
+    {
+      "code": "VER",
+      "driverNumber": 3,
+      "lapNumber": 48,
+      "lapTimeS": 104.993
+    },
+    {
+      "code": "ANT",
+      "driverNumber": 12,
+      "lapNumber": 50,
+      "lapTimeS": 105.413
+    },
+    {
+      "code": "HAD",
+      "driverNumber": 6,
+      "lapNumber": 49,
+      "lapTimeS": 105.618
+    }
+  ],
+  "limitations": [
+    "Each line is one driver's fastest non-out lap of the race, not an average and not an ideal line.",
+    "Position samples arrive at roughly 3.7 Hz and are resampled onto a fixed distance grid, so the line is interpolated between samples.",
+    "Corner numbering is not published by this source, so the map carries the driven path and no official corner labels."
+  ]
+}
