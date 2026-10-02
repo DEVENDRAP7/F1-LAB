@@ -91,24 +91,34 @@ export default function UpcomingBrief() {
         <p className="mono generated-at">generated {generated_at}</p>
       </header>
 
-      <div className="warning-banner" role="note">
-        <strong>These are records, not forecasts.</strong> Every figure below counts what
-        happened at this circuit in earlier seasons.
-        <Method label="Why the priors are weak">
-          2026 is the first year of a new set of technical regulations, so the cars that set
-          these numbers are not the cars about to race. Read the sample count under each one
-          before leaning on it.
-        </Method>
-      </div>
+      {/* Shown only when there is something to warn about: with no past
+          edition to draw on, "every figure below counts what happened at
+          this circuit" promises figures that are not there, and the
+          empty state underneath it is the whole page. */}
+      {history?.editions > 0 && (
+        <div className="warning-banner" role="note">
+          <strong>These are records, not forecasts.</strong> Every figure below counts what
+          happened at this circuit in earlier seasons.
+          <Method label="Why the priors are weak">
+            2026 is the first year of a new set of technical regulations, so the cars that set
+            these numbers are not the cars about to race. Read the sample count under each one
+            before leaning on it.
+          </Method>
+        </div>
+      )}
 
       {!history || history.editions === 0 ? (
         <EmptyState
-          title="No past editions available"
+          title="No past editions in the seasons this brief queries"
           reason={
             reason ??
-            `No results were published for this circuit in ${
-              historyYearsRequested?.join(', ') ?? 'the seasons queried'
-            }, so there is no prior to show. A first-time or returning venue has no history to draw on.`
+            `The brief asks the results feed for this circuit in ${
+              historyYearsRequested?.length
+                ? `${historyYearsRequested.length} season${
+                  historyYearsRequested.length === 1 ? '' : 's'
+                } — ${[...historyYearsRequested].sort().join(', ')}`
+                : 'the seasons queried'
+            } — and it published none, so there is no prior to show. That is a fact about the window, not about the venue: a circuit returning after a longer gap and a circuit appearing for the first time look identical from here, and this page will not guess which one this is.`
           }
         />
       ) : (
