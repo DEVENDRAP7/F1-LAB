@@ -434,7 +434,11 @@ substantive ones:
 - **The Upcoming brief's priors are weak by construction.** They come
   from at most four past editions of one circuit, under a different set
   of technical regulations, and every figure is rendered with its sample
-  count for that reason. Classification keys off `positionText`, not the
+  count for that reason. A circuit that appears in none of those four
+  seasons gets no figures at all, and the page says that the window came
+  up empty rather than that the venue has no history — a return after a
+  longer gap and a first visit are indistinguishable from inside a
+  four-season window, and the brief does not guess between them. Classification keys off `positionText`, not the
   status text: the same lapped-but-classified finisher reads `+1 Lap` in
   2022 and `Lapped` in 2025, so matching on status would have counted
   every lapped 2025 finisher as a retirement.
