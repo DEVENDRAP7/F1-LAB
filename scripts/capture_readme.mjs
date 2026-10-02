@@ -134,6 +134,18 @@ await shoot('lines', '/lines', async (page) => {
   await page.waitForTimeout(300);
 });
 await shoot('aero', '/aero', (page) => scrollToHeading(page, 'where the load is'));
+// The car, which is the one shot that has to wait for something heavy:
+// three.js and a Draco-compressed GLB are both lazy-loaded, so a shot
+// taken on networkidle alone catches an empty chamber.
+await shoot('car', '/aero?view=rig', async (page) => {
+  await page.waitForFunction(
+    () => !!document.querySelector('canvas.rig-canvas'),
+    null,
+    { timeout: 30000 },
+  );
+  await page.waitForTimeout(5000);
+  await scrollToHeading(page, 'the car');
+}, { height: 1038 });
 await shoot('whatif', '/whatif', (page) => scrollToHeading(page, 'change the strategy'));
 await shoot('circuits', '/circuits', (page) => scrollToHeading(page, 'circuit'));
 await shoot('qualifying', '/qualifying', (page) => scrollToHeading(page, 'head to head'));
