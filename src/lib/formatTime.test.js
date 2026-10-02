@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDelta, formatLapTime, formatDuration } from './formatTime.js';
+import { formatDelta, formatLapTime, formatDuration, formatRate } from './formatTime.js';
 
 describe('formatLapTime', () => {
   it('keeps sub-minute times in seconds, as timing screens do', () => {
@@ -66,5 +66,37 @@ describe('formatDuration past an hour', () => {
   it('leaves anything under an hour in the lap form', () => {
     expect(formatDuration(75.4)).toBe('1:15.4');
     expect(formatDuration(22.31)).toBe('22.3');
+  });
+});
+
+describe('formatRate', () => {
+  it('prints a rate at the shown precision', () => {
+    expect(formatRate(0.0182)).toBe('0.018');
+    expect(formatRate(-0.0182)).toBe('-0.018');
+  });
+
+  it('drops the sign of a rate that rounds away', () => {
+    // The What-If page summarised its own fit as "MEDIUM -0.000s/lap":
+    // a minus sign in front of nothing.
+    expect(formatRate(-0.0004)).toBe('0.000');
+    expect(formatRate(-0)).toBe('0.000');
+  });
+
+  it('signs a positive rate only when asked', () => {
+    expect(formatRate(0.018, { sign: true })).toBe('+0.018');
+    expect(formatRate(-0.018, { sign: true })).toBe('-0.018');
+    expect(formatRate(-0.0001, { sign: true })).toBe('0.000');
+    expect(formatRate(0.018)).toBe('0.018');
+  });
+
+  it('honours a different precision', () => {
+    expect(formatRate(0.0182, { decimals: 2 })).toBe('0.02');
+    expect(formatRate(-0.004, { decimals: 2 })).toBe('0.00');
+  });
+
+  it('has nothing to print for a missing rate', () => {
+    expect(formatRate(null)).toBe('—');
+    expect(formatRate(undefined)).toBe('—');
+    expect(formatRate(Number.NaN)).toBe('—');
   });
 });

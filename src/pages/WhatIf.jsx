@@ -8,7 +8,7 @@ import StrategyEditor from '../components/StrategyEditor.jsx';
 import OutcomeChart from '../components/OutcomeChart.jsx';
 import { monteCarlo, median } from '../lib/whatifModel.js';
 import { sensitivity } from '../lib/sensitivity.js';
-import { formatDuration, formatDelta } from '../lib/formatTime.js';
+import { formatDuration, formatDelta, formatRate } from '../lib/formatTime.js';
 import { driverIndex, driverCode, driverName } from '../lib/driverNames.js';
 import { Limitations, Method } from '../components/Disclosure.jsx';
 import TableScroll from '../components/TableScroll.jsx';
@@ -84,6 +84,9 @@ export default function WhatIf() {
   const lastLimitations = useRef([]);
   const [driverId, setDriverId] = useUrlState('driver');
   const [strategy, setStrategy] = useState(null);
+  // Which entry the editor above was built from. See the derivation
+  // below `entry`.
+  const [strategyFor, setStrategyFor] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -173,13 +176,21 @@ export default function WhatIf() {
 
   // The editor opens on what the driver actually ran, so the first thing
   // a reader sees is the real race and every change is a change from it.
-  useEffect(() => {
-    if (!entry) {
-      setStrategy(null);
-      return;
-    }
-    setStrategy(entry.params.strategy.map((s) => ({ ...s })));
-  }, [entry]);
+  //
+  // Derived during this render rather than in an effect, because an
+  // effect runs after the browser has painted: there was one frame with
+  // the round's data loaded and the editor still null, so everything
+  // gated on the editor was missing and the panels below it laid out
+  // high on the page, then moved when the next frame mounted them. That
+  // single frame was the whole of this page's layout shift — 0.31 at
+  // 390px, against the 0.1 that counts as good, on the loads where the
+  // JSON landed after first paint. Setting state during render is how
+  // React itself prescribes resetting state when the thing it derives
+  // from changes; the guard is what keeps it to one extra render.
+  if (entry !== strategyFor) {
+    setStrategyFor(entry);
+    setStrategy(entry ? entry.params.strategy.map((s) => ({ ...s })) : null);
+  }
 
   const compounds = useMemo(
     () => (entry ? Object.keys(entry.params.compounds) : []),
@@ -389,7 +400,7 @@ export default function WhatIf() {
               <li>
                 Fuel and track evolution together{' '}
                 <span className="mono">
-                  {entry.params.fuel_effect_s_per_lap.toFixed(3)}s
+                  {formatRate(entry.params.fuel_effect_s_per_lap)}s
                 </span>{' '}
                 per lap of fuel remaining. One race cannot separate the two, so the whole
                 coefficient is published as fuel.
@@ -421,7 +432,7 @@ export default function WhatIf() {
               <p className="panel-note">
                 Degradation per compound, fitted from this race:{' '}
                 {Object.entries(entry.params.compounds)
-                  .map(([c, p]) => `${compoundLabel(c)} ${p.deg_rate_s_per_lap.toFixed(3)}s/lap`)
+                  .map(([c, p]) => `${compoundLabel(c)} ${formatRate(p.deg_rate_s_per_lap)}s/lap`)
                   .join(' · ')}
                 .
               </p>

@@ -16,8 +16,12 @@ spec) before contributing.
 The site opens on a front page that states the rules it is built under
 and counts what it has — rounds ingested, sessions with racing lines,
 counterfactuals published, figures withheld — read from the artifacts at
-load time rather than written into the copy.
+load time rather than written into the copy. Behind the title is a real
+lap — the most recent round whose published elevation channel survives
+the pipeline's own check — drawn in three dimensions because that
+elevation is real, and coloured by the speed held along it.
 
+![The front page: one real lap in three dimensions, and what the site holds counted from the artifacts](docs/screenshots/home.png)
 
 ![The Season Ledger: the 2026 championship, accumulated independently and cross-checked](docs/screenshots/ledger.png)
 
@@ -33,8 +37,11 @@ those pages used to have still works and lands on the view it was.
   from each round's results and cross-checked against the published
   standings. The cross-check result is shown either way; a mismatch is a
   hard failure that blocks publication, not a warning to read past.
-- **Race Strategy** — twelve races of real lap times (14,066 laps), with
-  a stint chart, a lap-pace comparison for up to four drivers, an
+- **Race Strategy** — every race run so far, lap by lap, from the real
+  timing feed — fifteen rounds and 17,199 laps as this is written, a
+  count that moves every Tuesday, so trust the front page's figures and
+  the per-round header on the page itself over this sentence —
+  with a stint chart, a lap-pace comparison for up to four drivers, an
   undercut ledger, and per-stint pace-trend fits.
   The ledger also carries a points-progression chart and a
   mathematical-elimination calculator, the latter on the most
@@ -59,7 +66,8 @@ those pages used to have still works and lands on the view it was.
   It also carries a measured pit loss where one exists: the median
   across the drivers who had a stop the what-if fit could measure, with
   the middle half printed beside it. Four
-  circuits of twelve publish one. Shanghai has a single 45.8s stop and
+  circuits of the fifteen run publish one; the other eleven carry the
+  reason instead. Shanghai has a single 45.8s stop and
   Silverstone has seventeen drivers spanning 17–28s, and neither is a
   property of a pit lane, so neither is published.
 - **Racing Lines** — per-driver fastest laps from qualifying or the race,
@@ -74,7 +82,9 @@ those pages used to have still works and lands on the view it was.
   driver's green-flag median. A flag is not a verdict, and the page is
   built so the two can never be read as the same thing.
 - **Refusals** — the ledger of everything computed and then withheld:
-  327 figures this season, each with the number that made the decision.
+  406 figures this season, each with the number that made the decision.
+  The page counts them from the artifact, so that figure moves with the
+  data rather than with this sentence.
   A dashboard that cannot say no fills every gap with something
   plausible, and a reader has no way to tell which numbers those are.
 - **Driving Style** — how a lap was driven rather than how quick it was:
@@ -310,16 +320,19 @@ substantive ones:
   false`. A negative slope (the driver getting faster) is normal and is
   not evidence about tyres.
 - **A fit is only called usable when it earns it.** Reliability requires
-  both a sample-count floor and an R² floor. On real race data 57% of
-  fits clear both; the rest are published with the reason they failed
+  both a sample-count floor and an R² floor. On the fifteen races run so
+  far, 450 of 781 fits clear both — 58% — and the rest are published with the reason they failed
   ("R² 0.06 below 0.3 — lap-to-lap scatter dominates any trend in this
   stint") rather than shown as a confident number.
 - **Tyre compounds are matched, never assumed.** Jolpica-F1 publishes
   none; OpenF1's stint feed does, and a stint takes a compound only when
-  it matches by driver code and lap overlap above a set share. Eleven of
-  the twelve races run so far are fully matched. A stint that cannot be
-  matched keeps the ordinal shading and says so, because a wrong compound
-  colour is worse than no compound colour.
+  it matches by driver code and lap overlap above a set share. Ten of the
+  fifteen races run so far are matched end to end, and across the season
+  880 of 910 stints carry a real compound — the thirty that do not are
+  concentrated in five rounds whose stint feed is short of the laps that
+  were run. A stint that cannot be matched keeps the ordinal shading and
+  says so, because a wrong compound colour is worse than no compound
+  colour.
 - **Undercuts measure what happened, not what would have happened.**
   Gaps come from elapsed race time (the running sum of lap times).
   Pairings are excluded when the window cannot be about the stop — the
@@ -334,9 +347,9 @@ substantive ones:
   qualifying trace replaces a race one and a race trace never overwrites
   a qualifying one. It also filled the two real gaps: Monaco and the
   Hungaroring had no outline at all, because their race position feeds
-  are unusable, and both now have one from qualifying. All twelve rounds
-  have qualifying lines; ten have race lines as well.
-- **Two of the twelve races have no racing line, and say why.** The
+  are unusable, and both now have one from qualifying. All fifteen rounds
+  have qualifying lines; thirteen have race lines as well.
+- **Two of the fifteen races have no racing line, and say why.** The
   position feed returns nothing at all for Monaco — zero location rows
   for every driver's fastest lap, while car data for the same window
   returns about 285 — and at the Hungaroring it repeats coordinates so
@@ -350,16 +363,32 @@ substantive ones:
   circuits, so the pipeline judges it per round: under 3 m of variation
   over a whole lap is a constant with noise on it, not a profile. The
   measured range is published either way, so a refusal can be checked.
-- **Two pages still shift under the reader, and only sometimes.** Measured
-  at 390px with a layout-shift observer, against the 0.1 that counts as
-  good: What-If and the Aero Explainer each score 0 on some loads and
-  0.42 and 0.17 on others, from the same build. It is a race — when the
-  round's JSON lands before the first paint there is no shift at all, and
-  when it lands after, the panels are placed and then moved. The other
-  thirteen routes are at 0 every time, down from a site total of 2.18.
-  What was fixed, and what it took: every chart's height is known, so the
-  one-line "pick a driver" note now stands in a box the size of the chart
-  it precedes; the round picker is 180px wider once the calendar lands,
+- **What still shifts under the reader is the webfont, not the data.**
+  Measured at 390px with a layout-shift observer, six loads a route,
+  against the 0.1 that counts as good: of the home page and the eleven
+  pages behind the nav, ten are at or under 0.003 on every load, and
+  nothing anywhere passes 0.1. The two that move are the home page, at
+  0.04–0.07 on every load, and Refusals at 0.04 on some, and both are the
+  same cause — Archivo arrives after the
+  first paint, the nav and the page title reflow a few pixels narrower,
+  and whatever sits near the fold moves up with them. That is a font
+  swap, not a data race, and it is the one shift left: it needs the
+  fallback's metrics matched to Archivo's, or the font preloaded ahead of
+  the CSS that asks for it, and neither is done here.
+
+  The data races are gone. What-If was the last one, at 0.31 on the loads
+  where the round's JSON landed after first paint: its strategy editor
+  was initialised in an effect, which runs *after* the browser paints, so
+  one frame showed the round loaded and the editor still empty — every
+  panel gated on the editor missing, and the panels below it laid out
+  high on the page and then pushed down. Deriving the editor during the
+  render that has the data removes that frame, and the page now measures
+  0.001 on every load. The Aero Explainer, measured at 0.17 when it was
+  two pages, is at 0.003 since the merge.
+
+  What was fixed before that, and what it took: every chart's height is
+  known, so the one-line "pick a driver" note now stands in a box the
+  size of the chart it precedes; the round picker is 180px wider once the calendar lands,
   which rewrapped the control strip and moved every page down 52px, so
   below 620px each field takes its own line; the provenance line in that
   strip holds its line from the first paint; the home page's stat row

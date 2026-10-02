@@ -53,6 +53,27 @@ jobs:
           python -m pytest tests -q
           python validate_export.py
 
+      # public/data/2026/aero.json is DERIVED from the racing lines this
+      # pipeline just wrote, by a Node script rather than by Python, so
+      # the refresh used to commit new lines and leave the file that
+      # reads them a week behind. deploy.yml regenerates it before it
+      # builds, so the published site was always right and nothing ever
+      # failed — but the committed copy drifted, which cost `npm run dev`
+      # the newest round and made ci.yml's currency gate red on arrival
+      # for the next unrelated pull request. Deriving it here, inside the
+      # run that creates its inputs, is what keeps the two in step; the
+      # `git add public/data` below already picks it up.
+      #
+      # No `npm ci`: the script imports only Node builtins and this
+      # repo's own src/lib modules, so the dependency tree is not needed.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Re-derive the aero export from the refreshed lines
+        run: node scripts/aero_export.mjs --out public/data/2026/aero.json
+
       - name: Configure commit identity
         run: |
           git config user.name "github-actions[bot]"
