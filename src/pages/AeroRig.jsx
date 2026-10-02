@@ -200,12 +200,17 @@ export default function AeroRig() {
             <span className="rig-hint rig-hint-drag">drag to orbit · scroll to zoom</span>
             <span className="rig-hint rig-hint-touch">drag to orbit · pinch to zoom</span>
           </div>
-          {/* The key to the car's own colours. It is not decoration: the
-              car is painted by verdict, and a colour that encodes
-              something and is never named is a colour a reader cannot
-              use. Three words, because the Method above already explains
-              what each one means. */}
-          <ul className="rig-verdict-key" aria-label="What the car's colours mean">
+          {/* The key to the three verdicts, and to the colour a part
+              lights up in when it is selected. The car itself is one
+              colour now, so this key no longer describes the paint —
+              it describes what a click answers with, which is where
+              the verdict lives. A colour that encodes something and is
+              never named is a colour a reader cannot use, and that is
+              as true of the lit state as it was of the paint. Three
+              words, because the Method above already explains what
+              each one means. */}
+          <ul className="rig-verdict-key" aria-label="What a selected part's colour means">
+            <li className="rig-key-lead mono">a selected part lights up:</li>
             {[['m', 'measured'], ['s', 'schematic'], ['r', 'refused']].map(([kind, label]) => (
               <li key={kind}>
                 <span className={`rig-key-swatch is-${kind}`} />
