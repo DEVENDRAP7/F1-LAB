@@ -7,7 +7,7 @@ import StintChart from '../components/StintChart.jsx';
 import LapTimeChart from '../components/LapTimeChart.jsx';
 import UndercutLedger from '../components/UndercutLedger.jsx';
 import { Limitations, Method } from '../components/Disclosure.jsx';
-import { formatLapTime } from '../lib/formatTime.js';
+import { formatLapTime, formatRate } from '../lib/formatTime.js';
 import { driverCode, driverIndex, driverName } from '../lib/driverNames.js';
 import { circuitForRound, isSprintRound, relatedLinks } from '../lib/relatedLinks.js';
 import { useUrlState } from '../lib/urlState.js';
@@ -206,6 +206,11 @@ export default function RaceStrategy() {
     );
   }
 
+  // Today, for the round picker below: a race still in the future has
+  // nothing exported, and the option says so rather than the page
+  // saying it after the click.
+  const today = new Date().toISOString().slice(0, 10);
+
   return (
     <section className="page">
       <header className="page-head">
@@ -220,9 +225,18 @@ export default function RaceStrategy() {
           Round{' '}
           <select value={round} onChange={(e) => setRound(e.target.value)}>
             <option value="">Select a race…</option>
+            {/* A round that has not been run has nothing to export, so
+                offering it is offering a dead end: the page answered with
+                "No lap data exported for round 20" only after the click.
+                The calendar already carries each round's date, so say it
+                in the option instead. Dates only — a Sunday race is still
+                a day or two from being ingested, and that case keeps the
+                empty state as its backstop rather than being promised
+                here. Same marker the Circuit Atlas puts on its rows. */}
             {season.data.calendar.map((r) => (
-              <option key={r.round} value={r.round}>
+              <option key={r.round} value={r.round} disabled={r.date > today}>
                 {String(r.round).padStart(2, '0')} · {r.raceName}
+                {r.date > today ? ' — not yet raced' : ''}
               </option>
             ))}
           </select>
@@ -495,7 +509,7 @@ export default function RaceStrategy() {
                       <td className="tabular">{d.stint}</td>
                       <td className="tabular">
                         {d.reliable && d.deg_rate_s_per_lap != null
-                          ? `${d.deg_rate_s_per_lap >= 0 ? '+' : ''}${d.deg_rate_s_per_lap.toFixed(3)}`
+                          ? formatRate(d.deg_rate_s_per_lap, { sign: true })
                           : '—'}
                       </td>
                       <td className="tabular">

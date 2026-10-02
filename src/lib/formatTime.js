@@ -70,3 +70,22 @@ export function formatDuration(seconds, { decimals = 1 } = {}) {
   }
   return `${negative ? '-' : ''}${hours}:${pad(carried, 2)}:${secondsText}`;
 }
+
+/**
+ * A fitted per-lap rate: tyre degradation, a fuel effect, a pace trend.
+ *
+ * Separate from formatDelta because toFixed keeps the sign of a value
+ * that rounds away, and these rates sit near zero: a degradation of
+ * -0.0004 s/lap printed as "-0.000s/lap", a minus sign in front of
+ * nothing, in the page's own one-line summary of what it fitted. Round
+ * to the shown precision first, so a rate too small to show reads as
+ * zero rather than as a negative zero.
+ */
+export function formatRate(seconds, { decimals = MILLIS_DP, sign = false } = {}) {
+  if (seconds == null || !Number.isFinite(seconds)) return '—';
+  const factor = 10 ** decimals;
+  const rounded = Math.round(seconds * factor) / factor;
+  // `=== 0` is true for -0, which is the whole point: drop the sign.
+  const value = rounded === 0 ? 0 : rounded;
+  return `${sign && value > 0 ? '+' : ''}${value.toFixed(decimals)}`;
+}

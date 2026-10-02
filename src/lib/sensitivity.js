@@ -1,4 +1,5 @@
 import { simulateRace } from './whatifModel.js';
+import { formatRate } from './formatTime.js';
 
 // Which of the fitted numbers the answer actually depends on.
 //
@@ -42,7 +43,7 @@ export function sensitivity(params) {
           : nominalRates(params)[i]));
     rows.push({
       label: `${compound} degradation`,
-      detail: `${spec.deg_rate_s_per_lap.toFixed(3)} ± ${ci.toFixed(3)} s/lap`,
+      detail: `${formatRate(spec.deg_rate_s_per_lap)} ± ${formatRate(ci)} s/lap`,
       low: totalWith(params, shift(-1), params.pit_loss_s) - base,
       high: totalWith(params, shift(1), params.pit_loss_s) - base,
     });

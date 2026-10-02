@@ -92,7 +92,13 @@ standings stay as plain JSON since they're small and diffable.
   `pipeline/ingest.py → derive.py → export.py` for rounds with new
   sessions. Runs validation (self-checks, budget checks) as a hard gate —
   it aborts the commit on any failure, since commits land directly on
-  `main` with no review step.
+  `main` with no review step. It then re-derives
+  `public/data/2026/aero.json` from the lines it just wrote and commits
+  that too: the file is produced by a Node script rather than by the
+  Python pipeline, and leaving it out is how the committed copy fell a
+  round behind every week — invisible on the published site, which
+  regenerates it, but wrong for `npm run dev` and red for the next pull
+  request to meet `ci.yml`'s currency gate.
 - `deploy.yml` — on push to `main`: build, test, deploy to Pages, with a
   concurrency group so overlapping runs cancel.
 - `ci.yml` — on `pull_request` + `workflow_dispatch`. Lint, the JS suite,

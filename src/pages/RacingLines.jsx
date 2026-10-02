@@ -324,6 +324,11 @@ export default function RacingLines() {
 
   const availableDrivers = manifest.status === 'ready' ? Object.keys(manifest.data.drivers) : [];
 
+  // Today, for the round picker below: a race still in the future has
+  // nothing exported, and the option says so rather than the page
+  // saying it after the click.
+  const today = new Date().toISOString().slice(0, 10);
+
   return (
     <>
       <div className="controls-row">
@@ -331,9 +336,12 @@ export default function RacingLines() {
           Round{' '}
           <select value={round} onChange={(e) => setRound(e.target.value)}>
             <option value="">—</option>
+            {/* See RaceStrategy: a round with no export is a dead end, and
+                the calendar's own date is enough to say so up front. */}
             {season.data.calendar.map((r) => (
-              <option key={r.round} value={r.round}>
+              <option key={r.round} value={r.round} disabled={r.date > today}>
                 {r.round} · {r.raceName}
+                {r.date > today ? ' — not yet raced' : ''}
               </option>
             ))}
           </select>
