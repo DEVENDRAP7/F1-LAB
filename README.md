@@ -227,6 +227,14 @@ Qvist_designs, [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/) —
 decimated and re-cut into this page's own parts, and the page says so
 where a reader will see it.
 
+Its colours are this project's, not the donor's and not any team's: each
+part is painted by what the project can say about it — teal where a real
+number backs it, graphite where only the geometry is known, red where
+nothing published gives this site a way to say anything. The legend
+under the chamber is the whole key.
+
+![The Aero Rig: the car painted by what is known about each part](docs/screenshots/car.png)
+
 ```
 npm run model:build      # donor -> segmented, decimated, Draco glTF
 npm run model:debug      # same, but every part a different colour
