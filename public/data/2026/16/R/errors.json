@@ -1,0 +1,3687 @@
+{
+  "drivers": {
+    "ALB": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALB",
+          "driverNumber": 23,
+          "lap": 39,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 23 (ALB) TIMED AT 17:46:23",
+          "date": "2026-10-04T09:46:23+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "ALB",
+          "driverNumber": 23,
+          "lap": 43,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 23 (ALB) TIMED AT 17:52:05",
+          "date": "2026-10-04T09:52:06+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "ALB",
+          "driverNumber": 23,
+          "lap": 7,
+          "lapTimeS": 115.151,
+          "baselineS": 103.908,
+          "estimatedLossS": 11.243,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALB",
+          "driverNumber": 23,
+          "lap": 8,
+          "lapTimeS": 115.402,
+          "baselineS": 103.908,
+          "estimatedLossS": 11.494,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALB",
+          "driverNumber": 23,
+          "lap": 13,
+          "lapTimeS": 112.281,
+          "baselineS": 103.908,
+          "estimatedLossS": 8.373,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALB",
+          "driverNumber": 23,
+          "lap": 14,
+          "lapTimeS": 109.321,
+          "baselineS": 103.908,
+          "estimatedLossS": 5.413,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALB",
+          "driverNumber": 23,
+          "lap": 15,
+          "lapTimeS": 107.106,
+          "baselineS": 103.908,
+          "estimatedLossS": 3.198,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "BEA": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "noted",
+          "driverCode": "BEA",
+          "driverNumber": 87,
+          "lap": 55,
+          "category": "Flag",
+          "flag": "BLACK AND WHITE",
+          "message": "BLACK AND WHITE FLAG FOR CAR 87 (BEA) - TRACK LIMITS",
+          "date": "2026-10-04T10:25:57+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "BEA",
+          "driverNumber": 87,
+          "lap": 7,
+          "lapTimeS": 118.308,
+          "baselineS": 103.248,
+          "estimatedLossS": 15.061,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BEA",
+          "driverNumber": 87,
+          "lap": 8,
+          "lapTimeS": 114.634,
+          "baselineS": 103.248,
+          "estimatedLossS": 11.386,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BEA",
+          "driverNumber": 87,
+          "lap": 13,
+          "lapTimeS": 106.765,
+          "baselineS": 103.248,
+          "estimatedLossS": 3.517,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BEA",
+          "driverNumber": 87,
+          "lap": 14,
+          "lapTimeS": 105.691,
+          "baselineS": 103.248,
+          "estimatedLossS": 2.444,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BEA",
+          "driverNumber": 87,
+          "lap": 42,
+          "lapTimeS": 112.062,
+          "baselineS": 103.248,
+          "estimatedLossS": 8.814,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BEA",
+          "driverNumber": 87,
+          "lap": 43,
+          "lapTimeS": 134.46,
+          "baselineS": 103.248,
+          "estimatedLossS": 31.213,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BEA",
+          "driverNumber": 87,
+          "lap": 44,
+          "lapTimeS": 134.647,
+          "baselineS": 103.248,
+          "estimatedLossS": 31.399,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "BOR": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 36,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 5 (BOR) TIMED AT 17:40:39",
+          "date": "2026-10-04T09:40:40+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 7,
+          "lapTimeS": 114.237,
+          "baselineS": 103.988,
+          "estimatedLossS": 10.249,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 8,
+          "lapTimeS": 115.228,
+          "baselineS": 103.988,
+          "estimatedLossS": 11.24,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 13,
+          "lapTimeS": 109.687,
+          "baselineS": 103.988,
+          "estimatedLossS": 5.699,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 14,
+          "lapTimeS": 107.565,
+          "baselineS": 103.988,
+          "estimatedLossS": 3.577,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 42,
+          "lapTimeS": 124.46,
+          "baselineS": 103.988,
+          "estimatedLossS": 20.472,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "BOR",
+          "driverNumber": 5,
+          "lap": 43,
+          "lapTimeS": 135.2,
+          "baselineS": 103.988,
+          "estimatedLossS": 31.212,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "GAS": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 39,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 10 (GAS) TIMED AT 17:45:59",
+          "date": "2026-10-04T09:45:59+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 7,
+          "lapTimeS": 118.18,
+          "baselineS": 103.3,
+          "estimatedLossS": 14.88,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 8,
+          "lapTimeS": 114.626,
+          "baselineS": 103.3,
+          "estimatedLossS": 11.326,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 13,
+          "lapTimeS": 106.611,
+          "baselineS": 103.3,
+          "estimatedLossS": 3.311,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 14,
+          "lapTimeS": 105.557,
+          "baselineS": 103.3,
+          "estimatedLossS": 2.257,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 42,
+          "lapTimeS": 114.915,
+          "baselineS": 103.3,
+          "estimatedLossS": 11.615,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 43,
+          "lapTimeS": 134.379,
+          "baselineS": 103.3,
+          "estimatedLossS": 31.079,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "GAS",
+          "driverNumber": 10,
+          "lap": 44,
+          "lapTimeS": 133.719,
+          "baselineS": 103.3,
+          "estimatedLossS": 30.419,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "PER": {
+      "recorded": [
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 23,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:17:46",
+          "date": "2026-10-04T09:17:47+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 26,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:23:41",
+          "date": "2026-10-04T09:23:41+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 32,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:33:05",
+          "date": "2026-10-04T09:33:06+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 35,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:39:21",
+          "date": "2026-10-04T09:39:22+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 35,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:40:02",
+          "date": "2026-10-04T09:40:03+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 38,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:43:55",
+          "date": "2026-10-04T09:43:55+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 38,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:44:09",
+          "date": "2026-10-04T09:44:09+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 40,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:48:22",
+          "date": "2026-10-04T09:48:22+00:00"
+        },
+        {
+          "kind": "recorded",
+          "nature": "informational",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 41,
+          "category": "Flag",
+          "flag": "BLUE",
+          "message": "WAVED BLUE FLAG FOR CAR 11 (PER) TIMED AT 17:48:57",
+          "date": "2026-10-04T09:48:58+00:00"
+        }
+      ],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 7,
+          "lapTimeS": 114.185,
+          "baselineS": 105.226,
+          "estimatedLossS": 8.959,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 8,
+          "lapTimeS": 115.195,
+          "baselineS": 105.226,
+          "estimatedLossS": 9.969,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 13,
+          "lapTimeS": 113.134,
+          "baselineS": 105.226,
+          "estimatedLossS": 7.908,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 14,
+          "lapTimeS": 108.64,
+          "baselineS": 105.226,
+          "estimatedLossS": 3.414,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 15,
+          "lapTimeS": 107.252,
+          "baselineS": 105.226,
+          "estimatedLossS": 2.026,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 25,
+          "lapTimeS": 107.596,
+          "baselineS": 105.226,
+          "estimatedLossS": 2.37,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 37,
+          "lapTimeS": 109.713,
+          "baselineS": 105.226,
+          "estimatedLossS": 4.487,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 41,
+          "lapTimeS": 107.507,
+          "baselineS": 105.226,
+          "estimatedLossS": 2.281,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 42,
+          "lapTimeS": 133.593,
+          "baselineS": 105.226,
+          "estimatedLossS": 28.367,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PER",
+          "driverNumber": 11,
+          "lap": 43,
+          "lapTimeS": 133.118,
+          "baselineS": 105.226,
+          "estimatedLossS": 27.892,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "ALO": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 7,
+          "lapTimeS": 116.846,
+          "baselineS": 103.313,
+          "estimatedLossS": 13.533,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 8,
+          "lapTimeS": 114.007,
+          "baselineS": 103.313,
+          "estimatedLossS": 10.694,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 13,
+          "lapTimeS": 111.557,
+          "baselineS": 103.313,
+          "estimatedLossS": 8.244,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 14,
+          "lapTimeS": 107.872,
+          "baselineS": 103.313,
+          "estimatedLossS": 4.559,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 15,
+          "lapTimeS": 106.619,
+          "baselineS": 103.313,
+          "estimatedLossS": 3.306,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 43,
+          "lapTimeS": 134.926,
+          "baselineS": 103.313,
+          "estimatedLossS": 31.613,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ALO",
+          "driverNumber": 14,
+          "lap": 44,
+          "lapTimeS": 134.607,
+          "baselineS": 103.313,
+          "estimatedLossS": 31.294,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "ANT": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "ANT",
+          "driverNumber": 12,
+          "lap": 7,
+          "lapTimeS": 112.884,
+          "baselineS": 101.607,
+          "estimatedLossS": 11.277,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ANT",
+          "driverNumber": 12,
+          "lap": 8,
+          "lapTimeS": 112.623,
+          "baselineS": 101.607,
+          "estimatedLossS": 11.016,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ANT",
+          "driverNumber": 12,
+          "lap": 13,
+          "lapTimeS": 106.383,
+          "baselineS": 101.607,
+          "estimatedLossS": 4.776,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ANT",
+          "driverNumber": 12,
+          "lap": 14,
+          "lapTimeS": 104.307,
+          "baselineS": 101.607,
+          "estimatedLossS": 2.7,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "ANT",
+          "driverNumber": 12,
+          "lap": 43,
+          "lapTimeS": 117.598,
+          "baselineS": 101.607,
+          "estimatedLossS": 15.991,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "COL": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "COL",
+          "driverNumber": 43,
+          "lap": 7,
+          "lapTimeS": 119.934,
+          "baselineS": 103.185,
+          "estimatedLossS": 16.749,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "COL",
+          "driverNumber": 43,
+          "lap": 8,
+          "lapTimeS": 118.605,
+          "baselineS": 103.185,
+          "estimatedLossS": 15.42,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "COL",
+          "driverNumber": 43,
+          "lap": 13,
+          "lapTimeS": 106.217,
+          "baselineS": 103.185,
+          "estimatedLossS": 3.032,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "COL",
+          "driverNumber": 43,
+          "lap": 14,
+          "lapTimeS": 105.777,
+          "baselineS": 103.185,
+          "estimatedLossS": 2.592,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "COL",
+          "driverNumber": 43,
+          "lap": 44,
+          "lapTimeS": 134.003,
+          "baselineS": 103.185,
+          "estimatedLossS": 30.818,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "HAD": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "HAD",
+          "driverNumber": 6,
+          "lap": 7,
+          "lapTimeS": 111.57,
+          "baselineS": 102.271,
+          "estimatedLossS": 9.299,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAD",
+          "driverNumber": 6,
+          "lap": 8,
+          "lapTimeS": 112.021,
+          "baselineS": 102.271,
+          "estimatedLossS": 9.75,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAD",
+          "driverNumber": 6,
+          "lap": 13,
+          "lapTimeS": 107.028,
+          "baselineS": 102.271,
+          "estimatedLossS": 4.757,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAD",
+          "driverNumber": 6,
+          "lap": 14,
+          "lapTimeS": 104.34,
+          "baselineS": 102.271,
+          "estimatedLossS": 2.069,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAD",
+          "driverNumber": 6,
+          "lap": 43,
+          "lapTimeS": 124.013,
+          "baselineS": 102.271,
+          "estimatedLossS": 21.742,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "HAM": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "HAM",
+          "driverNumber": 44,
+          "lap": 7,
+          "lapTimeS": 116.549,
+          "baselineS": 102.029,
+          "estimatedLossS": 14.52,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAM",
+          "driverNumber": 44,
+          "lap": 8,
+          "lapTimeS": 112.876,
+          "baselineS": 102.029,
+          "estimatedLossS": 10.847,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAM",
+          "driverNumber": 44,
+          "lap": 13,
+          "lapTimeS": 110.975,
+          "baselineS": 102.029,
+          "estimatedLossS": 8.946,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAM",
+          "driverNumber": 44,
+          "lap": 14,
+          "lapTimeS": 104.923,
+          "baselineS": 102.029,
+          "estimatedLossS": 2.894,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HAM",
+          "driverNumber": 44,
+          "lap": 15,
+          "lapTimeS": 104.598,
+          "baselineS": 102.029,
+          "estimatedLossS": 2.569,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "HUL": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "HUL",
+          "driverNumber": 27,
+          "lap": 7,
+          "lapTimeS": 114.101,
+          "baselineS": 103.799,
+          "estimatedLossS": 10.302,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HUL",
+          "driverNumber": 27,
+          "lap": 13,
+          "lapTimeS": 109.375,
+          "baselineS": 103.799,
+          "estimatedLossS": 5.576,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HUL",
+          "driverNumber": 27,
+          "lap": 14,
+          "lapTimeS": 106.611,
+          "baselineS": 103.799,
+          "estimatedLossS": 2.812,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HUL",
+          "driverNumber": 27,
+          "lap": 43,
+          "lapTimeS": 134.117,
+          "baselineS": 103.799,
+          "estimatedLossS": 30.318,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "HUL",
+          "driverNumber": 27,
+          "lap": 44,
+          "lapTimeS": 134.187,
+          "baselineS": 103.799,
+          "estimatedLossS": 30.388,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "LAW": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "LAW",
+          "driverNumber": 30,
+          "lap": 7,
+          "lapTimeS": 114.361,
+          "baselineS": 103.453,
+          "estimatedLossS": 10.908,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LAW",
+          "driverNumber": 30,
+          "lap": 8,
+          "lapTimeS": 114.122,
+          "baselineS": 103.453,
+          "estimatedLossS": 10.669,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LAW",
+          "driverNumber": 30,
+          "lap": 13,
+          "lapTimeS": 108.188,
+          "baselineS": 103.453,
+          "estimatedLossS": 4.735,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LAW",
+          "driverNumber": 30,
+          "lap": 14,
+          "lapTimeS": 105.742,
+          "baselineS": 103.453,
+          "estimatedLossS": 2.289,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LAW",
+          "driverNumber": 30,
+          "lap": 43,
+          "lapTimeS": 131.435,
+          "baselineS": 103.453,
+          "estimatedLossS": 27.982,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LAW",
+          "driverNumber": 30,
+          "lap": 44,
+          "lapTimeS": 135.005,
+          "baselineS": 103.453,
+          "estimatedLossS": 31.552,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "LEC": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "LEC",
+          "driverNumber": 16,
+          "lap": 7,
+          "lapTimeS": 111.829,
+          "baselineS": 101.899,
+          "estimatedLossS": 9.93,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LEC",
+          "driverNumber": 16,
+          "lap": 8,
+          "lapTimeS": 111.529,
+          "baselineS": 101.899,
+          "estimatedLossS": 9.63,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LEC",
+          "driverNumber": 16,
+          "lap": 13,
+          "lapTimeS": 111.392,
+          "baselineS": 101.899,
+          "estimatedLossS": 9.493,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LEC",
+          "driverNumber": 16,
+          "lap": 14,
+          "lapTimeS": 107.355,
+          "baselineS": 101.899,
+          "estimatedLossS": 5.456,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LEC",
+          "driverNumber": 16,
+          "lap": 15,
+          "lapTimeS": 104.926,
+          "baselineS": 101.899,
+          "estimatedLossS": 3.027,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LEC",
+          "driverNumber": 16,
+          "lap": 27,
+          "lapTimeS": 103.964,
+          "baselineS": 101.899,
+          "estimatedLossS": 2.065,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "LIN": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "LIN",
+          "driverNumber": 41,
+          "lap": 7,
+          "lapTimeS": 113.467,
+          "baselineS": 103.482,
+          "estimatedLossS": 9.985,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LIN",
+          "driverNumber": 41,
+          "lap": 8,
+          "lapTimeS": 113.845,
+          "baselineS": 103.482,
+          "estimatedLossS": 10.363,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LIN",
+          "driverNumber": 41,
+          "lap": 13,
+          "lapTimeS": 109.377,
+          "baselineS": 103.482,
+          "estimatedLossS": 5.895,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LIN",
+          "driverNumber": 41,
+          "lap": 14,
+          "lapTimeS": 106.891,
+          "baselineS": 103.482,
+          "estimatedLossS": 3.409,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LIN",
+          "driverNumber": 41,
+          "lap": 24,
+          "lapTimeS": 105.566,
+          "baselineS": 103.482,
+          "estimatedLossS": 2.084,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "LIN",
+          "driverNumber": 41,
+          "lap": 42,
+          "lapTimeS": 107.255,
+          "baselineS": 103.482,
+          "estimatedLossS": 3.773,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "NOR": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "NOR",
+          "driverNumber": 1,
+          "lap": 7,
+          "lapTimeS": 115.255,
+          "baselineS": 103.077,
+          "estimatedLossS": 12.178,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "NOR",
+          "driverNumber": 1,
+          "lap": 8,
+          "lapTimeS": 112.056,
+          "baselineS": 103.077,
+          "estimatedLossS": 8.979,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "NOR",
+          "driverNumber": 1,
+          "lap": 13,
+          "lapTimeS": 110.825,
+          "baselineS": 103.077,
+          "estimatedLossS": 7.748,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "NOR",
+          "driverNumber": 1,
+          "lap": 14,
+          "lapTimeS": 106.871,
+          "baselineS": 103.077,
+          "estimatedLossS": 3.794,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "NOR",
+          "driverNumber": 1,
+          "lap": 43,
+          "lapTimeS": 129.662,
+          "baselineS": 103.077,
+          "estimatedLossS": 26.585,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "NOR",
+          "driverNumber": 1,
+          "lap": 44,
+          "lapTimeS": 135.183,
+          "baselineS": 103.077,
+          "estimatedLossS": 32.106,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "OCO": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 7,
+          "lapTimeS": 112.638,
+          "baselineS": 103.762,
+          "estimatedLossS": 8.876,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 8,
+          "lapTimeS": 113.48,
+          "baselineS": 103.762,
+          "estimatedLossS": 9.718,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 13,
+          "lapTimeS": 109.171,
+          "baselineS": 103.762,
+          "estimatedLossS": 5.409,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 14,
+          "lapTimeS": 105.948,
+          "baselineS": 103.762,
+          "estimatedLossS": 2.186,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 43,
+          "lapTimeS": 133.589,
+          "baselineS": 103.762,
+          "estimatedLossS": 29.827,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "OCO",
+          "driverNumber": 31,
+          "lap": 44,
+          "lapTimeS": 133.851,
+          "baselineS": 103.762,
+          "estimatedLossS": 30.089,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "PIA": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "PIA",
+          "driverNumber": 81,
+          "lap": 7,
+          "lapTimeS": 114.678,
+          "baselineS": 103.163,
+          "estimatedLossS": 11.515,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PIA",
+          "driverNumber": 81,
+          "lap": 8,
+          "lapTimeS": 115.676,
+          "baselineS": 103.163,
+          "estimatedLossS": 12.513,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PIA",
+          "driverNumber": 81,
+          "lap": 13,
+          "lapTimeS": 110.126,
+          "baselineS": 103.163,
+          "estimatedLossS": 6.963,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PIA",
+          "driverNumber": 81,
+          "lap": 14,
+          "lapTimeS": 106.568,
+          "baselineS": 103.163,
+          "estimatedLossS": 3.405,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PIA",
+          "driverNumber": 81,
+          "lap": 43,
+          "lapTimeS": 128.431,
+          "baselineS": 103.163,
+          "estimatedLossS": 25.268,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "PIA",
+          "driverNumber": 81,
+          "lap": 44,
+          "lapTimeS": 133.478,
+          "baselineS": 103.163,
+          "estimatedLossS": 30.315,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "RUS": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "RUS",
+          "driverNumber": 63,
+          "lap": 7,
+          "lapTimeS": 112.409,
+          "baselineS": 102.335,
+          "estimatedLossS": 10.074,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "RUS",
+          "driverNumber": 63,
+          "lap": 8,
+          "lapTimeS": 112.623,
+          "baselineS": 102.335,
+          "estimatedLossS": 10.288,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "RUS",
+          "driverNumber": 63,
+          "lap": 13,
+          "lapTimeS": 105.423,
+          "baselineS": 102.335,
+          "estimatedLossS": 3.088,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "RUS",
+          "driverNumber": 63,
+          "lap": 43,
+          "lapTimeS": 118.639,
+          "baselineS": 102.335,
+          "estimatedLossS": 16.304,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "SAI": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "SAI",
+          "driverNumber": 55,
+          "lap": 7,
+          "lapTimeS": 113.897,
+          "baselineS": 103.929,
+          "estimatedLossS": 9.968,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "SAI",
+          "driverNumber": 55,
+          "lap": 8,
+          "lapTimeS": 114.387,
+          "baselineS": 103.929,
+          "estimatedLossS": 10.458,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "SAI",
+          "driverNumber": 55,
+          "lap": 13,
+          "lapTimeS": 121.556,
+          "baselineS": 103.929,
+          "estimatedLossS": 17.627,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "SAI",
+          "driverNumber": 55,
+          "lap": 14,
+          "lapTimeS": 106.25,
+          "baselineS": 103.929,
+          "estimatedLossS": 2.321,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "SAI",
+          "driverNumber": 55,
+          "lap": 44,
+          "lapTimeS": 135.217,
+          "baselineS": 103.929,
+          "estimatedLossS": 31.288,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "STR": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 7,
+          "lapTimeS": 113.085,
+          "baselineS": 103.539,
+          "estimatedLossS": 9.546,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 8,
+          "lapTimeS": 113.819,
+          "baselineS": 103.539,
+          "estimatedLossS": 10.28,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 13,
+          "lapTimeS": 112.088,
+          "baselineS": 103.539,
+          "estimatedLossS": 8.549,
+          "severity": "moderate",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 14,
+          "lapTimeS": 107.897,
+          "baselineS": 103.539,
+          "estimatedLossS": 4.358,
+          "severity": "moderate",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 15,
+          "lapTimeS": 105.676,
+          "baselineS": 103.539,
+          "estimatedLossS": 2.137,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+              "sector": 11
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 10",
+              "sector": 10
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "STR",
+          "driverNumber": 18,
+          "lap": 42,
+          "lapTimeS": 107.171,
+          "baselineS": 103.539,
+          "estimatedLossS": 3.632,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    },
+    "VER": {
+      "recorded": [],
+      "flagged": [
+        {
+          "kind": "flagged",
+          "driverCode": "VER",
+          "driverNumber": 3,
+          "lap": 7,
+          "lapTimeS": 111.456,
+          "baselineS": 101.231,
+          "estimatedLossS": 10.225,
+          "severity": "major",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "VER",
+          "driverNumber": 3,
+          "lap": 8,
+          "lapTimeS": 111.887,
+          "baselineS": 101.231,
+          "estimatedLossS": 10.656,
+          "severity": "major",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 17",
+              "sector": 17
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+              "sector": 18
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "VER",
+          "driverNumber": 3,
+          "lap": 13,
+          "lapTimeS": 104.849,
+          "baselineS": 101.231,
+          "estimatedLossS": 3.618,
+          "severity": "minor",
+          "trackFlags": [
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            },
+            {
+              "flag": "DOUBLE YELLOW",
+              "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+              "sector": 4
+            },
+            {
+              "flag": "YELLOW",
+              "message": "YELLOW IN TRACK SECTOR 3",
+              "sector": 3
+            }
+          ],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        },
+        {
+          "kind": "flagged",
+          "driverCode": "VER",
+          "driverNumber": 3,
+          "lap": 14,
+          "lapTimeS": 103.456,
+          "baselineS": 101.231,
+          "estimatedLossS": 2.225,
+          "severity": "minor",
+          "trackFlags": [],
+          "basis": "slower than this driver's own median green-flag lap in this race; the cause is not identified and may be traffic, conditions or a team instruction rather than a driver error"
+        }
+      ]
+    }
+  },
+  "neutralisedLaps": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    9,
+    10,
+    11,
+    12,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
+  ],
+  "trackFlagLaps": {
+    "1": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 7",
+        "sector": 7
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 6",
+        "sector": 6
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 1",
+        "sector": 1
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 5",
+        "sector": 5
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 7",
+        "sector": 7
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 19",
+        "sector": 19
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 6",
+        "sector": 6
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 18",
+        "sector": 18
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 17",
+        "sector": 17
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 9",
+        "sector": 9
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 8",
+        "sector": 8
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 6",
+        "sector": 6
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 5",
+        "sector": 5
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 17",
+        "sector": 17
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 16",
+        "sector": 16
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 16",
+        "sector": 16
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 19",
+        "sector": 19
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 15",
+        "sector": 15
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 18",
+        "sector": 18
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 7",
+        "sector": 7
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 15",
+        "sector": 15
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+        "sector": 18
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 17",
+        "sector": 17
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 18",
+        "sector": 18
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 1",
+        "sector": 1
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 7",
+        "sector": 7
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 17",
+        "sector": 17
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 17",
+        "sector": 17
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 15",
+        "sector": 15
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 10",
+        "sector": 10
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 16",
+        "sector": 16
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 16",
+        "sector": 16
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 16",
+        "sector": 16
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+        "sector": 18
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 17",
+        "sector": 17
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 18",
+        "sector": 18
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 9",
+        "sector": 9
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 8",
+        "sector": 8
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 5",
+        "sector": 5
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 16",
+        "sector": 16
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 10",
+        "sector": 10
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      }
+    ],
+    "2": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 12",
+        "sector": 12
+      }
+    ],
+    "6": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 5",
+        "sector": 5
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      }
+    ],
+    "8": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+        "sector": 18
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 17",
+        "sector": 17
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 18",
+        "sector": 18
+      }
+    ],
+    "9": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 15",
+        "sector": 15
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      }
+    ],
+    "10": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 15",
+        "sector": 15
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 14",
+        "sector": 14
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 13",
+        "sector": 13
+      }
+    ],
+    "11": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 10",
+        "sector": 10
+      }
+    ],
+    "13": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      }
+    ],
+    "15": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 11",
+        "sector": 11
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 10",
+        "sector": 10
+      }
+    ],
+    "43": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 4",
+        "sector": 4
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      }
+    ],
+    "46": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 10",
+        "sector": 10
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 9",
+        "sector": 9
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 9",
+        "sector": 9
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 8",
+        "sector": 8
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 9",
+        "sector": 9
+      }
+    ],
+    "47": [
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 9",
+        "sector": 9
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 9",
+        "sector": 9
+      }
+    ],
+    "50": [
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 1",
+        "sector": 1
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 3",
+        "sector": 3
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      },
+      {
+        "flag": "DOUBLE YELLOW",
+        "message": "DOUBLE YELLOW IN TRACK SECTOR 2",
+        "sector": 2
+      },
+      {
+        "flag": "YELLOW",
+        "message": "YELLOW IN TRACK SECTOR 1",
+        "sector": 1
+      }
+    ]
+  },
+  "thresholds": {
+    "slowLapS": 2.0,
+    "severityBands": [
+      {
+        "atLeastS": 10.0,
+        "label": "major"
+      },
+      {
+        "atLeastS": 4.0,
+        "label": "moderate"
+      },
+      {
+        "atLeastS": 2.0,
+        "label": "minor"
+      }
+    ]
+  },
+  "limitations": [
+    "Recorded events are race-control messages, reported verbatim and attributed by the published car number rather than by reading the message text.",
+    "Blue flags are marked informational: they tell a driver a faster car is approaching and say nothing about that driver's own conduct.",
+    "Lap 1 is never flagged. It starts from a standstill, so it is slower than a flying lap for every driver, and flagging it would mark a normal race start as an event for the whole field.",
+    "Pit in-laps and out-laps are excluded. The source flags out-laps; an in-lap is identified as the lap before one, since it carries the pit entry and would otherwise show every stop in the race as a flag against the driver.",
+    "A flagged lap is a deviation from this driver's own green-flag median in this race, not a diagnosed mistake: traffic, conditions and pit-wall instructions produce the same signature as an error.",
+    "A flagged lap shows any flag race control published about the track on that lap. A yellow is a published reason for a slow lap that has nothing to do with the driver, and it was in the same feed all along \u2014 it simply carries no car number, so it never reached the attributed list.",
+    "Laps run under a safety car or red flag are excluded using the published track-status messages, so they are excluded because they were neutralised rather than because they looked slow.",
+    "No lock-up, off-track or mid-corner-correction detection. Those need per-lap telemetry for every driver, which this pipeline does not fetch, and at the sampling rate available the detections would be too weak to attach to a named driver."
+  ],
+  "schemaVersion": 6,
+  "year": 2026,
+  "round": 16,
+  "raceName": "Bahrain Grand Prix in Malaysia",
+  "generated_at": "2026-10-06T12:29:30Z",
+  "source": "OpenF1 session 11731: race control messages + lap times"
+}

@@ -4,8 +4,8 @@
     {
       "module": "What-If Engine",
       "rule": "A counterfactual is offered only where replaying the real strategy reproduces the real race time within 1%.",
-      "published": 101,
-      "refused": 15,
+      "published": 108,
+      "refused": 23,
       "entries": [
         {
           "scope": "Round 1 \u00b7 Australian Grand Prix",
@@ -40,6 +40,38 @@
           "reason": "replaying their real strategy missed their real race time by 1.26%, over the 1% bar"
         },
         {
+          "scope": "Round 16 \u00b7 antonelli",
+          "reason": "replaying their real strategy missed their real race time by 1.06%, over the 1% bar"
+        },
+        {
+          "scope": "Round 16 \u00b7 arvid_lindblad",
+          "reason": "replaying their real strategy missed their real race time by 1.06%, over the 1% bar"
+        },
+        {
+          "scope": "Round 16 \u00b7 gasly",
+          "reason": "replaying their real strategy missed their real race time by 1.14%, over the 1% bar"
+        },
+        {
+          "scope": "Round 16 \u00b7 hadjar",
+          "reason": "replaying their real strategy missed their real race time by 1.10%, over the 1% bar"
+        },
+        {
+          "scope": "Round 16 \u00b7 hamilton",
+          "reason": "replaying their real strategy missed their real race time by 1.17%, over the 1% bar"
+        },
+        {
+          "scope": "Round 16 \u00b7 max_verstappen",
+          "reason": "replaying their real strategy missed their real race time by 1.27%, over the 1% bar"
+        },
+        {
+          "scope": "Round 16 \u00b7 perez",
+          "reason": "replaying their real strategy missed their real race time by 1.76%, over the 1% bar"
+        },
+        {
+          "scope": "Round 16 \u00b7 sainz",
+          "reason": "replaying their real strategy missed their real race time by 1.27%, over the 1% bar"
+        },
+        {
           "scope": "Round 2 \u00b7 hadjar",
           "reason": "replaying their real strategy missed their real race time by 1.17%, over the 1% bar"
         },
@@ -72,7 +104,7 @@
     {
       "module": "Racing Lines",
       "rule": "A line is published only where the position feed carries a lap that can be drawn. A session it does not gets a written refusal, not an empty page.",
-      "published": 112,
+      "published": 120,
       "refused": 2,
       "entries": [
         {
@@ -104,8 +136,8 @@
     {
       "module": "Tyre compounds",
       "rule": "A stint takes a compound only where the stint feed matches it by driver and lap overlap. A wrong compound colour is worse than none.",
-      "published": 880,
-      "refused": 30,
+      "published": 971,
+      "refused": 34,
       "entries": [
         {
           "scope": "Round 1 \u00b7 Australian Grand Prix",
@@ -114,6 +146,10 @@
         {
           "scope": "Round 11 \u00b7 Hungarian Grand Prix",
           "reason": "1 stint(s) kept no compound: no confident match in the stint feed"
+        },
+        {
+          "scope": "Round 16 \u00b7 Bahrain Grand Prix in Malaysia",
+          "reason": "4 stint(s) kept no compound: no confident match in the stint feed"
         },
         {
           "scope": "Round 5 \u00b7 Canadian Grand Prix",
@@ -132,15 +168,15 @@
     {
       "module": "Degradation fits",
       "rule": "A fit is published as a trend only with enough laps behind it and enough explanatory power. Below that it ships with the reason it failed rather than as a confident slope.",
-      "published": 450,
-      "refused": 331,
+      "published": 510,
+      "refused": 358,
       "entries": [
         {
-          "scope": "254 fit(s)",
+          "scope": "259 fit(s)",
           "reason": "lap-to-lap scatter dominates the trend"
         },
         {
-          "scope": "77 fit(s)",
+          "scope": "99 fit(s)",
           "reason": "too few usable laps"
         }
       ]
@@ -148,7 +184,7 @@
     {
       "module": "Pit loss",
       "rule": "A pit loss becomes a circuit constant only where enough drivers had a measurable racing stop and their figures agree.",
-      "published": 4,
+      "published": 5,
       "refused": 11,
       "entries": [
         {
@@ -201,16 +237,16 @@
       "module": "DRS zones",
       "rule": "A zone is drawn on a track only where a source says what the car's DRS channel means. No source does.",
       "published": 0,
-      "refused": 15,
+      "refused": 16,
       "entries": [
         {
-          "scope": "every circuit (15)",
+          "scope": "every circuit (16)",
           "reason": "the feed carries a DRS integer per sample, but no public source maps those codes to flap open or closed with enough confidence to draw a zone on a track \u2014 FastF1 car_data docstring (checked against master, 2026-09-11): codes 0-14, 2 and 3 documented as '(?)', 10, 12 and 14 each as 'On (Unknown Distinction)', annotated '(Odd DRS is Disabled, Even DRS is Enabled?) (More Research Needed?)'"
         }
       ]
     }
   ],
-  "totalRefused": 406,
+  "totalRefused": 446,
   "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion.",
-  "generated_at": "2026-09-29T12:01:49Z"
+  "generated_at": "2026-10-06T12:38:46Z"
 }

@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-09-29T12:01:49Z",
+  "generated_at": "2026-10-06T12:38:46Z",
   "next": {
-    "round": 16,
-    "raceName": "Bahrain Grand Prix in Malaysia",
-    "circuitName": "Sepang International Circuit",
-    "circuitId": "sepang",
-    "date": "2026-10-04",
-    "sprint": false,
-    "lat": 2.76083,
-    "long": 101.738
+    "round": 17,
+    "raceName": "Singapore Grand Prix",
+    "circuitName": "Marina Bay Street Circuit",
+    "circuitId": "marina_bay",
+    "date": "2026-10-11",
+    "sprint": true,
+    "lat": 1.2914,
+    "long": 103.864
   },
   "historyYearsRequested": [
     2025,
@@ -17,29 +17,63 @@
     2022
   ],
   "history": {
-    "editions": 0,
-    "years": [],
-    "perEdition": [],
+    "editions": 4,
+    "years": [
+      2025,
+      2024,
+      2023,
+      2022
+    ],
+    "perEdition": [
+      {
+        "year": 2025,
+        "starters": 20,
+        "classified": 20,
+        "winnerGrid": 1,
+        "medianStops": 1.0
+      },
+      {
+        "year": 2024,
+        "starters": 20,
+        "classified": 19,
+        "winnerGrid": 1,
+        "medianStops": 1.0
+      },
+      {
+        "year": 2023,
+        "starters": 19,
+        "classified": 16,
+        "winnerGrid": 1,
+        "medianStops": 1.0
+      },
+      {
+        "year": 2022,
+        "starters": 20,
+        "classified": 14,
+        "winnerGrid": 2,
+        "medianStops": 1.0
+      }
+    ],
     "finishRate": {
-      "classified": 0,
-      "starters": 0,
-      "share": null
+      "classified": 69,
+      "starters": 79,
+      "share": 0.8734177215189873
     },
     "positionChange": {
-      "medianPlaces": null,
-      "n": 0,
+      "medianPlaces": 3.0,
+      "n": 68,
       "note": "Absolute difference between grid slot and finishing position, classified finishers only. Pit-lane starts (grid 0) are excluded."
     },
     "winnerGrid": {
-      "median": null,
-      "best": null,
-      "worst": null,
-      "n": 0
+      "median": 1.0,
+      "best": 1,
+      "worst": 2,
+      "n": 4
     },
     "stops": {
-      "medianPerDriver": null,
-      "n": 0,
-      "editionsWithData": 0
+      "medianPerDriver": 1.0,
+      "n": 73,
+      "editionsWithData": 4
     },
     "unavailable": {
       "safetyCar": "No safety-car or track-status channel is published by this source, so neutralisation frequency cannot be counted.",
