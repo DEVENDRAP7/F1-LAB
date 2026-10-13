@@ -4,7 +4,7 @@
     {
       "module": "What-If Engine",
       "rule": "A counterfactual is offered only where replaying the real strategy reproduces the real race time within 1%.",
-      "published": 108,
+      "published": 118,
       "refused": 23,
       "entries": [
         {
@@ -104,7 +104,7 @@
     {
       "module": "Racing Lines",
       "rule": "A line is published only where the position feed carries a lap that can be drawn. A session it does not gets a written refusal, not an empty page.",
-      "published": 120,
+      "published": 128,
       "refused": 2,
       "entries": [
         {
@@ -136,7 +136,7 @@
     {
       "module": "Tyre compounds",
       "rule": "A stint takes a compound only where the stint feed matches it by driver and lap overlap. A wrong compound colour is worse than none.",
-      "published": 971,
+      "published": 1018,
       "refused": 34,
       "entries": [
         {
@@ -168,15 +168,15 @@
     {
       "module": "Degradation fits",
       "rule": "A fit is published as a trend only with enough laps behind it and enough explanatory power. Below that it ships with the reason it failed rather than as a confident slope.",
-      "published": 510,
-      "refused": 358,
+      "published": 526,
+      "refused": 389,
       "entries": [
         {
-          "scope": "259 fit(s)",
+          "scope": "288 fit(s)",
           "reason": "lap-to-lap scatter dominates the trend"
         },
         {
-          "scope": "99 fit(s)",
+          "scope": "101 fit(s)",
           "reason": "too few usable laps"
         }
       ]
@@ -184,7 +184,7 @@
     {
       "module": "Pit loss",
       "rule": "A pit loss becomes a circuit constant only where enough drivers had a measurable racing stop and their figures agree.",
-      "published": 5,
+      "published": 6,
       "refused": 11,
       "entries": [
         {
@@ -237,16 +237,16 @@
       "module": "DRS zones",
       "rule": "A zone is drawn on a track only where a source says what the car's DRS channel means. No source does.",
       "published": 0,
-      "refused": 16,
+      "refused": 17,
       "entries": [
         {
-          "scope": "every circuit (16)",
+          "scope": "every circuit (17)",
           "reason": "the feed carries a DRS integer per sample, but no public source maps those codes to flap open or closed with enough confidence to draw a zone on a track \u2014 FastF1 car_data docstring (checked against master, 2026-09-11): codes 0-14, 2 and 3 documented as '(?)', 10, 12 and 14 each as 'On (Unknown Distinction)', annotated '(Odd DRS is Disabled, Even DRS is Enabled?) (More Research Needed?)'"
         }
       ]
     }
   ],
-  "totalRefused": 446,
+  "totalRefused": 478,
   "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion.",
-  "generated_at": "2026-10-06T12:38:46Z"
+  "generated_at": "2026-10-13T13:25:53Z"
 }

@@ -4,7 +4,7 @@
       "driverCode": "ANT",
       "driverName": "Andrea Kimi Antonelli",
       "team": "Mercedes",
-      "points": 320.0,
+      "points": 340.0,
       "wins": 8,
       "position": 1
     },
@@ -12,7 +12,7 @@
       "driverCode": "RUS",
       "driverName": "George Russell",
       "team": "Mercedes",
-      "points": 236.0,
+      "points": 238.0,
       "wins": 3,
       "position": 2
     },
@@ -20,39 +20,39 @@
       "driverCode": "HAM",
       "driverName": "Lewis Hamilton",
       "team": "Ferrari",
-      "points": 214.0,
+      "points": 229.0,
       "wins": 1,
       "position": 3
-    },
-    {
-      "driverCode": "LEC",
-      "driverName": "Charles Leclerc",
-      "team": "Ferrari",
-      "points": 191.0,
-      "wins": 1,
-      "position": 4
-    },
-    {
-      "driverCode": "NOR",
-      "driverName": "Lando Norris",
-      "team": "McLaren",
-      "points": 188.0,
-      "wins": 2,
-      "position": 5
     },
     {
       "driverCode": "VER",
       "driverName": "Max Verstappen",
       "team": "Red Bull",
-      "points": 188.0,
+      "points": 221.0,
+      "wins": 2,
+      "position": 4
+    },
+    {
+      "driverCode": "LEC",
+      "driverName": "Charles Leclerc",
+      "team": "Ferrari",
+      "points": 215.0,
       "wins": 1,
+      "position": 5
+    },
+    {
+      "driverCode": "NOR",
+      "driverName": "Lando Norris",
+      "team": "McLaren",
+      "points": 201.0,
+      "wins": 2,
       "position": 6
     },
     {
       "driverCode": "PIA",
       "driverName": "Oscar Piastri",
       "team": "McLaren",
-      "points": 128.0,
+      "points": 138.0,
       "wins": 0,
       "position": 7
     },
@@ -60,7 +60,7 @@
       "driverCode": "HAD",
       "driverName": "Isack Hadjar",
       "team": "Red Bull",
-      "points": 96.0,
+      "points": 97.0,
       "wins": 0,
       "position": 8
     },
@@ -68,7 +68,7 @@
       "driverCode": "LAW",
       "driverName": "Liam Lawson",
       "team": "RB F1 Team",
-      "points": 65.0,
+      "points": 75.0,
       "wins": 0,
       "position": 9
     },
@@ -100,23 +100,23 @@
       "driverCode": "BEA",
       "driverName": "Oliver Bearman",
       "team": "Haas F1 Team",
-      "points": 20.0,
+      "points": 23.0,
       "wins": 0,
       "position": 13
+    },
+    {
+      "driverCode": "HUL",
+      "driverName": "Nico H\u00fclkenberg",
+      "team": "Audi",
+      "points": 13.0,
+      "wins": 0,
+      "position": 14
     },
     {
       "driverCode": "BOR",
       "driverName": "Gabriel Bortoleto",
       "team": "Audi",
       "points": 10.0,
-      "wins": 0,
-      "position": 14
-    },
-    {
-      "driverCode": "HUL",
-      "driverName": "Nico H\u00fclkenberg",
-      "team": "Audi",
-      "points": 7.0,
       "wins": 0,
       "position": 15
     },
@@ -185,7 +185,7 @@
       "position": 23
     }
   ],
-  "generated_at": "2026-10-06T12:38:39Z",
+  "generated_at": "2026-10-13T13:25:41Z",
   "source_check": {
     "mismatch": false,
     "details": []
@@ -643,103 +643,132 @@
         "BOT": 0.0,
         "PER": 0.0
       }
+    },
+    {
+      "round": 17,
+      "raceName": "Singapore Grand Prix",
+      "points": {
+        "ANT": 340.0,
+        "RUS": 238.0,
+        "HAM": 229.0,
+        "VER": 221.0,
+        "LEC": 215.0,
+        "NOR": 201.0,
+        "PIA": 138.0,
+        "HAD": 97.0,
+        "LAW": 75.0,
+        "GAS": 41.0,
+        "LIN": 38.0,
+        "COL": 27.0,
+        "BEA": 23.0,
+        "HUL": 13.0,
+        "BOR": 10.0,
+        "OCO": 7.0,
+        "ALO": 7.0,
+        "SAI": 7.0,
+        "ALB": 5.0,
+        "TSU": 1.0,
+        "STR": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0
+      }
     }
   ],
   "elimination": {
-    "remainingRounds": 7,
-    "remainingMaxPoints": 183,
-    "leaderPoints": 320.0,
+    "remainingRounds": 6,
+    "remainingMaxPoints": 150,
+    "leaderPoints": 340.0,
     "drivers": {
       "ANT": {
-        "maxPossible": 503.0,
+        "maxPossible": 490.0,
         "eliminated": false
       },
       "RUS": {
-        "maxPossible": 419.0,
+        "maxPossible": 388.0,
         "eliminated": false
       },
       "HAM": {
-        "maxPossible": 397.0,
-        "eliminated": false
-      },
-      "LEC": {
-        "maxPossible": 374.0,
-        "eliminated": false
-      },
-      "NOR": {
-        "maxPossible": 371.0,
+        "maxPossible": 379.0,
         "eliminated": false
       },
       "VER": {
         "maxPossible": 371.0,
         "eliminated": false
       },
+      "LEC": {
+        "maxPossible": 365.0,
+        "eliminated": false
+      },
+      "NOR": {
+        "maxPossible": 351.0,
+        "eliminated": false
+      },
       "PIA": {
-        "maxPossible": 311.0,
+        "maxPossible": 288.0,
         "eliminated": true
       },
       "HAD": {
-        "maxPossible": 279.0,
+        "maxPossible": 247.0,
         "eliminated": true
       },
       "LAW": {
-        "maxPossible": 248.0,
+        "maxPossible": 225.0,
         "eliminated": true
       },
       "GAS": {
-        "maxPossible": 224.0,
+        "maxPossible": 191.0,
         "eliminated": true
       },
       "LIN": {
-        "maxPossible": 221.0,
-        "eliminated": true
-      },
-      "COL": {
-        "maxPossible": 210.0,
-        "eliminated": true
-      },
-      "BEA": {
-        "maxPossible": 203.0,
-        "eliminated": true
-      },
-      "BOR": {
-        "maxPossible": 193.0,
-        "eliminated": true
-      },
-      "HUL": {
-        "maxPossible": 190.0,
-        "eliminated": true
-      },
-      "OCO": {
-        "maxPossible": 190.0,
-        "eliminated": true
-      },
-      "ALO": {
-        "maxPossible": 190.0,
-        "eliminated": true
-      },
-      "SAI": {
-        "maxPossible": 190.0,
-        "eliminated": true
-      },
-      "ALB": {
         "maxPossible": 188.0,
         "eliminated": true
       },
+      "COL": {
+        "maxPossible": 177.0,
+        "eliminated": true
+      },
+      "BEA": {
+        "maxPossible": 173.0,
+        "eliminated": true
+      },
+      "HUL": {
+        "maxPossible": 163.0,
+        "eliminated": true
+      },
+      "BOR": {
+        "maxPossible": 160.0,
+        "eliminated": true
+      },
+      "OCO": {
+        "maxPossible": 157.0,
+        "eliminated": true
+      },
+      "ALO": {
+        "maxPossible": 157.0,
+        "eliminated": true
+      },
+      "SAI": {
+        "maxPossible": 157.0,
+        "eliminated": true
+      },
+      "ALB": {
+        "maxPossible": 155.0,
+        "eliminated": true
+      },
       "TSU": {
-        "maxPossible": 184.0,
+        "maxPossible": 151.0,
         "eliminated": true
       },
       "STR": {
-        "maxPossible": 183.0,
+        "maxPossible": 150.0,
         "eliminated": true
       },
       "BOT": {
-        "maxPossible": 183.0,
+        "maxPossible": 150.0,
         "eliminated": true
       },
       "PER": {
-        "maxPossible": 183.0,
+        "maxPossible": 150.0,
         "eliminated": true
       }
     }
