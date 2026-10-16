@@ -2691,16 +2691,27 @@ tbody tr.is-on {
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%);
 }
 
+/* The swatches now show the verdict steps a SELECTED part lights up in,
+   not the car's paint — the car is one colour. These are the same steps
+   the readout's badge uses, which is the point: the strip and the badge
+   have to agree. */
 .rig-key-swatch.is-m {
-  background: var(--rig-measured);
+  background: var(--verdict-measured);
 }
 
 .rig-key-swatch.is-s {
-  background: var(--rig-schematic);
+  background: var(--verdict-schematic);
 }
 
 .rig-key-swatch.is-r {
-  background: var(--rig-refused);
+  background: var(--verdict-refused);
+}
+
+/* Reads as a sentence rather than a fourth swatch, so the strip says
+   what the three colours are for instead of leaving it implied. */
+.rig-key-lead {
+  color: var(--ink-2);
+  letter-spacing: 0.06em;
 }
 
 @media (max-width: 640px) {

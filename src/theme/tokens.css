@@ -195,69 +195,48 @@
    * 4.5:1 that size of type needs: measured is 7.13:1 on the dark
    * surface and, re-stepped below, 6.46:1 on the light one.
    *
-   * THE CAR sits in the rig's own chamber, which the scene paints dark
-   * in BOTH themes — so those steps are defined once and deliberately do
-   * not follow the page, because the surface they are read against is
-   * the chamber and not the document.
+   * THE CAR is painted in one colour, and the verdict is shown by
+   * SELECTING a part rather than by the paint. It used to be the other
+   * way round — three base colours, one per verdict, so the car showed
+   * at a glance how little of it was measured — and this is a
+   * deliberate trade: the owner wanted the car red, and a car that is
+   * one colour cannot also be three. Nothing was dropped from what the
+   * page can tell a reader, but one thing moved: the verdict is now in
+   * the readout, the badge and the lit part, and no longer in the paint.
+   * The legend under the chamber was rewritten to match, because a key
+   * that explains a colour the car no longer wears is worse than no key.
    *
-   * The car's steps also hold each part's own lightness and vary only in
-   * hue. Lightness on a shaded 3D surface is already spoken for by the
-   * lighting — the same panel is light where it faces the key and dark
-   * where it turns away — so it cannot also carry a category, whereas
-   * hue survives being lit from any angle.
+   * The red is OKLCH L 0.62 C 0.225 h 29 — near the top of what this
+   * hue reaches in sRGB at that lightness. It was picked by rendering
+   * the rig headless rather than from a swatch, because the rig puts
+   * about 2.4 units of directional light and an image-based environment
+   * through ACES filmic tone mapping at 0.95 exposure, and ACES pulls
+   * mid-tones down and desaturates: a value that looks right as a
+   * swatch renders dull, which is how this car once shipped 29 dE76
+   * from its own near-black chamber and hard to find at all. At this
+   * value it is 100 dE76 from the chamber.
    *
-   * Schematic is the neutral one on purpose. It means the project claims
-   * nothing about that shape, and the absence of a claim should look
-   * like the absence of colour.
+   * ONE CONSEQUENCE WORTH KNOWING. A selected part lights in its
+   * verdict's colour, and the refused step is itself a red, so on a red
+   * car that one class lights red on red. The emissive lift in
+   * aeroRigScene.js was raised from 0.5 to 1.15 for exactly this
+   * reason: brightness is hue-independent, so it still answers for the
+   * class whose verdict colour is now the body colour. At 0.5 a
+   * selected sidepod was invisible and the camera move was the only
+   * sign anything had been picked.
    *
-   * WHY THESE ARE LIGHTER THAN THEY WERE. The three classes used to sit
-   * at CIELAB L* 32 on the theory that the rig's lighting would lift
-   * them — about 2.4 units of directional light plus an image-based
-   * environment, through ACES filmic tone mapping at 0.95 exposure. It
-   * does lift them, but nowhere near that far: ACES is built to pull
-   * mid-tones down and desaturate, and the chamber behind the car is
-   * painted #0b0b0c, so what actually shipped was a car 29 dE76 from
-   * its own background with streamlines drawn brighter than the
-   * bodywork. The silhouette was hard to find and the two claim hues
-   * read as mud. That is a fault in the values, not in the theory of
-   * lighting them.
-   *
-   * So they were re-picked by rendering the rig headless and looking at
-   * the result rather than at swatches, and they are now stated in
-   * OKLCH, which is the space the equal-lightness rule above is
-   * actually true in. All three bodywork classes sit at OKLCH L 0.58
-   * (CIELAB L* 50-52, which is as equal as three different hues get in
-   * a space that is not uniform in lightness across hue). Against the
-   * chamber they are 49, 59 and 60 dE76 — the car is now plainly a lit
-   * object in a dark room.
-   *
-   * THE TWO CLAIMS CARRY THE SAME CHROMA, 0.112 requested in OKLCH,
-   * 0.108 and 0.111 achieved. The cap is the sRGB gamut: cyan at this
-   * lightness runs out of chroma around 0.11, and the red was matched
-   * down to it rather than left louder. Nothing on this page is more
-   * important than what the project can measure, so "refused" must not
-   * be the colour that carries the eye. Separation between classes, in
-   * dE76: 28 schematic-to-measured, 42 schematic-to-refused, 70
-   * measured-to-refused.
-   *
-   * THE TYRE IS EXEMPT, and stays neutral at every verdict. Rubber has
-   * to be dark and colourless to read as rubber, and the wheel is a big
-   * enough mass that tinting it made the tint the subject of the picture
-   * instead of the car. Its verdict is still reachable — it lights up
-   * when selected, and the readout names it — but at rest the wheel is
-   * the one part of thirteen whose class the car does not show. It is
-   * still lifted off the chamber with everything else, OKLCH L 0.32
-   * against the bodywork's 0.58: dark enough to read as rubber, 18 dE76
-   * from the background instead of the 13 that made a tyre on the far
-   * side of the car indistinguishable from the room. */
+   * THE TYRE stays neutral and dark, OKLCH L 0.32 against the body's
+   * 0.58. Rubber has to be dark and colourless to read as rubber, and
+   * the wheel is a big enough mass that painting it the body colour
+   * would make the car a single red mass with no parts in it. It is
+   * still lifted off the chamber — 18 dE76, against the 13 that made a
+   * tyre on the far side of the car indistinguishable from the room. */
   --verdict-measured: #65a9c8;
   --verdict-schematic: var(--ink-1);
   --verdict-refused: var(--status-critical);
 
   /* OKLCH, so a later re-pick starts from the recipe and not the hex. */
-  --rig-schematic: #747b84; /* L 0.58  C 0.016  h 255 */
-  --rig-measured: #0088a9; /* L 0.58  C 0.112  h 222 (gamut-clipped to 0.108) */
-  --rig-refused: #b35f52; /* L 0.58  C 0.112  h  30 */
+  --rig-body: #ef3227; /* L 0.62  C 0.225  h  29 (gamut-clipped) */
   --rig-tyre: #313336; /* L 0.32  C 0.006  h 255 */
 
   /* Podium. Sport semantics — finishing position, not team identity,
