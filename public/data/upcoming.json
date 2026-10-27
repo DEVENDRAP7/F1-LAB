@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-20T10:51:05Z",
+  "generated_at": "2026-10-27T11:29:44Z",
   "next": {
-    "round": 18,
-    "raceName": "United States Grand Prix",
-    "circuitName": "Circuit of the Americas",
-    "circuitId": "americas",
-    "date": "2026-10-25",
+    "round": 19,
+    "raceName": "Mexico City Grand Prix",
+    "circuitName": "Aut\u00f3dromo Hermanos Rodr\u00edguez",
+    "circuitId": "rodriguez",
+    "date": "2026-11-01",
     "sprint": false,
-    "lat": 30.1328,
-    "long": -97.6411
+    "lat": 19.4042,
+    "long": -99.0907
   },
   "historyYearsRequested": [
     2025,
@@ -28,50 +28,50 @@
       {
         "year": 2025,
         "starters": 20,
-        "classified": 19,
+        "classified": 17,
         "winnerGrid": 1,
         "medianStops": 1.0
       },
       {
         "year": 2024,
         "starters": 20,
-        "classified": 19,
-        "winnerGrid": 4,
+        "classified": 17,
+        "winnerGrid": 1,
         "medianStops": 1.0
       },
       {
         "year": 2023,
-        "starters": 20,
+        "starters": 19,
         "classified": 17,
-        "winnerGrid": 6,
+        "winnerGrid": 3,
         "medianStops": 2.0
       },
       {
         "year": 2022,
         "starters": 20,
-        "classified": 17,
-        "winnerGrid": 2,
-        "medianStops": 2.0
+        "classified": 19,
+        "winnerGrid": 1,
+        "medianStops": 1.0
       }
     ],
     "finishRate": {
-      "classified": 72,
-      "starters": 80,
-      "share": 0.9
+      "classified": 70,
+      "starters": 79,
+      "share": 0.8860759493670886
     },
     "positionChange": {
-      "medianPlaces": 3.0,
-      "n": 71,
+      "medianPlaces": 2.0,
+      "n": 68,
       "note": "Absolute difference between grid slot and finishing position, classified finishers only. Pit-lane starts (grid 0) are excluded."
     },
     "winnerGrid": {
-      "median": 3.0,
+      "median": 1.0,
       "best": 1,
-      "worst": 6,
+      "worst": 3,
       "n": 4
     },
     "stops": {
-      "medianPerDriver": 2.0,
+      "medianPerDriver": 1.0,
       "n": 75,
       "editionsWithData": 4
     },

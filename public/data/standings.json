@@ -4,15 +4,15 @@
       "driverCode": "ANT",
       "driverName": "Andrea Kimi Antonelli",
       "team": "Mercedes",
-      "points": 340.0,
-      "wins": 8,
+      "points": 365.0,
+      "wins": 9,
       "position": 1
     },
     {
       "driverCode": "RUS",
       "driverName": "George Russell",
       "team": "Mercedes",
-      "points": 238.0,
+      "points": 242.0,
       "wins": 3,
       "position": 2
     },
@@ -20,7 +20,7 @@
       "driverCode": "HAM",
       "driverName": "Lewis Hamilton",
       "team": "Ferrari",
-      "points": 229.0,
+      "points": 241.0,
       "wins": 1,
       "position": 3
     },
@@ -28,7 +28,7 @@
       "driverCode": "VER",
       "driverName": "Max Verstappen",
       "team": "Red Bull",
-      "points": 221.0,
+      "points": 236.0,
       "wins": 2,
       "position": 4
     },
@@ -36,7 +36,7 @@
       "driverCode": "LEC",
       "driverName": "Charles Leclerc",
       "team": "Ferrari",
-      "points": 215.0,
+      "points": 233.0,
       "wins": 1,
       "position": 5
     },
@@ -44,7 +44,7 @@
       "driverCode": "NOR",
       "driverName": "Lando Norris",
       "team": "McLaren",
-      "points": 201.0,
+      "points": 211.0,
       "wins": 2,
       "position": 6
     },
@@ -52,7 +52,7 @@
       "driverCode": "PIA",
       "driverName": "Oscar Piastri",
       "team": "McLaren",
-      "points": 138.0,
+      "points": 144.0,
       "wins": 0,
       "position": 7
     },
@@ -60,7 +60,7 @@
       "driverCode": "HAD",
       "driverName": "Isack Hadjar",
       "team": "Red Bull",
-      "points": 97.0,
+      "points": 105.0,
       "wins": 0,
       "position": 8
     },
@@ -68,7 +68,7 @@
       "driverCode": "LAW",
       "driverName": "Liam Lawson",
       "team": "RB F1 Team",
-      "points": 75.0,
+      "points": 77.0,
       "wins": 0,
       "position": 9
     },
@@ -76,7 +76,7 @@
       "driverCode": "GAS",
       "driverName": "Pierre Gasly",
       "team": "Alpine F1 Team",
-      "points": 41.0,
+      "points": 42.0,
       "wins": 0,
       "position": 10
     },
@@ -185,7 +185,7 @@
       "position": 23
     }
   ],
-  "generated_at": "2026-10-20T10:50:57Z",
+  "generated_at": "2026-10-27T11:29:28Z",
   "source_check": {
     "mismatch": false,
     "details": []
@@ -672,103 +672,132 @@
         "BOT": 0.0,
         "PER": 0.0
       }
+    },
+    {
+      "round": 18,
+      "raceName": "United States Grand Prix",
+      "points": {
+        "ANT": 365.0,
+        "RUS": 242.0,
+        "HAM": 241.0,
+        "VER": 236.0,
+        "LEC": 233.0,
+        "NOR": 211.0,
+        "PIA": 144.0,
+        "HAD": 105.0,
+        "LAW": 77.0,
+        "GAS": 42.0,
+        "LIN": 38.0,
+        "COL": 27.0,
+        "BEA": 23.0,
+        "HUL": 13.0,
+        "BOR": 10.0,
+        "OCO": 7.0,
+        "ALO": 7.0,
+        "SAI": 7.0,
+        "ALB": 5.0,
+        "TSU": 1.0,
+        "STR": 0.0,
+        "BOT": 0.0,
+        "PER": 0.0
+      }
     }
   ],
   "elimination": {
-    "remainingRounds": 6,
-    "remainingMaxPoints": 150,
-    "leaderPoints": 340.0,
+    "remainingRounds": 5,
+    "remainingMaxPoints": 125,
+    "leaderPoints": 365.0,
     "drivers": {
       "ANT": {
         "maxPossible": 490.0,
         "eliminated": false
       },
       "RUS": {
-        "maxPossible": 388.0,
+        "maxPossible": 367.0,
         "eliminated": false
       },
       "HAM": {
-        "maxPossible": 379.0,
+        "maxPossible": 366.0,
         "eliminated": false
       },
       "VER": {
-        "maxPossible": 371.0,
-        "eliminated": false
+        "maxPossible": 361.0,
+        "eliminated": true
       },
       "LEC": {
-        "maxPossible": 365.0,
-        "eliminated": false
+        "maxPossible": 358.0,
+        "eliminated": true
       },
       "NOR": {
-        "maxPossible": 351.0,
-        "eliminated": false
+        "maxPossible": 336.0,
+        "eliminated": true
       },
       "PIA": {
-        "maxPossible": 288.0,
+        "maxPossible": 269.0,
         "eliminated": true
       },
       "HAD": {
-        "maxPossible": 247.0,
+        "maxPossible": 230.0,
         "eliminated": true
       },
       "LAW": {
-        "maxPossible": 225.0,
+        "maxPossible": 202.0,
         "eliminated": true
       },
       "GAS": {
-        "maxPossible": 191.0,
+        "maxPossible": 167.0,
         "eliminated": true
       },
       "LIN": {
-        "maxPossible": 188.0,
-        "eliminated": true
-      },
-      "COL": {
-        "maxPossible": 177.0,
-        "eliminated": true
-      },
-      "BEA": {
-        "maxPossible": 173.0,
-        "eliminated": true
-      },
-      "HUL": {
         "maxPossible": 163.0,
         "eliminated": true
       },
+      "COL": {
+        "maxPossible": 152.0,
+        "eliminated": true
+      },
+      "BEA": {
+        "maxPossible": 148.0,
+        "eliminated": true
+      },
+      "HUL": {
+        "maxPossible": 138.0,
+        "eliminated": true
+      },
       "BOR": {
-        "maxPossible": 160.0,
+        "maxPossible": 135.0,
         "eliminated": true
       },
       "OCO": {
-        "maxPossible": 157.0,
+        "maxPossible": 132.0,
         "eliminated": true
       },
       "ALO": {
-        "maxPossible": 157.0,
+        "maxPossible": 132.0,
         "eliminated": true
       },
       "SAI": {
-        "maxPossible": 157.0,
+        "maxPossible": 132.0,
         "eliminated": true
       },
       "ALB": {
-        "maxPossible": 155.0,
+        "maxPossible": 130.0,
         "eliminated": true
       },
       "TSU": {
-        "maxPossible": 151.0,
+        "maxPossible": 126.0,
         "eliminated": true
       },
       "STR": {
-        "maxPossible": 150.0,
+        "maxPossible": 125.0,
         "eliminated": true
       },
       "BOT": {
-        "maxPossible": 150.0,
+        "maxPossible": 125.0,
         "eliminated": true
       },
       "PER": {
-        "maxPossible": 150.0,
+        "maxPossible": 125.0,
         "eliminated": true
       }
     }
