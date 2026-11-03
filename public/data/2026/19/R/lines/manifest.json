@@ -1,0 +1,77 @@
+{
+  "channels": [
+    "x",
+    "y",
+    "speed",
+    "throttle",
+    "brake",
+    "gear"
+  ],
+  "scale": {
+    "x": 10,
+    "y": 10,
+    "speed": 10,
+    "throttle": 1,
+    "brake": 1,
+    "gear": 1
+  },
+  "drivers": {
+    "HAM": {
+      "pointCount": 2223
+    },
+    "VER": {
+      "pointCount": 2226
+    },
+    "ANT": {
+      "pointCount": 2230
+    },
+    "NOR": {
+      "pointCount": 2212
+    }
+  },
+  "schemaVersion": 2,
+  "sessionName": "R",
+  "sessionLabel": "the race",
+  "source": "OpenF1 session 11404 (Mexico)",
+  "positionUnitsPerMetre": {
+    "value": 10.016538407633126,
+    "source": "measured on this lap: raw position path length divided by the lap length obtained by integrating published speed over the sample timestamps",
+    "sample_size": 321
+  },
+  "elevation": {
+    "usable": false,
+    "rangeM": 2.79,
+    "reason": "the elevation channel varies by only 2.8m over the lap, below the 3m floor this project treats as a real profile"
+  },
+  "laps": [
+    {
+      "code": "HAM",
+      "driverNumber": 44,
+      "lapNumber": 50,
+      "lapTimeS": 79.268
+    },
+    {
+      "code": "VER",
+      "driverNumber": 3,
+      "lapNumber": 50,
+      "lapTimeS": 79.328
+    },
+    {
+      "code": "ANT",
+      "driverNumber": 12,
+      "lapNumber": 64,
+      "lapTimeS": 79.427
+    },
+    {
+      "code": "NOR",
+      "driverNumber": 1,
+      "lapNumber": 50,
+      "lapTimeS": 79.8
+    }
+  ],
+  "limitations": [
+    "Each line is one driver's fastest non-out lap of the race, not an average and not an ideal line.",
+    "Position samples arrive at roughly 3.7 Hz and are resampled onto a fixed distance grid, so the line is interpolated between samples.",
+    "Corner numbering is not published by this source, so the map carries the driven path and no official corner labels."
+  ]
+}

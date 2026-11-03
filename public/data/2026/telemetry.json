@@ -1,6 +1,6 @@
 {
   "year": 2026,
-  "generated_at": "2026-10-27T11:29:17Z",
+  "generated_at": "2026-11-03T13:32:47Z",
   "rounds": {
     "1": {
       "Q": {
@@ -309,6 +309,38 @@
           "usable": true,
           "rangeM": 30.4,
           "reason": null
+        }
+      }
+    },
+    "19": {
+      "Q": {
+        "drivers": [
+          "HAM",
+          "LEC",
+          "RUS",
+          "VER"
+        ],
+        "sessionLabel": "qualifying",
+        "unavailable": false,
+        "elevation": {
+          "usable": false,
+          "rangeM": 2.81,
+          "reason": "the elevation channel varies by only 2.8m over the lap, below the 3m floor this project treats as a real profile"
+        }
+      },
+      "R": {
+        "drivers": [
+          "ANT",
+          "HAM",
+          "NOR",
+          "VER"
+        ],
+        "sessionLabel": "the race",
+        "unavailable": false,
+        "elevation": {
+          "usable": false,
+          "rangeM": 2.79,
+          "reason": "the elevation channel varies by only 2.8m over the lap, below the 3m floor this project treats as a real profile"
         }
       }
     },

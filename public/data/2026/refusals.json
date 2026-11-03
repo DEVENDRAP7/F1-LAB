@@ -5,7 +5,7 @@
       "module": "What-If Engine",
       "rule": "A counterfactual is offered only where replaying the real strategy reproduces the real race time within 1%.",
       "published": 129,
-      "refused": 23,
+      "refused": 24,
       "entries": [
         {
           "scope": "Round 1 \u00b7 Australian Grand Prix",
@@ -18,6 +18,10 @@
         {
           "scope": "Round 13 \u00b7 Italian Grand Prix",
           "reason": "the race was suspended \u2014 a lap of 1958s was run with the cars stationary, and no term in this model describes a red flag"
+        },
+        {
+          "scope": "Round 19 \u00b7 Mexico City Grand Prix",
+          "reason": "the race was suspended \u2014 a lap of 2434s was run with the cars stationary, and no term in this model describes a red flag"
         },
         {
           "scope": "Round 6 \u00b7 Monaco Grand Prix",
@@ -104,7 +108,7 @@
     {
       "module": "Racing Lines",
       "rule": "A line is published only where the position feed carries a lap that can be drawn. A session it does not gets a written refusal, not an empty page.",
-      "published": 136,
+      "published": 144,
       "refused": 2,
       "entries": [
         {
@@ -121,7 +125,7 @@
       "module": "Elevation",
       "rule": "A z channel that varies by less than 3 m over a whole lap is a constant with noise on it, not a profile.",
       "published": null,
-      "refused": 2,
+      "refused": 4,
       "entries": [
         {
           "scope": "Round 1 \u00b7 qualifying",
@@ -130,13 +134,21 @@
         {
           "scope": "Round 1 \u00b7 the race",
           "reason": "the elevation channel varies by only 2.5m over the lap, below the 3m floor this project treats as a real profile"
+        },
+        {
+          "scope": "Round 19 \u00b7 qualifying",
+          "reason": "the elevation channel varies by only 2.8m over the lap, below the 3m floor this project treats as a real profile"
+        },
+        {
+          "scope": "Round 19 \u00b7 the race",
+          "reason": "the elevation channel varies by only 2.8m over the lap, below the 3m floor this project treats as a real profile"
         }
       ]
     },
     {
       "module": "Tyre compounds",
       "rule": "A stint takes a compound only where the stint feed matches it by driver and lap overlap. A wrong compound colour is worse than none.",
-      "published": 1072,
+      "published": 1152,
       "refused": 34,
       "entries": [
         {
@@ -168,15 +180,15 @@
     {
       "module": "Degradation fits",
       "rule": "A fit is published as a trend only with enough laps behind it and enough explanatory power. Below that it ships with the reason it failed rather than as a confident slope.",
-      "published": 552,
-      "refused": 415,
+      "published": 577,
+      "refused": 450,
       "entries": [
         {
-          "scope": "313 fit(s)",
+          "scope": "343 fit(s)",
           "reason": "lap-to-lap scatter dominates the trend"
         },
         {
-          "scope": "102 fit(s)",
+          "scope": "107 fit(s)",
           "reason": "too few usable laps"
         }
       ]
@@ -185,7 +197,7 @@
       "module": "Pit loss",
       "rule": "A pit loss becomes a circuit constant only where enough drivers had a measurable racing stop and their figures agree.",
       "published": 7,
-      "refused": 11,
+      "refused": 12,
       "entries": [
         {
           "scope": "Round 1 \u00b7 Albert Park Grand Prix Circuit",
@@ -230,6 +242,10 @@
         {
           "scope": "Round 15 \u00b7 Baku City Circuit",
           "reason": "1 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
+        },
+        {
+          "scope": "Round 19 \u00b7 Aut\u00f3dromo Hermanos Rodr\u00edguez",
+          "reason": "0 driver(s) had a measurable racing stop here, and a median over fewer than 5 is a story about one stop rather than a property of the pit lane"
         }
       ]
     },
@@ -237,16 +253,16 @@
       "module": "DRS zones",
       "rule": "A zone is drawn on a track only where a source says what the car's DRS channel means. No source does.",
       "published": 0,
-      "refused": 18,
+      "refused": 19,
       "entries": [
         {
-          "scope": "every circuit (18)",
+          "scope": "every circuit (19)",
           "reason": "the feed carries a DRS integer per sample, but no public source maps those codes to flap open or closed with enough confidence to draw a zone on a track \u2014 FastF1 car_data docstring (checked against master, 2026-09-11): codes 0-14, 2 and 3 documented as '(?)', 10, 12 and 14 each as 'On (Unknown Distinction)', annotated '(Odd DRS is Disabled, Even DRS is Enabled?) (More Research Needed?)'"
         }
       ]
     }
   ],
-  "totalRefused": 505,
+  "totalRefused": 545,
   "note": "Read from the published artifacts only. A refusal that is not written down in the artifact it belongs to does not appear here, which keeps this a report rather than a second opinion.",
-  "generated_at": "2026-10-27T11:29:44Z"
+  "generated_at": "2026-11-03T13:33:09Z"
 }

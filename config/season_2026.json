@@ -346,11 +346,11 @@
       "permanentNumber": null
     },
     {
-      "code": null,
+      "code": "HIR",
       "driverId": "ryo_hirakawa",
       "givenName": "Ryo",
       "familyName": "Hirakawa",
-      "permanentNumber": null
+      "permanentNumber": "50"
     },
     {
       "code": "HUL",
@@ -386,6 +386,13 @@
       "givenName": "Arvid",
       "familyName": "Lindblad",
       "permanentNumber": "41"
+    },
+    {
+      "code": null,
+      "driverId": "gabriele_mini",
+      "givenName": "Gabriele",
+      "familyName": "Mini",
+      "permanentNumber": null
     },
     {
       "code": "NOR",
@@ -430,11 +437,25 @@
       "permanentNumber": "55"
     },
     {
+      "code": null,
+      "driverId": "freddie_slater",
+      "givenName": "Freddie",
+      "familyName": "Slater",
+      "permanentNumber": null
+    },
+    {
       "code": "STR",
       "driverId": "stroll",
       "givenName": "Lance",
       "familyName": "Stroll",
       "permanentNumber": "18"
+    },
+    {
+      "code": null,
+      "driverId": "nikola_tsolov",
+      "givenName": "Nikola",
+      "familyName": "Tsolov",
+      "permanentNumber": null
     },
     {
       "code": "TSU",
@@ -458,6 +479,6 @@
       "permanentNumber": null
     }
   ],
-  "generated_at": "2026-10-27T11:19:08Z",
+  "generated_at": "2026-11-03T13:19:44Z",
   "source": "https://api.jolpi.ca/ergast/f1/2026"
 }

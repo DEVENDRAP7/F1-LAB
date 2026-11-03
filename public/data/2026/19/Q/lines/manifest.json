@@ -1,0 +1,77 @@
+{
+  "channels": [
+    "x",
+    "y",
+    "speed",
+    "throttle",
+    "brake",
+    "gear"
+  ],
+  "scale": {
+    "x": 10,
+    "y": 10,
+    "speed": 10,
+    "throttle": 1,
+    "brake": 1,
+    "gear": 1
+  },
+  "drivers": {
+    "HAM": {
+      "pointCount": 2233
+    },
+    "RUS": {
+      "pointCount": 2223
+    },
+    "LEC": {
+      "pointCount": 2225
+    },
+    "VER": {
+      "pointCount": 2223
+    }
+  },
+  "schemaVersion": 2,
+  "sessionName": "Q",
+  "sessionLabel": "qualifying",
+  "source": "OpenF1 session 11400 (Mexico)",
+  "positionUnitsPerMetre": {
+    "value": 9.977705721848318,
+    "source": "measured on this lap: raw position path length divided by the lap length obtained by integrating published speed over the sample timestamps",
+    "sample_size": 289
+  },
+  "elevation": {
+    "usable": false,
+    "rangeM": 2.81,
+    "reason": "the elevation channel varies by only 2.8m over the lap, below the 3m floor this project treats as a real profile"
+  },
+  "laps": [
+    {
+      "code": "HAM",
+      "driverNumber": 44,
+      "lapNumber": 19,
+      "lapTimeS": 76.514
+    },
+    {
+      "code": "RUS",
+      "driverNumber": 63,
+      "lapNumber": 21,
+      "lapTimeS": 76.523
+    },
+    {
+      "code": "LEC",
+      "driverNumber": 16,
+      "lapNumber": 23,
+      "lapTimeS": 76.633
+    },
+    {
+      "code": "VER",
+      "driverNumber": 3,
+      "lapNumber": 10,
+      "lapTimeS": 76.692
+    }
+  ],
+  "limitations": [
+    "Each line is one driver's fastest non-out lap of qualifying, not an average and not an ideal line.",
+    "Position samples arrive at roughly 3.7 Hz and are resampled onto a fixed distance grid, so the line is interpolated between samples.",
+    "Corner numbering is not published by this source, so the map carries the driven path and no official corner labels."
+  ]
+}
