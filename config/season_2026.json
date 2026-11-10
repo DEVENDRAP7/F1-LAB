@@ -297,6 +297,13 @@
       "permanentNumber": null
     },
     {
+      "code": "CAM",
+      "driverId": "rafael_camara",
+      "givenName": "Rafael",
+      "familyName": "Camara",
+      "permanentNumber": "51"
+    },
+    {
       "code": "COL",
       "driverId": "colapinto",
       "givenName": "Franco",
@@ -479,6 +486,6 @@
       "permanentNumber": null
     }
   ],
-  "generated_at": "2026-11-03T13:19:44Z",
+  "generated_at": "2026-11-10T14:00:09Z",
   "source": "https://api.jolpi.ca/ergast/f1/2026"
 }
