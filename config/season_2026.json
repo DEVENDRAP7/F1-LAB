@@ -255,7 +255,7 @@
       "permanentNumber": "12"
     },
     {
-      "code": null,
+      "code": "ARO",
       "driverId": "paul_aron",
       "givenName": "Paul",
       "familyName": "Aron",
@@ -269,11 +269,11 @@
       "permanentNumber": "87"
     },
     {
-      "code": null,
+      "code": "BEG",
       "driverId": "dino_beganovic",
       "givenName": "Dino",
       "familyName": "Beganovic",
-      "permanentNumber": null
+      "permanentNumber": "38"
     },
     {
       "code": "BOR",
@@ -290,11 +290,11 @@
       "permanentNumber": "77"
     },
     {
-      "code": null,
+      "code": "BRO",
       "driverId": "luke_browning",
       "givenName": "Luke",
       "familyName": "Browning",
-      "permanentNumber": null
+      "permanentNumber": "46"
     },
     {
       "code": "CAM",
@@ -311,18 +311,18 @@
       "permanentNumber": "43"
     },
     {
-      "code": null,
+      "code": "CRA",
       "driverId": "jak_crawford",
       "givenName": "Jak",
       "familyName": "Crawford",
-      "permanentNumber": null
+      "permanentNumber": "34"
     },
     {
-      "code": null,
+      "code": "FOR",
       "driverId": "leonardo_fornaroli",
       "givenName": "Leonardo",
       "familyName": "Fornaroli",
-      "permanentNumber": null
+      "permanentNumber": "67"
     },
     {
       "code": "GAS",
@@ -346,7 +346,7 @@
       "permanentNumber": "44"
     },
     {
-      "code": null,
+      "code": "HER",
       "driverId": "colton_herta",
       "givenName": "Colton",
       "familyName": "Herta",
@@ -367,11 +367,11 @@
       "permanentNumber": "27"
     },
     {
-      "code": null,
+      "code": "IWA",
       "driverId": "ayumu_iwasa",
       "givenName": "Ayumu",
       "familyName": "Iwasa",
-      "permanentNumber": null
+      "permanentNumber": "36"
     },
     {
       "code": "LAW",
@@ -395,11 +395,11 @@
       "permanentNumber": "41"
     },
     {
-      "code": null,
+      "code": "MIN",
       "driverId": "gabriele_mini",
       "givenName": "Gabriele",
       "familyName": "Mini",
-      "permanentNumber": null
+      "permanentNumber": "61"
     },
     {
       "code": "NOR",
@@ -444,11 +444,11 @@
       "permanentNumber": "55"
     },
     {
-      "code": null,
+      "code": "SLA",
       "driverId": "freddie_slater",
       "givenName": "Freddie",
       "familyName": "Slater",
-      "permanentNumber": null
+      "permanentNumber": "98"
     },
     {
       "code": "STR",
@@ -458,11 +458,11 @@
       "permanentNumber": "18"
     },
     {
-      "code": null,
+      "code": "TSO",
       "driverId": "nikola_tsolov",
       "givenName": "Nikola",
       "familyName": "Tsolov",
-      "permanentNumber": null
+      "permanentNumber": "91"
     },
     {
       "code": "TSU",
@@ -479,13 +479,13 @@
       "permanentNumber": "3"
     },
     {
-      "code": null,
+      "code": "VES",
       "driverId": "frederik_vesti",
       "givenName": "Frederik",
       "familyName": "Vesti",
-      "permanentNumber": null
+      "permanentNumber": "72"
     }
   ],
-  "generated_at": "2026-11-10T14:00:09Z",
+  "generated_at": "2026-11-17T15:14:38Z",
   "source": "https://api.jolpi.ca/ergast/f1/2026"
 }
