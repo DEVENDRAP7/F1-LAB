@@ -266,17 +266,17 @@ export function createAeroRig(
      GLB's thirteen materials is used. They are replaced, and disposed,
      the moment the model lands.
 
-     What replaces them says something instead. Each part already
-     carries a verdict — measured, schematic or refused — which is the
-     whole reason the car is clickable, and that verdict is now what
-     colours it. A reader can see, before clicking anything, that most
-     of this car is a drawn shape and only a few parts are things this
-     site can actually measure.
+     What replaces them is this project's own single body colour, and
+     the tyre's own dark rubber. The paint used to carry each part's
+     verdict — measured, schematic or refused, three base colours, so
+     the car showed at a glance how little of it was measured — and
+     that cue now lives entirely in the selection: clicking a part
+     lights it in its verdict's colour, and the readout and badge name
+     it. See the tokens for the trade that was made and why the legend
+     under the chamber was rewritten with it.
 
      Two material families, because a tyre that is coloured like
-     bodywork stops looking like a tyre. Within each family the three
-     verdicts differ in hue at the same lightness — see the tokens for
-     why lightness cannot be the cue on a lit 3D surface.
+     bodywork stops looking like a tyre.
 
      One material instance per mesh rather than one per class, so that
      selecting a part can light that part alone. Thirteen materials is
@@ -288,13 +288,15 @@ export function createAeroRig(
   function verdictColours(part) {
     const verdict = VERDICT_TOKEN[verdicts[part]] ?? 'schematic';
     return {
-      // The tyre keeps rubber's own colourless dark at every verdict —
-      // see the tokens for why it is the one exemption.
-      base: TYRE_PARTS.has(part) ? cssToken('--rig-tyre') : cssToken(`--rig-${verdict}`),
-      // The full-strength step, used only to light a selected part. The
-      // tyre does get this: a selection is momentary and deliberate, so
-      // it can afford to stop looking like rubber for as long as it is
-      // the thing being asked about.
+      // One body colour for every panel; the tyre keeps rubber's own
+      // colourless dark — see the tokens for why it is the exemption.
+      base: cssToken(TYRE_PARTS.has(part) ? '--rig-tyre' : '--rig-body'),
+      // The full-strength verdict step, used to light a selected part.
+      // With the paint no longer carrying the verdict this is the only
+      // place the car itself shows one, so it is doing more work than it
+      // was. The tyre gets it too: a selection is momentary and
+      // deliberate, so it can afford to stop looking like rubber for as
+      // long as it is the thing being asked about.
       lit: cssToken(`--verdict-${verdict}`),
     };
   }
@@ -688,7 +690,14 @@ export function createAeroRig(
     for (const entry of carMaterials) {
       const on = entry.part === part;
       entry.material.emissive.set(on ? verdictColours(entry.part).lit : 0x000000);
-      entry.material.emissiveIntensity = on ? 0.5 : 0;
+      // Bright enough to be a cue on its own, because hue can no longer
+      // be one. At 0.5 this worked while the car was three colours: a
+      // selected part changed hue as well as brightness. On a red car a
+      // refused part lights in red on red and 0.5 was invisible — the
+      // zoom was the only sign anything had been selected. The lift is
+      // hue-independent, so it answers for the one class whose verdict
+      // colour is the body colour.
+      entry.material.emissiveIntensity = on ? 1.15 : 0;
     }
   }
 

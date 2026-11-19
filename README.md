@@ -227,11 +227,14 @@ Qvist_designs, [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/) —
 decimated and re-cut into this page's own parts, and the page says so
 where a reader will see it.
 
-Its colours are this project's, not the donor's and not any team's: each
-part is painted by what the project can say about it — teal where a real
-number backs it, graphite where only the geometry is known, red where
-nothing published gives this site a way to say anything. The legend
-under the chamber is the whole key.
+Its colour is this project's own, and the donor's baked-in livery and
+camera paint are thrown away with its thirteen materials the moment the
+model lands. The verdict each part carries — a real number behind it,
+only its geometry known, or nothing published to measure it with — is
+shown by selecting the part: it lights in that verdict's colour, the
+readout names it, and the strip under the chamber is the key. The paint
+carried that cue until the car became one colour; the trade is written
+down in `src/theme/tokens.css`.
 
 ![The Aero Rig: the car painted by what is known about each part](docs/screenshots/car.png)
 
