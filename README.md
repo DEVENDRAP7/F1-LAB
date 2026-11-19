@@ -38,7 +38,7 @@ those pages used to have still works and lands on the view it was.
   standings. The cross-check result is shown either way; a mismatch is a
   hard failure that blocks publication, not a warning to read past.
 - **Race Strategy** — every race run so far, lap by lap, from the real
-  timing feed — fifteen rounds and 17,199 laps as this is written, a
+  timing feed — twenty rounds and 23,539 laps as this is written, a
   count that moves every Tuesday, so trust the front page's figures and
   the per-round header on the page itself over this sentence —
   with a stint chart, a lap-pace comparison for up to four drivers, an
@@ -65,11 +65,11 @@ those pages used to have still works and lands on the view it was.
   circuit whose z does not vary gets the reason instead of a flat line.
   It also carries a measured pit loss where one exists: the median
   across the drivers who had a stop the what-if fit could measure, with
-  the middle half printed beside it. Four
-  circuits of the fifteen run publish one; the other eleven carry the
-  reason instead. Shanghai has a single 45.8s stop and
-  Silverstone has seventeen drivers spanning 17–28s, and neither is a
-  property of a pit lane, so neither is published.
+  the middle half printed beside it. Eight
+  circuits of the twenty run publish one; the other twelve carry the
+  reason instead. Shanghai has a single measurable stop and
+  Silverstone has seventeen drivers whose middle half spans 17–28s, and
+  neither is a property of a pit lane, so neither is published.
 - **Racing Lines** — per-driver fastest laps from qualifying or the race,
   decoded from Int16 position binaries, with linked speed and throttle
   traces on a shared distance axis, the line colourable by any published
@@ -82,7 +82,7 @@ those pages used to have still works and lands on the view it was.
   driver's green-flag median. A flag is not a verdict, and the page is
   built so the two can never be read as the same thing.
 - **Refusals** — the ledger of everything computed and then withheld:
-  406 figures this season, each with the number that made the decision.
+  560 figures this season, each with the number that made the decision.
   The page counts them from the artifact, so that figure moves with the
   data rather than with this sentence.
   A dashboard that cannot say no fills every gap with something
@@ -331,17 +331,18 @@ substantive ones:
   false`. A negative slope (the driver getting faster) is normal and is
   not evidence about tyres.
 - **A fit is only called usable when it earns it.** Reliability requires
-  both a sample-count floor and an R² floor. On the fifteen races run so
-  far, 450 of 781 fits clear both — 58% — and the rest are published with the reason they failed
+  both a sample-count floor and an R² floor. On the twenty races run so
+  far, 643 of 1,106 fits clear both — 58% — and the rest are published with the reason they failed
   ("R² 0.06 below 0.3 — lap-to-lap scatter dominates any trend in this
   stint") rather than shown as a confident number.
 - **Tyre compounds are matched, never assumed.** Jolpica-F1 publishes
   none; OpenF1's stint feed does, and a stint takes a compound only when
-  it matches by driver code and lap overlap above a set share. Ten of the
-  fifteen races run so far are matched end to end, and across the season
-  880 of 910 stints carry a real compound — the thirty that do not are
-  concentrated in five rounds whose stint feed is short of the laps that
-  were run. A stint that cannot be matched keeps the ordinal shading and
+  it matches by driver code and lap overlap above a set share. Thirteen of
+  the twenty races run so far are matched end to end, and across the
+  season 1,230 of 1,265 stints carry a real compound — the thirty-five
+  that do not are spread over seven rounds (1, 5, 6, 7, 11, 16 and 20),
+  the most in round 6, which lacks 16 of its 107. A stint that cannot be
+  matched keeps the ordinal shading and
   says so, because a wrong compound colour is worse than no compound
   colour.
 - **Undercuts measure what happened, not what would have happened.**
@@ -358,9 +359,9 @@ substantive ones:
   qualifying trace replaces a race one and a race trace never overwrites
   a qualifying one. It also filled the two real gaps: Monaco and the
   Hungaroring had no outline at all, because their race position feeds
-  are unusable, and both now have one from qualifying. All fifteen rounds
-  have qualifying lines; thirteen have race lines as well.
-- **Two of the fifteen races have no racing line, and say why.** The
+  are unusable, and both now have one from qualifying. All twenty rounds
+  have qualifying lines; eighteen have race lines as well.
+- **Two of the twenty races have no racing line, and say why.** The
   position feed returns nothing at all for Monaco — zero location rows
   for every driver's fastest lap, while car data for the same window
   returns about 285 — and at the Hungaroring it repeats coordinates so
@@ -375,17 +376,19 @@ substantive ones:
   over a whole lap is a constant with noise on it, not a profile. The
   measured range is published either way, so a refusal can be checked.
 - **What still shifts under the reader is the webfont, not the data.**
-  Measured at 390px with a layout-shift observer, six loads a route,
+  Measured at 390px with a layout-shift observer, five loads a route,
   against the 0.1 that counts as good: of the home page and the eleven
   pages behind the nav, ten are at or under 0.003 on every load, and
   nothing anywhere passes 0.1. The two that move are the home page, at
-  0.04–0.07 on every load, and Refusals at 0.04 on some, and both are the
-  same cause — Archivo arrives after the
+  0.04–0.05 on every load, and Qualifying, at 0.006 on one load of five.
+  The home page's is the webfont — Archivo arrives after the
   first paint, the nav and the page title reflow a few pixels narrower,
   and whatever sits near the fold moves up with them. That is a font
-  swap, not a data race, and it is the one shift left: it needs the
-  fallback's metrics matched to Archivo's, or the font preloaded ahead of
-  the CSS that asks for it, and neither is done here.
+  swap, not a data race: it needs the fallback's metrics matched to
+  Archivo's, or the font preloaded ahead of the CSS that asks for it, and
+  neither is done here. Qualifying's 0.006 has not been diagnosed; it is
+  an order of magnitude under the threshold and appeared on one load in
+  five, so it is recorded rather than chased.
 
   The data races are gone. What-If was the last one, at 0.31 on the loads
   where the round's JSON landed after first paint: its strategy editor
@@ -418,9 +421,11 @@ substantive ones:
   path turned 40 degrees, and a real 40 m radius times a stale straight-line
   speed was published as 14.5g. Two checks now withhold a turn's load — the
   speed stepping rather than the car braking, and the corner being tighter
-  than the curvature fit's own window — which takes out 47 of 1,010 detected
-  turns (4.7%) and the whole impossible top of the distribution. The step
-  test is not a tuned threshold: measured over all 255,531 samples, the
+  than the curvature fit's own window — which takes out 84 of 1,616 detected
+  turns (5.2%) across the 152 published laps, and the whole impossible top
+  of the distribution. The step
+  test is not a tuned threshold: measured, when it was added, over all
+  255,531 samples then exported, the
   implied longitudinal g between neighbours is bimodal, 6.6g at the 99.9th
   percentile and 38.4g at the 99.99th, and anything from 8 to 30 selects the
   same samples. What remains is a tail: published loads now top out near
@@ -482,11 +487,11 @@ ingested:
   are measured, not fitted** — each is the excess of specific laps over
   what the fit says they should have taken.
 - **Red-flagged races are refused.** A suspension leaves the cars
-  stationary with the clock running (round 12 carries a 1758-second lap
-  3), the model has no term for that, and a race total containing one is
-  not a quantity it can be checked against. Four of this season's twelve
-  races are excluded for this, each with the lap time that caused it on
-  record.
+  stationary with the clock running (round 12 carries a lap 3 that runs
+  to 1,771 seconds), the model has no term for that, and a race total
+  containing one is not a quantity it can be checked against. Six of this
+  season's twenty races are excluded for this, each with the lap time that
+  caused it on record.
 
 The gate then runs per driver: replay their real strategy, compare the
 model's median against their real race time, and offer a counterfactual

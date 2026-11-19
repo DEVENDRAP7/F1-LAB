@@ -19,7 +19,8 @@ import fs from 'fs';
 import path from 'path';
 import { accelerationTrace, lateralEnvelope, peaks } from '../src/lib/aero.js';
 import { detectTurns } from '../src/lib/corners.js';
-import { impliedGripG } from '../src/lib/cornerModel.js';
+import { cornerModel, impliedGripG } from '../src/lib/cornerModel.js';
+import { coastIndices } from '../src/lib/drag.js';
 import { drivingStyle } from '../src/lib/style.js';
 
 const YEAR = 2026;
@@ -70,6 +71,19 @@ for (const roundDir of fs.readdirSync(path.join(ROOT, '2026')).filter((d) => /^\
       const turns = detectTurns(trace, ds);
       const pk = peaks(trace);
       const style = drivingStyle(ch, trace, ds);
+      const implied = impliedGripG(turns, trace.curvature);
+      // The two per-lap inputs behind the Aero Explainer's season-wide
+      // claims — how far the median lap sits from the corner model, and
+      // how rare coasting is. The page used to hardcode both as prose
+      // ("across the 88 laps published here the median lap sits 12% off"),
+      // which was true for exactly one Tuesday: at 152 laps it was 11.5%,
+      // two coasting samples rather than one, and 62 laps with none
+      // rather than 38. They live here, derived in the run that decodes
+      // the lines, so the page reads them rather than remembers them.
+      // Same inputs as scripts/aero_survey.mjs, which is how to check them.
+      const model = cornerModel(turns, trace.curvature, implied ?? pk.peakLateralG, {
+        topSpeedKph,
+      });
       laps.push({
         code,
         team: teamOf[code] ?? null,
@@ -82,8 +96,10 @@ for (const roundDir of fs.readdirSync(path.join(ROOT, '2026')).filter((d) => /^\
         topSpeedKph: round(topSpeedKph, 1),
         peakLateralG: round(pk.peakLateralG, 2),
         peakBrakingG: round(pk.peakBrakingG, 2),
-        impliedGripG: round(impliedGripG(turns, trace.curvature), 2),
+        impliedGripG: round(implied, 2),
         turns: turns.length,
+        coastSamples: coastIndices(trace, ch).length,
+        cornerModelErrorPct: round(model.medianAbsErrorPct, 1),
         slowestCornerKph: turns.length
           ? round(Math.min(...turns.map((t) => t.minSpeedKph)), 1)
           : null,

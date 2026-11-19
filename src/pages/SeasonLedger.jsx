@@ -5,6 +5,7 @@ import EmptyState from '../components/EmptyState.jsx';
 import ProgressionChart from '../components/ProgressionChart.jsx';
 import { Method } from '../components/Disclosure.jsx';
 import TableScroll from '../components/TableScroll.jsx';
+import { titleDecided } from '../lib/championship.js';
 
 // M2 — Season Ledger. Standings are computed by the pipeline and
 // cross-checked against the API at export time (docs/SPEC.md); this page
@@ -62,6 +63,12 @@ export default function SeasonLedger() {
   const eliminatedCount = elimination
     ? Object.values(elimination.drivers).filter((d) => d.eliminated).length
     : 0;
+
+  // Until now this note said "21 of 22 drivers can no longer win the
+  // championship", which is correct and never says the obvious thing:
+  // that there is one driver left who can, and it is the leader. Same
+  // arithmetic as the rest of the note, counted — see lib/championship.js.
+  const decided = titleDecided(standings.length, elimination);
 
   return (
     <section className="page">
@@ -162,7 +169,13 @@ export default function SeasonLedger() {
       {elimination && elimination.remainingRounds > 0 && (
         <div className="verified-note">
           <p>
-            {eliminatedCount === 0 ? (
+            {decided ? (
+              <>
+                <strong>The drivers' championship is decided.</strong>{' '}
+                {standings[0].driverName} cannot be caught: every other driver is out of
+                reach.
+              </>
+            ) : eliminatedCount === 0 ? (
               <>No driver is mathematically out of the championship yet.</>
             ) : (
               <>
@@ -178,7 +191,9 @@ export default function SeasonLedger() {
             A driver is counted out only when taking every remaining point still leaves them
             behind the leader's current{' '}
             <span className="mono">{elimination.leaderPoints}</span> — even if the leader
-            never scores again. A driver who could draw level is not counted out.
+            never scores again. A driver who could draw level is not counted out. The
+            championship is called decided when every driver except the leader is counted
+            out, and not before.
           </Method>
         </div>
       )}
