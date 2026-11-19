@@ -22,6 +22,7 @@ import { Limitations, Method } from '../components/Disclosure.jsx';
 import { detectTurns, TURN_DEFAULTS } from '../lib/corners.js';
 import { GRIP_LIMITED_TOLERANCE_PCT, cornerModel, impliedGripG } from '../lib/cornerModel.js';
 import { COAST_MIN_SPEED_KPH, dragFit } from '../lib/drag.js';
+import { seasonSurvey } from '../lib/aeroSurvey.js';
 import TableScroll from '../components/TableScroll.jsx';
 
 // M8 — Aero Explainer, the measurable half.
@@ -74,6 +75,28 @@ export default function AeroExplainer() {
       cancelled = true;
     };
   }, []);
+
+  // Every published lap, for the two season-wide claims in the method
+  // notes below. Those sentences used to carry typed-in numbers and went
+  // stale the first Tuesday after they were typed — see lib/aeroSurvey.js.
+  // Nothing on the page waits for this: the claims sit in collapsed
+  // disclosures, and if the file is absent they leave out their numbers
+  // rather than quoting old ones.
+  const [aero, setAero] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(dataPath('2026/aero.json'))
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => !cancelled && setAero(data))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const survey = useMemo(() => (aero ? seasonSurvey(aero.laps) : null), [aero]);
 
   // Open on the newest round that has position data exported.
   useEffect(() => {
@@ -653,8 +676,13 @@ export default function AeroExplainer() {
                   Where the geometry supports more speed than the car reached anywhere on
                   this lap, no model speed is printed: that corner is not limited by grip.
                   The corners that beat the model do so because a single grip number is the
-                  model's one assumption and it is wrong in a specific direction. Across the
-                  88 laps published here the median lap sits 12% off this model.
+                  model's one assumption and it is wrong in a specific direction.
+                  {survey?.medianModelErrorPct != null && (
+                    <>
+                      {' '}Across the {survey.modelLaps} laps published here the median lap
+                      sits {survey.medianModelErrorPct.toFixed(1)}% off this model.
+                    </>
+                  )}
                 </p>
               </Method>
             </section>
@@ -719,10 +747,19 @@ export default function AeroExplainer() {
                   <Method label="Why coasting is this rare">
                     A flying lap is spent on the throttle or on the brakes; genuine
                     coasting — off both pedals, above {COAST_MIN_SPEED_KPH} km/h, going
-                    roughly straight — barely happens. Across the 88 laps published here the
-                    median lap has <strong>one</strong> such sample and 38 laps have none,
-                    so the coefficient is left unpublished rather than fitted to
-                    corner-entry lifts that would return a number with no drag in it.
+                    roughly straight — barely happens.{' '}
+                    {survey?.medianCoastSamples != null ? (
+                      <>
+                        Across the {survey.coastLaps} laps published here the median lap has{' '}
+                        <strong>{survey.medianCoastSamples}</strong> such sample
+                        {survey.medianCoastSamples === 1 ? '' : 's'} and{' '}
+                        {survey.lapsWithoutCoast} laps have none, so the coefficient
+                      </>
+                    ) : (
+                      <>The coefficient is therefore</>
+                    )}{' '}
+                    is left unpublished rather than fitted to corner-entry lifts that would
+                    return a number with no drag in it.
                   </Method>
                 </>
               )}
