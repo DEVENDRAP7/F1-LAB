@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-17T15:27:50Z",
+  "generated_at": "2026-11-24T16:58:40Z",
   "next": {
-    "round": 21,
-    "raceName": "Las Vegas Grand Prix",
-    "circuitName": "Las Vegas Strip Street Circuit",
-    "circuitId": "vegas",
-    "date": "2026-11-22",
+    "round": 22,
+    "raceName": "Qatar Grand Prix",
+    "circuitName": "Lusail International Circuit",
+    "circuitId": "losail",
+    "date": "2026-11-29",
     "sprint": false,
-    "lat": 36.1147,
-    "long": -115.173
+    "lat": 25.49,
+    "long": 51.4542
   },
   "historyYearsRequested": [
     2025,
@@ -27,44 +27,44 @@
       {
         "year": 2025,
         "starters": 20,
-        "classified": 15,
-        "winnerGrid": 2,
-        "medianStops": 1.0
+        "classified": 18,
+        "winnerGrid": 3,
+        "medianStops": 2.0
       },
       {
         "year": 2024,
         "starters": 20,
-        "classified": 18,
-        "winnerGrid": 1,
-        "medianStops": 2.0
+        "classified": 15,
+        "winnerGrid": 2,
+        "medianStops": 3.0
       },
       {
         "year": 2023,
-        "starters": 20,
-        "classified": 19,
-        "winnerGrid": 2,
-        "medianStops": 2.0
+        "starters": 19,
+        "classified": 17,
+        "winnerGrid": 1,
+        "medianStops": 3.0
       }
     ],
     "finishRate": {
-      "classified": 52,
-      "starters": 60,
-      "share": 0.8666666666666667
+      "classified": 50,
+      "starters": 59,
+      "share": 0.847457627118644
     },
     "positionChange": {
-      "medianPlaces": 3.5,
-      "n": 52,
+      "medianPlaces": 2.0,
+      "n": 50,
       "note": "Absolute difference between grid slot and finishing position, classified finishers only. Pit-lane starts (grid 0) are excluded."
     },
     "winnerGrid": {
       "median": 2.0,
       "best": 1,
-      "worst": 2,
+      "worst": 3,
       "n": 3
     },
     "stops": {
-      "medianPerDriver": 2.0,
-      "n": 58,
+      "medianPerDriver": 3.0,
+      "n": 55,
       "editionsWithData": 3
     },
     "unavailable": {
